@@ -74,7 +74,7 @@ def convert_string_to_dd_mmm_yy(val_str):
 def process_fis_grouping_preserve_format(
     file_bytes, master_region_df, grouping_date_obj
 ):
-    grouping_date_str = grouping_date_obj.strftime("%y%m%d")  # รูปแบบ YYMMDD
+    grouping_date_str = grouping_date_obj.strftime("%y%m%d")
     grouping_date_display = grouping_date_obj.strftime("%d %b %y")
 
     df = pd.read_excel(file_bytes)
@@ -92,7 +92,7 @@ def process_fis_grouping_preserve_format(
     prefix = f"SJWD{grouping_date_str}-"
     group_counter = 1
 
-    # สร้าง Dictionary สำหรับแมป Region จาก Master
+    # ดึง Master Map
     master_map = dict(
         zip(
             master_region_df["Delivery Location"].astype(str).str.strip(),
@@ -111,7 +111,7 @@ def process_fis_grouping_preserve_format(
     if missing_locations:
         return None, None, None, missing_locations
 
-    # เติม Region จาก Master ในกรณีที่ช่อง Region ในไฟล์ตกหล่น/ว่างเปล่า
+    # แมป Region เพิ่มเติม
     df["Mapped_Region"] = df_delivery_clean.map(master_map)
     df[region_col] = df[region_col].fillna(df["Mapped_Region"])
 
@@ -147,7 +147,7 @@ def process_fis_grouping_preserve_format(
     for region_name, region_batch in ready_df.groupby(region_col, dropna=False):
         pending_indices = region_batch.index.tolist()
 
-        while len(pending_indices) >= 6:  # ข้อ 3: ต้องมีอย่างน้อย 6 คัน
+        while len(pending_indices) >= 6:
             group_indices = []
             pickups_in_group = set()
             deliveries_in_group = set()
@@ -159,7 +159,6 @@ def process_fis_grouping_preserve_format(
                 temp_pickups = pickups_in_group | {curr_pickup}
                 temp_deliveries = deliveries_in_group | {curr_delivery}
 
-                # ข้อ 5, 6, 7: Pick up <= 3 จุด และ Delivery <= 3 จุด
                 if len(temp_pickups) <= 3 and len(temp_deliveries) <= 3:
                     group_indices.append(idx)
                     pickups_in_group = temp_pickups
@@ -200,7 +199,6 @@ def process_fis_grouping_preserve_format(
             else:
                 break
 
-    # โหลดไฟล์เข้า openpyxl เพื่อเขียนผลลัพธ์และแปลง Format วันที่
     wb = openpyxl.load_workbook(file_bytes)
     ws = wb.active
 
@@ -214,21 +212,18 @@ def process_fis_grouping_preserve_format(
         headers.index(h) + 1 for h in date_header_names if h in headers
     ]
 
-    # 1. เขียนข้อมูล Grouping Number, Date และ Region ที่ซ่อมแล้ว
     for idx, row in df.iterrows():
         excel_row_num = idx + 2
         calc_no = row["Calc_Group_No"]
         calc_date = row["Calc_Group_Date"]
         region_val = row[region_col]
 
-        # เติม Region ถ้าในไฟล์ต้นฉบับว่างอยู่
         ws.cell(row=excel_row_num, column=region_col_idx, value=region_val)
 
         if calc_no != "":
             ws.cell(row=excel_row_num, column=g_no_col_idx, value=calc_no)
             ws.cell(row=excel_row_num, column=g_date_col_idx, value=calc_date)
 
-    # 2. บังคับเปลี่ยนวันที่ในคอลัมน์วันที่ทั้งหมดให้เป็น '31 Jul 26'
     for r in range(2, ws.max_row + 1):
         for c in target_date_cols:
             cell = ws.cell(row=r, column=c)
@@ -247,93 +242,101 @@ def process_fis_grouping_preserve_format(
     return output_buffer, pd.DataFrame(summary_list), total_cars, []
 
 
-# --- Streamlit Web App Interface ---
+# --- Streamlit Layout Configuration ---
 st.set_page_config(
     page_title="SJWD - FIS Auto Grouping System",
     page_icon="🚛",
     layout="wide",
 )
 
-st.title("🚛 ระบบจัดกลุ่มรถขนส่งอัตโนมัติ (FIS Delivery Optimization)")
-st.caption(
-    "ประมวลผลจัดกลุ่มรถขนส่งอัตโนมัติ อ้างอิงเงื่อนไข Aging, สถานะความพร้อม และ Master Region Mapping"
+# --- SIDEBAR: MASTER FILES SETTINGS ---
+st.sidebar.title("⚙️ Master Files Management")
+st.sidebar.caption("จัดการไฟล์ Master สำหรับการจับคู่ข้อมูล")
+
+master_region_file = st.sidebar.file_uploader(
+    "📂 Upload Master Region (Dealer (Region).xlsx)",
+    type=["xlsx", "xls"],
+    help="ไฟล์จับคู่ Delivery Location กับ Region",
 )
 
-col_up1, col_up2 = st.columns(2)
-with col_up1:
-    uploaded_file = st.file_uploader(
-        "1. อัปโหลดไฟล์ FIS Ready to Grouping for delivery (.xlsx)",
-        type=["xlsx", "xls"],
-    )
+st.sidebar.divider()
+st.sidebar.info(
+    "💡 **คำแนะนำ:**\nคุณสามารถอัปโหลดไฟล์ Master ทิ้งไว้ในแถบข้างนี้ แล้วเลือกอัปโหลดเฉพาะไฟล์จัดกลุ่มในหน้าหลักได้ทันที"
+)
 
-with col_up2:
-    master_file = st.file_uploader(
-        "2. อัปโหลดไฟล์ Master Region (Dealer (Region).xlsx)",
-        type=["xlsx", "xls"],
-    )
 
-if uploaded_file and master_file:
-    file_bytes = io.BytesIO(uploaded_file.getvalue())
-    master_df = pd.read_excel(master_file)
+# --- MAIN PANEL: GROUPING PROCESSING ---
+st.title("🚛 ระบบจัดกลุ่มรถขนส่งอัตโนมัติ (FIS Delivery Optimization)")
+st.caption("อัปโหลดไฟล์งานประจำวัน เพื่อประมวลผลจัดกลุ่มคิวขนส่งสินค้า")
 
-    st.success("อัปโหลดไฟล์ข้อมูลและ Master Region สำเร็จ!")
+uploaded_file = st.file_uploader(
+    "📁 อัปโหลดไฟล์ FIS Ready to Grouping for delivery (.xlsx)",
+    type=["xlsx", "xls"],
+)
 
-    col1, col2 = st.columns(2)
-    with col1:
-        date_input = st.date_input("เลือกวันที่จัดกลุ่ม", datetime.now())
+if uploaded_file:
+    if not master_region_file:
+        st.warning(
+            "⚠️ กรุณาอัปโหลดไฟล์ Master Region (Dealer (Region).xlsx) ที่แถบซ้ายมือ (Sidebar) ก่อนประมวลผล"
+        )
+    else:
+        file_bytes = io.BytesIO(uploaded_file.getvalue())
+        master_df = pd.read_excel(master_region_file)
 
-    with col2:
-        st.write("")
-        st.write("")
-        run_btn = st.button("🚀 ประมวลผลจัดกลุ่มอัตโนมัติ", type="primary")
+        st.success("เตรียมพร้อมข้อมูลสำเร็จ!")
 
-    if run_btn:
-        with st.spinner("กำลังตรวจสอบ Master Region และประมวลผล..."):
-            out_buffer, df_summary, total_cars, missing_locs = (
-                process_fis_grouping_preserve_format(
-                    file_bytes, master_df, date_input
+        col1, col2 = st.columns(2)
+        with col1:
+            date_input = st.date_input("เลือกวันที่จัดกลุ่ม", datetime.now())
+
+        with col2:
+            st.write("")
+            st.write("")
+            run_btn = st.button("🚀 ประมวลผลจัดกลุ่มอัตโนมัติ", type="primary")
+
+        if run_btn:
+            with st.spinner("กำลังตรวจสอบ Master Region และประมวลผล..."):
+                out_buffer, df_summary, total_cars, missing_locs = (
+                    process_fis_grouping_preserve_format(
+                        file_bytes, master_df, date_input
+                    )
                 )
-            )
 
-        if missing_locs:
-            st.error(
-                "❌ ไม่สามารถประมวลผลได้ เนื่องจากพบ Delivery Location ที่ไม่มีในไฟล์ Master!"
-            )
-            st.warning(
-                "กรุณาเพิ่มข้อมูล Delivery Location ดังต่อไปนี้ลงในไฟล์ Master (Dealer (Region).xlsx) ก่อนประมวลผลใหม่:"
-            )
-            for m_loc in missing_locs:
-                st.write(f"- 📍 **{m_loc}**")
-        else:
-            st.divider()
-            st.subheader("📊 สรุปผลการจัดกลุ่มจัดส่ง")
-
-            m1, m2, m3 = st.columns(3)
-            m1.metric("จำนวนกลุ่มที่สร้างได้", f"{len(df_summary)} กลุ่ม")
-            grouped_cars_count = (
-                df_summary["Car Count"].sum() if not df_summary.empty else 0
-            )
-            m2.metric("จำนวนรถที่จัดกลุ่มสำเร็จ", f"{grouped_cars_count} คัน")
-            m3.metric(
-                "รถที่ไม่เข้าเงื่อนไข/รอจัดกลุ่มใหม่",
-                f"{total_cars - grouped_cars_count} คัน",
-            )
-
-            if not df_summary.empty:
-                st.dataframe(df_summary, use_container_width=True)
-            else:
+            if missing_locs:
+                st.error(
+                    "❌ ไม่สามารถประมวลผลได้ เนื่องจากพบ Delivery Location ที่ไม่มีในไฟล์ Master!"
+                )
                 st.warning(
-                    "ไม่พบคันรถที่ตรงตามเงื่อนไขครบ 6-8 คัน หรือรถส่วนใหญ่อยู่ในสถานะ HOLD/เลื่อนส่ง"
+                    "กรุณาเพิ่มข้อมูล Delivery Location ดังต่อไปนี้ลงในไฟล์ Master Region (แถบซ้ายมือ) ก่อนประมวลผลใหม่:"
+                )
+                for m_loc in missing_locs:
+                    st.write(f"- 📍 **{m_loc}**")
+            else:
+                st.divider()
+                st.subheader("📊 สรุปผลการจัดกลุ่มจัดส่ง")
+
+                m1, m2, m3 = st.columns(3)
+                m1.metric("จำนวนกลุ่มที่สร้างได้", f"{len(df_summary)} กลุ่ม")
+                grouped_cars_count = (
+                    df_summary["Car Count"].sum() if not df_summary.empty else 0
+                )
+                m2.metric("จำนวนรถที่จัดกลุ่มสำเร็จ", f"{grouped_cars_count} คัน")
+                m3.metric(
+                    "รถที่ไม่เข้าเงื่อนไข/รอจัดกลุ่มใหม่",
+                    f"{total_cars - grouped_cars_count} คัน",
                 )
 
-            st.download_button(
-                label="📥 Download Result grouping",
-                data=out_buffer,
-                file_name=f"FIS_Grouped_{date_input.strftime('%Y%m%d')}.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            )
-elif uploaded_file and not master_file:
-    st.info(
-        "💡 กรุณาอัปโหลดไฟล์ Master Region (Dealer (Region).xlsx) ในช่องทางขวาเพื่อดำเนินการต่อ"
-    )
-    
+                if not df_summary.empty:
+                    st.dataframe(df_summary, use_container_width=True)
+                else:
+                    st.warning(
+                        "ไม่พบคันรถที่ตรงตามเงื่อนไขครบ 6-8 คัน หรือรถส่วนใหญ่อยู่ในสถานะ HOLD/เลื่อนส่ง"
+                    )
+
+                st.download_button(
+                    label="📥 Download Result grouping",
+                    data=out_buffer,
+                    file_name=f"FIS_Grouped_{date_input.strftime('%Y%m%d')}.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                )
+                
