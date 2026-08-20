@@ -303,17 +303,17 @@ st.markdown(
         color: #ffffff !important;
     }
     
-    /* กล่อง File Uploader ใน Sidebar อ่านง่าย */
-    [data-testid="stSidebar"] [data-testid="stFileUploader"] {
+    /* กล่อง File Uploader อ่านง่าย */
+    [data-testid="stFileUploader"] {
         background-color: #f8f9fa !important;
         border-radius: 10px !important;
         padding: 10px !important;
         border: 1px solid #cbd5e1 !important;
     }
-    [data-testid="stSidebar"] [data-testid="stFileUploader"] * {
+    [data-testid="stFileUploader"] * {
         color: #1a202c !important;
     }
-    [data-testid="stSidebar"] [data-testid="stFileUploader"] button {
+    [data-testid="stFileUploader"] button {
         background-color: #0066B3 !important;
         color: #ffffff !important;
         border-radius: 6px !important;
@@ -366,12 +366,14 @@ st.sidebar.markdown(
 )
 
 st.sidebar.title("⚙️ Control Panel")
-st.sidebar.caption("เลือกฟังก์ชันคำสั่งใน Sidebar เพื่อแสดงข้อมูลบนหน้าหลัก")
+st.sidebar.caption("กดเลือกหัวข้อที่ Sidebar เพื่อแสดงผลลัพธ์บน Main Panel ขวามือ")
 
 active_feature = st.sidebar.radio(
-    "เลือกฟังก์ชันใช้งาน:",
+    "เลือกหัวข้อทำงาน:",
     [
         "🚀 วางแผนจัดกลุ่ม (Auto Grouping)",
+        "📂 Master list (Dealer Region)",
+        "📋 Conditions (เงื่อนไขการจัดกลุ่ม)",
         "🚛 Fleet Capacity Settings",
         "📜 ประวัติการจัดกลุ่มย้อนหลัง",
         "✏️ Revise & Swap VIN",
@@ -380,26 +382,6 @@ active_feature = st.sidebar.radio(
 )
 
 st.sidebar.divider()
-
-# --- SIDEBAR INPUTS FOR AUTO GROUPING ---
-if active_feature == "🚀 วางแผนจัดกลุ่ม (Auto Grouping)":
-    st.sidebar.subheader("1. Master list")
-    master_region_file = st.sidebar.file_uploader(
-        "📂 Upload Dealer (Region).xlsx", type=["xlsx", "xls"], key="sb_master"
-    )
-
-    st.sidebar.subheader("2. Grouping order")
-    uploaded_file = st.sidebar.file_uploader(
-        "📁 Upload FIS Ready to Grouping (.xlsx)", type=["xlsx", "xls"], key="sb_fis"
-    )
-
-    run_btn = False
-    if uploaded_file and master_region_file:
-        st.sidebar.write("")
-        run_btn = st.sidebar.button(
-            "🚀 ประมวลผลจัดกลุ่มอัตโนมัติ", type="primary", use_container_width=True
-        )
-
 st.sidebar.caption("SIAM JWD LOGISTICS CO., LTD.")
 
 
@@ -420,124 +402,183 @@ st.caption("ระบบคำนวณและวางแผนจัดก�
 st.divider()
 
 
-# --- DISPLAY CONTENT ON MAIN PANEL BASED ON SIDEBAR SELECTION ---
+# --- DISPLAY CONTENT ON MAIN PANEL RIGHT SIDE BASED ON SIDEBAR CLICK ---
 
-# 1. AUTO GROUPING
+# 1. AUTO GROUPING WORKSPACE ON MAIN PANEL
 if active_feature == "🚀 วางแผนจัดกลุ่ม (Auto Grouping)":
-    if not run_btn:
-        col_f1, col_f2, col_f3 = st.columns(3)
-        with col_f1:
-            st.markdown(
-                """
-                <div class="clean-card">
-                    <h4 style="color:#0066B3; margin-top:0;">🎯 Auto Matching</h4>
-                    <p style="color:#4a5568; font-size:14px; margin:0;">จับคู่ Delivery Location กับ Region และเติมช่องตกหล่นจาก Master อัตโนมัติ</p>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-        with col_f2:
-            st.markdown(
-                """
-                <div class="clean-card-red">
-                    <h4 style="color:#ED1C24; margin-top:0;">⏳ Aging Priority</h4>
-                    <p style="color:#4a5568; font-size:14px; margin:0;">เรียงลำดับคิวรถตาม Allocation Date จากอดีตไปหาปัจจุบัน ป้องกันสินค้าค้างส่ง</p>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-        with col_f3:
-            st.markdown(
-                """
-                <div class="clean-card">
-                    <h4 style="color:#0066B3; margin-top:0;">🚛 Route & Slide-on</h4>
-                    <p style="color:#4a5568; font-size:14px; margin:0;">คุมจำนวนรถเฉลี่ย 6-7 คันต่อเทรลเลอร์ (DENZA D9 ใน BKK จัดส่งแบบ Slide on ได้ทันที)</p>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
+    st.subheader("🚀 วางแผนและประมวลผลจัดกลุ่มอัตโนมัติ (Main Workspace)")
+    st.caption("อัปโหลดไฟล์ข้อมูล และกดปุ่มประมวลผลจัดกลุ่มบนหน้าหลักขวามือได้ทันที")
 
-        st.info("👈 **เริ่มต้นใช้งาน:** เลือกอัปโหลดไฟล์ Master list และ Grouping order ในแถบซ้ายมือ (Sidebar) แล้วกดปุ่มประมวลผล ข้อมูลจะเด้งมาแสดงผลที่หน้าหลักนี้ทันที")
+    col_up1, col_up2 = st.columns(2)
+    with col_up1:
+        st.markdown(
+            """
+            <div class="clean-card">
+                <h4 style="color:#0066B3; margin-top:0;">1. Master list</h4>
+                <p style="color:#64748b; font-size:13px;">อัปโหลดไฟล์ <b>Dealer (Region).xlsx</b> (หรือใช้ Master ล่าสุดในระบบ)</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        master_region_file = st.file_uploader(
+            "📂 เลือกไฟล์ Dealer (Region).xlsx", type=["xlsx", "xls"], key="main_master"
+        )
 
-    else:
-        file_bytes = io.BytesIO(uploaded_file.getvalue())
-        master_df = pd.read_excel(master_region_file)
+    with col_up2:
+        st.markdown(
+            """
+            <div class="clean-card-red">
+                <h4 style="color:#ED1C24; margin-top:0;">2. Grouping order</h4>
+                <p style="color:#64748b; font-size:13px;">อัปโหลดไฟล์ <b>FIS Ready to Grouping (.xlsx)</b> คิวรถที่ต้องการจัดกลุ่ม</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        uploaded_file = st.file_uploader(
+            "📁 เลือกไฟล์ FIS Ready to Grouping (.xlsx)", type=["xlsx", "xls"], key="main_fis"
+        )
 
-        capacity_settings = {
-            "trailer_7": st.session_state.get("trailer_7_qty", 20),
-            "trailer_8": st.session_state.get("trailer_8_qty", 5),
-            "slide_on": st.session_state.get("slide_on_allow", True),
-        }
+    st.write("")
 
-        with st.spinner("กำลังตรวจสอบ Master Region และประมวลผลคิวขนส่ง..."):
-            out_buffer, df_summary, total_cars, missing_locs, df_processed = (
-                process_fis_grouping_with_capacity(
-                    file_bytes, master_df, datetime.now(), capacity_settings
+    if uploaded_file and master_region_file:
+        st.success("✅ อัปโหลดไฟล์ครบถ้วนแล้ว พร้อมสำหรับการประมวลผลจัดกลุ่ม")
+        if st.button("🚀 เริ่มคำนวณจัดกลุ่มอัตโนมัติ (Process Grouping)", type="primary", use_container_width=True):
+            file_bytes = io.BytesIO(uploaded_file.getvalue())
+            master_df = pd.read_excel(master_region_file)
+
+            capacity_settings = {
+                "trailer_7": st.session_state.get("trailer_7_qty", 20),
+                "trailer_8": st.session_state.get("trailer_8_qty", 5),
+                "slide_on": st.session_state.get("slide_on_allow", True),
+            }
+
+            with st.spinner("กำลังตรวจสอบ Master Region และประมวลผลคิวขนส่ง..."):
+                out_buffer, df_summary, total_cars, missing_locs, df_processed = (
+                    process_fis_grouping_with_capacity(
+                        file_bytes, master_df, datetime.now(), capacity_settings
+                    )
                 )
-            )
 
-        if missing_locs:
-            st.error("❌ ไม่สามารถประมวลผลได้ เนื่องจากพบ Delivery Location ที่ไม่มีในไฟล์ Master!")
-            st.warning("กรุณาเพิ่มข้อมูล Delivery Location ดังต่อไปนี้ลงในไฟล์ Master list (Dealer (Region).xlsx) ก่อนประมวลผลใหม่:")
-            for m_loc in missing_locs:
-                st.write(f"- 📍 **{m_loc}**")
-        else:
-            st.subheader("📊 สรุปผลการจัดกลุ่มจัดส่งที่เด้งมาแสดงผลบนหน้าหลัก (SIAM JWD LOGISTICS)")
+            if missing_locs:
+                st.error("❌ ไม่สามารถประมวลผลได้ เนื่องจากพบ Delivery Location ที่ไม่มีในไฟล์ Master!")
+                st.warning("กรุณาเพิ่มข้อมูล Delivery Location ดังต่อไปนี้ลงในไฟล์ Master list (Dealer (Region).xlsx) ก่อนประมวลผลใหม่:")
+                for m_loc in missing_locs:
+                    st.write(f"- 📍 **{m_loc}**")
+            else:
+                st.divider()
+                st.subheader("📊 ผลลัพธ์การจัดกลุ่มจัดส่ง (SIAM JWD LOGISTICS)")
 
-            m1, m2, m3 = st.columns(3)
-            m1.metric("จำนวนกลุ่มที่สร้างได้", f"{len(df_summary)} กลุ่ม")
-            grouped_cars_count = df_summary["Car Count"].sum() if not df_summary.empty else 0
-            m2.metric("จำนวนรถที่จัดกลุ่มสำเร็จ", f"{grouped_cars_count} คัน")
-            m3.metric("รถที่ไม่เข้าเงื่อนไข/รอจัดกลุ่มใหม่", f"{total_cars - grouped_cars_count} คัน")
+                m1, m2, m3 = st.columns(3)
+                m1.metric("จำนวนกลุ่มที่สร้างได้", f"{len(df_summary)} กลุ่ม")
+                grouped_cars_count = df_summary["Car Count"].sum() if not df_summary.empty else 0
+                m2.metric("จำนวนรถที่จัดกลุ่มสำเร็จ", f"{grouped_cars_count} คัน")
+                m3.metric("รถที่ไม่เข้าเงื่อนไข/รอจัดกลุ่มใหม่", f"{total_cars - grouped_cars_count} คัน")
 
-            if not df_summary.empty:
-                st.dataframe(df_summary, use_container_width=True)
+                if not df_summary.empty:
+                    st.dataframe(df_summary, use_container_width=True)
 
-                history = load_history()
-                date_key = datetime.now().strftime("%Y-%m-%d")
-                history[date_key] = {
-                    "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                    "total_cars": total_cars,
-                    "grouped_cars": int(grouped_cars_count),
-                    "total_groups": len(df_summary),
-                    "summary": df_summary.to_dict(orient="records"),
-                }
-                save_history(history)
-                st.success("💾 บันทึกประวัติการจัดกลุ่มลงระบบเรียบร้อยแล้ว!")
+                    history = load_history()
+                    date_key = datetime.now().strftime("%Y-%m-%d")
+                    history[date_key] = {
+                        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        "total_cars": total_cars,
+                        "grouped_cars": int(grouped_cars_count),
+                        "total_groups": len(df_summary),
+                        "summary": df_summary.to_dict(orient="records"),
+                    }
+                    save_history(history)
+                    st.success("💾 บันทึกประวัติการจัดกลุ่มลงระบบเรียบร้อยแล้ว!")
 
-            st.download_button(
-                label="📥 Download Result grouping (.xlsx)",
-                data=out_buffer,
-                file_name=f"FIS_Grouped_{datetime.now().strftime('%Y%m%d')}.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            )
+                st.download_button(
+                    label="📥 Download Result grouping (.xlsx)",
+                    data=out_buffer,
+                    file_name=f"FIS_Grouped_{datetime.now().strftime('%Y%m%d')}.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                )
 
-            st.session_state["df_last_processed"] = df_processed
-            st.session_state["df_last_summary"] = df_summary
+                st.session_state["df_last_processed"] = df_processed
+                st.session_state["df_last_summary"] = df_summary
+    else:
+        st.info("💡 **คำแนะนำ:** กรุณาเลือกไฟล์ Master list และ Grouping order ด้านบนเพื่อกดปุ่มประมวลผลจัดกลุ่ม")
 
-# 2. FLEET CAPACITY SETTINGS
+
+# 2. MASTER LIST SEPARATE MENU ON MAIN PANEL
+elif active_feature == "📂 Master list (Dealer Region)":
+    st.subheader("📂 การจัดการข้อมูล Master list (Dealer & Region Mapping)")
+    st.caption("ตรวจสอบและอัปโหลดข้อมูลแมปสถานที่จัดส่งสินค้า (Delivery Location) คู่กับ Region")
+
+    master_up = st.file_uploader("📂 อัปโหลดไฟล์ Master Dealer (Region).xlsx ใหม่:", type=["xlsx", "xls"], key="menu_master_file")
+    
+    if master_up:
+        df_master_view = pd.read_excel(master_up)
+        st.success(f"อัปโหลดไฟล์ Master สำเร็จ! พบรายการสถานที่ส่งทั้งหมด {len(df_master_view)} รายการ")
+        st.dataframe(df_master_view, use_container_width=True)
+    else:
+        st.info("📌 คุณสามารถอัปโหลดไฟล์ Master Dealer (Region).xlsx เพื่อตรวจสอบจับคู่ Delivery Location และ Region ที่นี่")
+
+
+# 3. CONDITIONS SEPARATE MENU ON MAIN PANEL
+elif active_feature == "📋 Conditions (เงื่อนไขการจัดกลุ่ม)":
+    st.subheader("📋 เงื่อนไขการจัดกลุ่มจัดส่งอัตโนมัติ (Grouping Conditions)")
+    st.caption("ระบบจะนำเงื่อนไขทั้ง 3 ส่วนนี้ไปประมวลผลในการจัดกลุ่มรถทุกครั้ง")
+
+    col_f1, col_f2, col_f3 = st.columns(3)
+    with col_f1:
+        st.markdown(
+            """
+            <div class="clean-card">
+                <h4 style="color:#0066B3; margin-top:0;">🎯 Auto Matching</h4>
+                <p style="color:#4a5568; font-size:14px; margin:0;">จับคู่ Delivery Location กับ Region และเติมช่องตกหล่นจาก Master อัตโนมัติ</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+    with col_f2:
+        st.markdown(
+            """
+            <div class="clean-card-red">
+                <h4 style="color:#ED1C24; margin-top:0;">⏳ Aging Priority</h4>
+                <p style="color:#4a5568; font-size:14px; margin:0;">เรียงลำดับคิวรถตาม Allocation Date จากอดีตไปหาปัจจุบัน ป้องกันสินค้าค้างส่ง</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+    with col_f3:
+        st.markdown(
+            """
+            <div class="clean-card">
+                <h4 style="color:#0066B3; margin-top:0;">🚛 Route & Slide-on</h4>
+                <p style="color:#4a5568; font-size:14px; margin:0;">คุมจำนวนรถเฉลี่ย 6-7 คันต่อเทรลเลอร์ (DENZA D9 ใน BKK จัดส่งแบบ Slide on ได้ทันที)</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+
+# 4. FLEET CAPACITY SETTINGS ON MAIN PANEL
 elif active_feature == "🚛 Fleet Capacity Settings":
-    st.subheader("🚛 ตั้งค่า Fleet Capacity บนหน้าหลัก")
-    st.caption("กำหนดโควตาเทรลเลอร์สำหรับส่งให้ระบบ Auto Grouping คำนวณ")
+    st.subheader("🚛 ตั้งค่า Fleet Capacity (กำหนดโควตากองรถ)")
+    st.caption("กำหนดจำกัดจำนวนเทรลเลอร์และเงื่อนไขประเภทรถขนส่งสำหรับนำไปคำนวณในระบบ")
 
     f1, f2 = st.columns(2)
     with f1:
         st.session_state["trailer_7_qty"] = st.number_input(
-            "จำนวน Trailer (6-7 Load) พร้อมวิ่ง:", min_value=0, value=st.session_state.get("trailer_7_qty", 20)
+            "จำนวน Trailer (6-7 Load) ที่มีพร้อมวิ่ง:", min_value=0, value=st.session_state.get("trailer_7_qty", 20)
         )
         st.session_state["trailer_8_qty"] = st.number_input(
-            "จำนวน Trailer (8 Load) พร้อมวิ่ง:", min_value=0, value=st.session_state.get("trailer_8_qty", 5)
+            "จำนวน Trailer (8 Load) ที่มีพร้อมวิ่ง:", min_value=0, value=st.session_state.get("trailer_8_qty", 5)
         )
     with f2:
         st.session_state["slide_on_allow"] = st.checkbox(
             "อนุญาตให้ส่งแบบ Slide-on สำหรับ DENZA D9 ใน BKK ได้ทันที", value=st.session_state.get("slide_on_allow", True)
         )
 
-    st.success("💾 บันทึกการตั้งค่าโควตากองรถเรียบร้อยแล้ว! เมื่อกดประมวลผลที่ Sidebar ระบบจะใช้โควตานี้ทันที")
+    st.success("💾 บันทึกการตั้งค่าโควตากองรถเรียบร้อยแล้ว!")
 
-# 3. GROUPING HISTORY
+
+# 5. GROUPING HISTORY ON MAIN PANEL
 elif active_feature == "📜 ประวัติการจัดกลุ่มย้อนหลัง":
-    st.subheader("📜 ประวัติการจัดกลุ่มย้อนหลัง (แสดงผลบนหน้าหลัก)")
+    st.subheader("📜 เรียกดูประวัติการจัดกลุ่มย้อนหลัง")
     history_data = load_history()
 
     if not history_data:
@@ -558,12 +599,13 @@ elif active_feature == "📜 ประวัติการจัดกลุ่
             df_hist_summary = pd.DataFrame(record.get("summary", []))
             st.dataframe(df_hist_summary, use_container_width=True)
 
-# 4. REVISE & SWAP VIN
+
+# 6. REVISE & SWAP VIN ON MAIN PANEL
 elif active_feature == "✏️ Revise & Swap VIN":
-    st.subheader("✏️ แก้ไข / ยกเลิก / สลับคันรถใน Grouping")
+    st.subheader("✏️ แก้ไข / ยกเลิก / สลับคันรถใน Grouping (Revise & Swap)")
 
     if "df_last_processed" not in st.session_state or "df_last_summary" not in st.session_state:
-        st.warning("⚠️ กรุณาประมวลผลจัดกลุ่มที่เมนู 'Auto Grouping' ใน Sidebar ก่อนทำการแก้ไข")
+        st.warning("⚠️ กรุณาประมวลผลจัดกลุ่มที่หัวข้อ '🚀 วางแผนจัดกลุ่ม' ก่อนทำการแก้ไข")
     else:
         df_proc = st.session_state["df_last_processed"].copy()
         df_sum = st.session_state["df_last_summary"].copy()
