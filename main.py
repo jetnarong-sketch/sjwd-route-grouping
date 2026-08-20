@@ -1,5 +1,6 @@
 from datetime import datetime
 import io
+import openpyxl
 import pandas as pd
 import streamlit as st
 
@@ -41,9 +42,22 @@ def is_car_ready_to_ship(row, hold_col="HOLD", remark_col="Remark"):
     return True
 
 
-def process_fis_grouping(df, grouping_date_obj):
+def clean_date_display(val):
+    """ฟังก์ชันตัดเวลา 00:00:00 ออก ให้เหลือเฉพาะ YYYY-MM-DD"""
+    if pd.isna(val) or val == "":
+        return ""
+    if isinstance(val, (pd.Timestamp, datetime)):
+        return val.strftime("%Y-%m-%d")
+    val_str = str(val).split(" ")[0].strip()
+    return val_str if val_str != "nan" else ""
+
+
+def process_fis_grouping_preserve_format(file_bytes, grouping_date_obj):
     grouping_date_str = grouping_date_obj.strftime("%y%m%d")  # รูปแบบ YYMMDD
     grouping_date_display = grouping_date_obj.strftime("%d/%m/%Y")
+
+    # อ่าน DataFrame มาประมวลผล Logic
+    df = pd.read_excel(file_bytes)
 
     pickup_col = "Pick up Location"
     delivery_col = "Delivery Location"
@@ -58,7 +72,6 @@ def process_fis_grouping(df, grouping_date_obj):
     prefix = f"SJWD{grouping_date_str}-"
     group_counter = 1
 
-    # ป้องกัน TypeError โดยแปลงคอลัมน์เป้าหมายให้รองรับข้อความ (String/Object)
     df[group_no_col] = df[group_no_col].astype(object)
     df[group_date_col] = df[group_date_col].astype(object)
 
@@ -68,12 +81,14 @@ def process_fis_grouping(df, grouping_date_obj):
     )
     ready_df = df[df["Ready_Flag"] == True].copy()
 
-    # 2. ข้อ 8: เรียงลำดับคิวตาม Aging Allocation Date (เก่าสุดขึ้นก่อน)
+    # 2. ข้อ 8: เรียงลำดับคิวตาม Aging Allocation Date
     if alloc_date_col in ready_df.columns:
-        ready_df[alloc_date_col] = pd.to_datetime(
+        temp_alloc_date = pd.to_datetime(
             ready_df[alloc_date_col], errors="coerce"
         )
-        ready_df = ready_df.sort_values(by=alloc_date_col, ascending=True)
+        ready_df = ready_df.assign(
+            _temp_sort_date=temp_alloc_date
+        ).sort_values(by="_temp_sort_date", ascending=True)
 
     ready_df["Estimated_Weight_KG"] = (
         ready_df[model_col]
@@ -107,7 +122,6 @@ def process_fis_grouping(df, grouping_date_obj):
                     pickups_in_group = temp_pickups
                     deliveries_in_group = temp_deliveries
 
-                # ข้อ 3: สูงสุด 8 คันต่อกลุ่ม
                 if len(group_indices) == 8:
                     break
 
@@ -143,18 +157,46 @@ def process_fis_grouping(df, grouping_date_obj):
             else:
                 break
 
-    # ข้อ 4: อัปเดตคอลัมน์ (คันที่จัดไม่ได้ ให้คงค่าเดิมไว้)
-    mask = df["Calc_Group_No"] != ""
-    df.loc[mask, group_no_col] = df.loc[mask, "Calc_Group_No"]
-    df.loc[mask, group_date_col] = df.loc[mask, "Calc_Group_Date"]
+    # นำผลลัพธ์ใส่กลับลงใน openpyxl เพื่อรักษา Format เดิม + ลบเวลา 00:00:00 ออก
+    wb = openpyxl.load_workbook(file_bytes)
+    ws = wb.active
 
-    df.drop(
-        columns=["Ready_Flag", "Calc_Group_No", "Calc_Group_Date"],
-        inplace=True,
-        errors="ignore",
-    )
+    headers = [cell.value for cell in ws[1]]
+    g_no_col_idx = headers.index(group_no_col) + 1
+    g_date_col_idx = headers.index(group_date_col) + 1
 
-    return df, pd.DataFrame(summary_list)
+    # ค้นหาคอลัมน์ที่เป็นวันที่เพื่อ Clean เอาเวลา 00:00:00 ออก
+    date_columns_to_clean = []
+    for date_header in ["Gate In", "Allocation Date", "วันที่รับ"]:
+        if date_header in headers:
+            date_columns_to_clean.append(headers.index(date_header) + 1)
+
+    for idx, row in df.iterrows():
+        excel_row_num = idx + 2  # +2 เพราะมี Header อยู่แถวที่ 1
+
+        # 1. เขียนข้อมูล Grouping Number & Date
+        calc_no = row["Calc_Group_No"]
+        calc_date = row["Calc_Group_Date"]
+
+        if calc_no != "":
+            ws.cell(row=excel_row_num, column=g_no_col_idx, value=calc_no)
+            ws.cell(row=excel_row_num, column=g_date_col_idx, value=calc_date)
+
+        # 2. ลบเวลา 00:00:00 ออกจากคอลัมน์วันที่
+        for c_idx in date_columns_to_clean:
+            cell = ws.cell(row=excel_row_num, column=c_idx)
+            if cell.value is not None:
+                cleaned_val = clean_date_display(cell.value)
+                if cleaned_val:
+                    cell.value = cleaned_val
+                    cell.number_format = "YYYY-MM-DD"
+
+    output_buffer = io.BytesIO()
+    wb.save(output_buffer)
+    output_buffer.seek(0)
+
+    total_cars = len(df)
+    return output_buffer, pd.DataFrame(summary_list), total_cars
 
 
 # --- Streamlit Web App Interface ---
@@ -175,8 +217,8 @@ uploaded_file = st.file_uploader(
 )
 
 if uploaded_file:
-    df_raw = pd.read_excel(uploaded_file)
-    st.success(f"อัปโหลดไฟล์สำเร็จ! จำนวนรถทั้งหมดในไฟล์: {len(df_raw)} คัน")
+    file_bytes = io.BytesIO(uploaded_file.getvalue())
+    st.success("อัปโหลดไฟล์สำเร็จ!")
 
     col1, col2 = st.columns(2)
     with col1:
@@ -188,8 +230,10 @@ if uploaded_file:
         run_btn = st.button("🚀 ประมวลผลจัดกลุ่มอัตโนมัติ", type="primary")
 
     if run_btn:
-        with st.spinner("กำลังตรวจสอบเงื่อนไขและจัดกลุ่มคิวขนส่ง..."):
-            df_result, df_summary = process_fis_grouping(df_raw, date_input)
+        with st.spinner("กำลังประมวลผลและลบเวลาส่วนเกินออกจากคอลัมน์วันที่..."):
+            out_buffer, df_summary, total_cars = (
+                process_fis_grouping_preserve_format(file_bytes, date_input)
+            )
 
         st.divider()
         st.subheader("📊 สรุปผลการจัดกลุ่มจัดส่ง")
@@ -202,7 +246,7 @@ if uploaded_file:
         m2.metric("จำนวนรถที่จัดกลุ่มสำเร็จ", f"{grouped_cars_count} คัน")
         m3.metric(
             "รถที่ไม่เข้าเงื่อนไข/รอจัดกลุ่มใหม่",
-            f"{len(df_raw) - grouped_cars_count} คัน",
+            f"{total_cars - grouped_cars_count} คัน",
         )
 
         if not df_summary.empty:
@@ -212,15 +256,9 @@ if uploaded_file:
                 "ไม่พบคันรถที่ตรงตามเงื่อนไขครบ 6-8 คัน หรือรถส่วนใหญ่อยู่ในสถานะ HOLD/เลื่อนส่ง"
             )
 
-        buffer = io.BytesIO()
-        with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
-            df_result.to_excel(writer, index=False)
-        buffer.seek(0)
-
         st.download_button(
             label="📥 ดาวน์โหลดไฟล์ Excel ผลลัพธ์",
-            data=buffer,
+            data=out_buffer,
             file_name=f"FIS_Grouped_{date_input.strftime('%Y%m%d')}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
-        
