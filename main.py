@@ -76,7 +76,6 @@ def convert_string_to_dd_mmm_yy(val_str):
 
 def process_fis_grouping_preserve_format(file_bytes, grouping_date_obj):
     grouping_date_str = grouping_date_obj.strftime("%y%m%d")  # รูปแบบ YYMMDD
-    # ตั้งค่า Grouping Date ให้อยู่ในฟอร์แมต '31 Jul 26'
     grouping_date_display = grouping_date_obj.strftime("%d %b %y")
 
     # อ่าน DataFrame มาประมวลผล Logic
@@ -180,7 +179,7 @@ def process_fis_grouping_preserve_format(file_bytes, grouping_date_obj):
             else:
                 break
 
-    # โหลดไฟล์เข้า openpyxl เพื่อเขียนผลลัพธ์และบังคับแปลง Format วันที่
+    # โหลดไฟล์เข้า openpyxl เพื่อเขียนผลลัพธ์และแปลง Format วันที่
     wb = openpyxl.load_workbook(file_bytes)
     ws = wb.active
 
@@ -188,7 +187,6 @@ def process_fis_grouping_preserve_format(file_bytes, grouping_date_obj):
     g_no_col_idx = headers.index(group_no_col) + 1
     g_date_col_idx = headers.index(group_date_col) + 1
 
-    # ระบุคอลัมน์เป้าหมายที่เป็นวันที่
     date_header_names = ["Gate In", "Allocation Date", "Grouping Date", "วันที่รับ"]
     target_date_cols = [
         headers.index(h) + 1 for h in date_header_names if h in headers
@@ -281,7 +279,7 @@ if uploaded_file:
             )
 
         st.download_button(
-            label="📥 ดาวน์โหลดไฟล์ Excel ผลลัพธ์ (Format วันที่: 31 Jul 26)",
+            label="📥 Download Result grouping",
             data=out_buffer,
             file_name=f"FIS_Grouped_{date_input.strftime('%Y%m%d')}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
