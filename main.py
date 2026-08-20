@@ -1,6 +1,6 @@
 from datetime import datetime, date
 import io
-import os
+import base64
 import openpyxl
 import pandas as pd
 from PIL import Image
@@ -19,22 +19,17 @@ MODEL_WEIGHT_MASTER = {
     "SEAL 5": 1600,
 }
 
+# รหัสรูปภาพโลโก้ SIAM JWD LOGISTICS ฝังตรงในหน่วยความจำ
+LOGO_B64 = "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARERERYUGBwaGi2EORAte3t7e3t7e3t7e3t7e3t7e3t7e3t7e3t7e3t7e3t7e3t7e3t7e3t7e3t7e3t7e3t7e3v/wAARCAE3AcIDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi46Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBA3barp39D"
 
-def load_logo_image():
-    """ค้นหาไฟล์ภาพโลโก้ในโฟลเดอร์โครงการ"""
-    logo_names = [
-        "logo.png",
-        "logo siam jwd logistics_5.jpg",
-        "siam_jwd_logo.png",
-        "siam_jwd_logo.png.jpg",
-    ]
-    for name in logo_names:
-        if os.path.exists(name):
-            try:
-                return Image.open(name)
-            except Exception:
-                pass
-    return None
+@st.cache_data
+def load_embedded_logo():
+    """แปลง Base64 สตริงเป็น PIL Image วางบน RAM โดยตรง"""
+    try:
+        image_data = base64.b64decode(LOGO_B64)
+        return Image.open(io.BytesIO(image_data))
+    except Exception:
+        return None
 
 
 def is_car_ready_to_ship(row, hold_col="HOLD", remark_col="Remark"):
@@ -261,14 +256,13 @@ st.set_page_config(
     layout="wide",
 )
 
-# โหลดรูปภาพโลโก้
-logo_img = load_logo_image()
-
-# เรียกใช้ st.logo() ซึ่งเป็น API ตรงของ Streamlit สำหรับแสดงโลโก้
-if logo_img is not None:
-    st.logo(logo_img, icon_image=logo_img)
+# โหลดรูปภาพจากหน่วยความจำ RAM
+logo_img = load_embedded_logo()
 
 # --- SIDEBAR: CONTROL PANEL ---
+if logo_img is not None:
+    st.sidebar.image(logo_img, use_container_width=True)
+
 st.sidebar.title("⚙️ Control Panel")
 st.sidebar.caption("ศูนย์จัดการไฟล์และตั้งค่าการประมวลผล")
 
@@ -300,7 +294,9 @@ st.sidebar.caption("SIAM JWD LOGISTICS CO., LTD.")
 
 
 # --- MAIN PANEL ---
-st.markdown("# **SIAM JWD LOGISTICS**")
+if logo_img is not None:
+    st.image(logo_img, width=380)
+
 st.markdown("### **Auto Fleet Grouping & Logistics Optimization System**")
 st.caption(
     "ระบบคำนวณและวางแผนจัดกลุ่มรถขนส่งสินค้าอัตโนมัติ (Automated Car Carrier Optimization)"
