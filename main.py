@@ -242,7 +242,7 @@ st.set_page_config(
     layout="wide",
 )
 
-# --- CUSTOM CSS: SIAM JWD RED & BLUE CLEAN THEME ---
+# --- CUSTOM CSS: FIX SIDEBAR FILE UPLOADER CONTRAST ---
 st.markdown(
     """
     <style>
@@ -250,15 +250,35 @@ st.markdown(
     [data-testid="stSidebar"] {
         background-color: #0b2545 !important;
     }
-    [data-testid="stSidebar"] * {
+    /* ข้อความทั่วไปใน Sidebar เป็นสีขาว */
+    [data-testid="stSidebar"] h1, 
+    [data-testid="stSidebar"] h2, 
+    [data-testid="stSidebar"] h3, 
+    [data-testid="stSidebar"] p, 
+    [data-testid="stSidebar"] span, 
+    [data-testid="stSidebar"] label {
         color: #ffffff !important;
     }
-    /* ปุ่มอัปโหลดไฟล์ใน Sidebar */
+    
+    /* แก้ไขกล่อง File Uploader ใน Sidebar ให้เห็นข้อความชัดเจน */
     [data-testid="stSidebar"] [data-testid="stFileUploader"] {
-        background-color: #134074;
-        border-radius: 8px;
-        padding: 8px;
+        background-color: #f8f9fa !important;
+        border-radius: 10px !important;
+        padding: 10px !important;
+        border: 1px solid #cbd5e1 !important;
     }
+    /* ปรับตัวอักษรและไอคอนภายในกล่องอัปโหลดให้เป็นสีเข้ม */
+    [data-testid="stSidebar"] [data-testid="stFileUploader"] * {
+        color: #1a202c !important;
+    }
+    /* ปรับแต่งปุ่ม Browse files ภายในกล่องอัปโหลด */
+    [data-testid="stSidebar"] [data-testid="stFileUploader"] button {
+        background-color: #0066B3 !important;
+        color: #ffffff !important;
+        border-radius: 6px !important;
+        border: none !important;
+    }
+    
     /* ปุ่มประมวลผล สีแดงองค์กร */
     div.stButton > button:first-child {
         background-color: #ED1C24 !important;
@@ -274,6 +294,7 @@ st.markdown(
         background-color: #c41218 !important;
         box-shadow: 0px 6px 15px rgba(237, 28, 36, 0.5) !important;
     }
+    
     /* การ์ดข้อมูล Clean Card */
     .clean-card {
         background-color: #ffffff;
