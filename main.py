@@ -137,7 +137,39 @@ def process_fis_grouping_preserve_format(
     df["Calc_Group_Date"] = ""
     summary_list = []
 
-    for region_name, region_batch in ready_df.groupby(region_col, dropna=False):
+    # --- 1. จัดกลุ่ม DENZA D9 ใน BKK สำหรับ Slide on (คันละ 1 กลุ่ม) ---
+    slide_on_mask = (
+        (ready_df[model_col].astype(str).str.upper().str.contains("DENZA D9|D9", regex=True)) &
+        (ready_df[region_col].astype(str).str.upper().str.strip() == "BKK")
+    )
+    slide_on_indices = ready_df[slide_on_mask].index.tolist()
+
+    for idx in slide_on_indices:
+        current_group_id = f"{prefix}{group_counter:03d}-SLIDE"
+        df.loc[idx, "Calc_Group_No"] = current_group_id
+        df.loc[idx, "Calc_Group_Date"] = grouping_date_display
+
+        group_weight = ready_df.loc[idx, "Estimated_Weight_KG"]
+        pick_loc = ready_df.loc[idx, pickup_col]
+        del_loc = ready_df.loc[idx, delivery_col]
+
+        summary_list.append(
+            {
+                "Grouping ID": current_group_id,
+                "Region": "BKK (Slide on)",
+                "Pick up Locations": str(pick_loc),
+                "Delivery Locations": str(del_loc),
+                "Car Count": 1,
+                "Total Weight (kg)": group_weight,
+            }
+        )
+        group_counter += 1
+
+    # ตัดคันที่ถูกจัดกลุ่ม Slide on ออกไปก่อนเริ่มกระบวนการ Trailer 6-8 คัน
+    ready_df_trailer = ready_df.drop(index=slide_on_indices)
+
+    # --- 2. จัดกลุ่ม Trailer ปกติ (6-8 คัน) ---
+    for region_name, region_batch in ready_df_trailer.groupby(region_col, dropna=False):
         pending_indices = region_batch.index.tolist()
 
         while len(pending_indices) >= 6:
@@ -403,8 +435,8 @@ if not run_btn:
         st.markdown(
             """
             <div class="clean-card">
-                <h4 style="color:#0066B3; margin-top:0;">🚛 Route Control</h4>
-                <p style="color:#4a5568; font-size:14px; margin:0;">คุมจำนวนรถ 6-8 คันต่อเทรลเลอร์ และจุดรับ-ส่งไม่เกินอย่างละ 3 จุดต่อเที่ยววิ่ง</p>
+                <h4 style="color:#0066B3; margin-top:0;">🚛 Route Control & Slide on</h4>
+                <p style="color:#4a5568; font-size:14px; margin:0;">คุมจำนวนรถ 6-8 คันต่อเทรลเลอร์ (ยกเว้น DENZA D9 ใน BKK จัดส่งแบบ Slide on ได้ทันที)</p>
             </div>
             """,
             unsafe_allow_html=True,
