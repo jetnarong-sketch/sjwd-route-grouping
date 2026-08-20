@@ -17,9 +17,6 @@ MODEL_WEIGHT_MASTER = {
     "SEAL 5": 1600,
 }
 
-# URL โลโก้ SIAM JWD LOGISTICS สำรองที่โหลดผ่าน Streamlit ได้ชัวร์ 100%
-LOGO_URL = "https://www.siamjwd.com/wp-content/uploads/2023/03/siam-jwd-logo.png"
-
 
 def is_car_ready_to_ship(row, hold_col="HOLD", remark_col="Remark"):
     if pd.notna(row[hold_col]):
@@ -247,10 +244,8 @@ st.set_page_config(
 
 # --- SIDEBAR: CONTROL PANEL ---
 st.sidebar.markdown(
-    f'<img src="{LOGO_URL}" style="max-width: 100%; height: auto; margin-bottom: 10px;">',
-    unsafe_allow_html=True,
+    "## **SIAM JWD LOGISTICS**\n### **LOGISTICS OPTIMIZATION**"
 )
-st.sidebar.title("⚙️ Control Panel")
 st.sidebar.caption("ศูนย์จัดการไฟล์และตั้งค่าการประมวลผล")
 
 st.sidebar.subheader("1. Master list")
@@ -281,10 +276,7 @@ st.sidebar.caption("SIAM JWD LOGISTICS CO., LTD.")
 
 
 # --- MAIN PANEL ---
-st.markdown(
-    f'<img src="{LOGO_URL}" style="max-width: 380px; height: auto; margin-bottom: 20px;">',
-    unsafe_allow_html=True,
-)
+st.markdown("# **SIAM JWD LOGISTICS**")
 st.markdown("### **Auto Fleet Grouping & Logistics Optimization System**")
 st.caption(
     "ระบบคำนวณและวางแผนจัดกลุ่มรถขนส่งสินค้าอัตโนมัติ (Automated Car Carrier Optimization)"
