@@ -249,94 +249,114 @@ st.set_page_config(
     layout="wide",
 )
 
-# --- SIDEBAR: MASTER FILES SETTINGS ---
-st.sidebar.title("⚙️ Master Files Management")
-st.sidebar.caption("จัดการไฟล์ Master สำหรับการจับคู่ข้อมูล")
+# --- SIDEBAR: ALL FILE UPLOADS & CONTROL PANEL ---
+st.sidebar.title("🛠️ Control Panel")
+st.sidebar.caption("ศูนย์จัดการไฟล์และประมวลผลระบบ")
 
+st.sidebar.subheader("1. ไฟล์ Master")
 master_region_file = st.sidebar.file_uploader(
-    "📂 Upload Master Region (Dealer (Region).xlsx)",
+    "📂 Upload Dealer (Region).xlsx",
     type=["xlsx", "xls"],
-    help="ไฟล์จับคู่ Delivery Location กับ Region",
+    help="ไฟล์ Master แมปสถานที่ส่งกับ Region",
+)
+
+st.sidebar.subheader("2. ไฟล์งานประจำวัน")
+uploaded_file = st.sidebar.file_uploader(
+    "📁 Upload FIS Ready to Grouping (.xlsx)",
+    type=["xlsx", "xls"],
+    help="ไฟล์รายการรถที่ต้องการนำมาจัดกลุ่ม",
+)
+
+st.sidebar.subheader("3. การตั้งค่าการจัดกลุ่ม")
+date_input = st.sidebar.date_input("เลือกวันที่จัดกลุ่ม", datetime.now())
+
+st.sidebar.write("")
+run_btn = st.sidebar.button(
+    "🚀 ประมวลผลจัดกลุ่มอัตโนมัติ", type="primary", use_container_width=True
 )
 
 st.sidebar.divider()
-st.sidebar.info(
-    "💡 **คำแนะนำ:**\nคุณสามารถอัปโหลดไฟล์ Master ทิ้งไว้ในแถบข้างนี้ แล้วเลือกอัปโหลดเฉพาะไฟล์จัดกลุ่มในหน้าหลักได้ทันที"
+st.sidebar.info("💡 **สถานะ:** พร้อมใช้งาน")
+
+
+# --- MAIN PANEL: HERO DASHBOARD & RESULTS ---
+st.title("🚛 SJWD - Auto Fleet Grouping & Logistics System")
+st.caption("ระบบคำนวณและวางแผนจัดกลุ่มรถขนส่งสินค้าอัตโนมัติ (Automated Car Carrier Optimization)")
+
+# ภาพ Banner Trailer Carrier สวยๆ ด้านบน
+st.image(
+    "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=1200&q=80",
+    caption="SJWD Logistics - Vehicle Carrier Operations",
+    use_container_width=True,
 )
 
+# กรณีสภาวะปกติ (ยังไม่ได้กดประมวลผล)
+if not run_btn:
+    st.divider()
+    col_f1, col_f2, col_f3 = st.columns(3)
+    with col_f1:
+        st.markdown("### 🎯 Auto Matching")
+        st.write("จับคู่ Delivery Location กับ Region และเติมช่องตกหล่นจาก Master อัตโนมัติ")
+    with col_f2:
+        st.markdown("### ⏳ Aging Priority")
+        st.write("เรียงลำดับคิวรถตาม Allocation Date จากอดีตไปหาปัจจุบัน ป้องกันสินค้าค้างส่ง")
+    with col_f3:
+        st.markdown("### 🚛 Route Control")
+        st.write("คุมจำนวนรถ 6-8 คันต่อเทรลเลอร์ และจุดรับ-ส่งไม่เกินอย่างละ 3 จุดต่อเที่ยววิ่ง")
 
-# --- MAIN PANEL: GROUPING PROCESSING ---
-st.title("🚛 ระบบจัดกลุ่มรถขนส่งอัตโนมัติ (FIS Delivery Optimization)")
-st.caption("อัปโหลดไฟล์งานประจำวัน เพื่อประมวลผลจัดกลุ่มคิวขนส่งสินค้า")
+    st.info("👈 **เริ่มต้นใช้งาน:** กรุณาอัปโหลดไฟล์ Master และไฟล์งานประจำวันที่แถบซ้ายมือ (Sidebar) จากนั้นกดปุ่ม 'ประมวลผลจัดกลุ่มอัตโนมัติ'")
 
-uploaded_file = st.file_uploader(
-    "📁 อัปโหลดไฟล์ FIS Ready to Grouping for delivery (.xlsx)",
-    type=["xlsx", "xls"],
-)
-
-if uploaded_file:
+else:
+    # ตรวจสอบความพร้อมของไฟล์ก่อนประมวลผล
     if not master_region_file:
-        st.warning(
-            "⚠️ กรุณาอัปโหลดไฟล์ Master Region (Dealer (Region).xlsx) ที่แถบซ้ายมือ (Sidebar) ก่อนประมวลผล"
-        )
+        st.error("❌ กรุณาอัปโหลดไฟล์ Master Region (Dealer (Region).xlsx) ที่แถบซ้ายมือให้เรียบร้อยก่อนครับ")
+    elif not uploaded_file:
+        st.error("❌ กรุณาอัปโหลดไฟล์งานประจำวัน (FIS Ready to Grouping for delivery.xlsx) ที่แถบซ้ายมือให้เรียบร้อยก่อนครับ")
     else:
         file_bytes = io.BytesIO(uploaded_file.getvalue())
         master_df = pd.read_excel(master_region_file)
 
-        st.success("เตรียมพร้อมข้อมูลสำเร็จ!")
-
-        col1, col2 = st.columns(2)
-        with col1:
-            date_input = st.date_input("เลือกวันที่จัดกลุ่ม", datetime.now())
-
-        with col2:
-            st.write("")
-            st.write("")
-            run_btn = st.button("🚀 ประมวลผลจัดกลุ่มอัตโนมัติ", type="primary")
-
-        if run_btn:
-            with st.spinner("กำลังตรวจสอบ Master Region และประมวลผล..."):
-                out_buffer, df_summary, total_cars, missing_locs = (
-                    process_fis_grouping_preserve_format(
-                        file_bytes, master_df, date_input
-                    )
+        with st.spinner("กำลังตรวจสอบ Master Region และประมวลผลคิวขนส่ง..."):
+            out_buffer, df_summary, total_cars, missing_locs = (
+                process_fis_grouping_preserve_format(
+                    file_bytes, master_df, date_input
                 )
+            )
 
-            if missing_locs:
-                st.error(
-                    "❌ ไม่สามารถประมวลผลได้ เนื่องจากพบ Delivery Location ที่ไม่มีในไฟล์ Master!"
-                )
-                st.warning(
-                    "กรุณาเพิ่มข้อมูล Delivery Location ดังต่อไปนี้ลงในไฟล์ Master Region (แถบซ้ายมือ) ก่อนประมวลผลใหม่:"
-                )
-                for m_loc in missing_locs:
-                    st.write(f"- 📍 **{m_loc}**")
+        if missing_locs:
+            st.error(
+                "❌ ไม่สามารถประมวลผลได้ เนื่องจากพบ Delivery Location ที่ไม่มีในไฟล์ Master!"
+            )
+            st.warning(
+                "กรุณาเพิ่มข้อมูล Delivery Location ดังต่อไปนี้ลงในไฟล์ Master Region (Dealer (Region).xlsx) ก่อนประมวลผลใหม่:"
+            )
+            for m_loc in missing_locs:
+                st.write(f"- 📍 **{m_loc}**")
+        else:
+            st.divider()
+            st.subheader("📊 สรุปผลการจัดกลุ่มจัดส่ง")
+
+            m1, m2, m3 = st.columns(3)
+            m1.metric("จำนวนกลุ่มที่สร้างได้", f"{len(df_summary)} กลุ่ม")
+            grouped_cars_count = (
+                df_summary["Car Count"].sum() if not df_summary.empty else 0
+            )
+            m2.metric("จำนวนรถที่จัดกลุ่มสำเร็จ", f"{grouped_cars_count} คัน")
+            m3.metric(
+                "รถที่ไม่เข้าเงื่อนไข/รอจัดกลุ่มใหม่",
+                f"{total_cars - grouped_cars_count} คัน",
+            )
+
+            if not df_summary.empty:
+                st.dataframe(df_summary, use_container_width=True)
             else:
-                st.divider()
-                st.subheader("📊 สรุปผลการจัดกลุ่มจัดส่ง")
-
-                m1, m2, m3 = st.columns(3)
-                m1.metric("จำนวนกลุ่มที่สร้างได้", f"{len(df_summary)} กลุ่ม")
-                grouped_cars_count = (
-                    df_summary["Car Count"].sum() if not df_summary.empty else 0
-                )
-                m2.metric("จำนวนรถที่จัดกลุ่มสำเร็จ", f"{grouped_cars_count} คัน")
-                m3.metric(
-                    "รถที่ไม่เข้าเงื่อนไข/รอจัดกลุ่มใหม่",
-                    f"{total_cars - grouped_cars_count} คัน",
+                st.warning(
+                    "ไม่พบคันรถที่ตรงตามเงื่อนไขครบ 6-8 คัน หรือรถส่วนใหญ่อยู่ในสถานะ HOLD/เลื่อนส่ง"
                 )
 
-                if not df_summary.empty:
-                    st.dataframe(df_summary, use_container_width=True)
-                else:
-                    st.warning(
-                        "ไม่พบคันรถที่ตรงตามเงื่อนไขครบ 6-8 คัน หรือรถส่วนใหญ่อยู่ในสถานะ HOLD/เลื่อนส่ง"
-                    )
-
-                st.download_button(
-                    label="📥 Download Result grouping",
-                    data=out_buffer,
-                    file_name=f"FIS_Grouped_{date_input.strftime('%Y%m%d')}.xlsx",
-                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                )
-                
+            st.download_button(
+                label="📥 Download Result grouping",
+                data=out_buffer,
+                file_name=f"FIS_Grouped_{date_input.strftime('%Y%m%d')}.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            )
