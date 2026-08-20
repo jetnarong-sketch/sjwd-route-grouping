@@ -1,6 +1,5 @@
 from datetime import datetime, date
 import io
-import os
 import openpyxl
 import pandas as pd
 import streamlit as st
@@ -18,9 +17,12 @@ MODEL_WEIGHT_MASTER = {
     "SEAL 5": 1600,
 }
 
+# URL รูปภาพออนไลน์ (สำรองเพื่อความเสถียรบน Cloud)
+LOGO_URL = "https://raw.githubusercontent.com/siamjwd/logo/main/siam_jwd_logo.png"  # หรือใช้ URL รูปภาพของบริษัท
+BANNER_URL = "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=1200&q=80"
+
 
 def is_car_ready_to_ship(row, hold_col="HOLD", remark_col="Remark"):
-    """ข้อ 9: ตรวจสอบความพร้อมในการจัดส่งผ่านช่อง HOLD และ Remark"""
     if pd.notna(row[hold_col]):
         hold_val = str(row[hold_col]).strip()
         if hold_val != "":
@@ -44,7 +46,6 @@ def is_car_ready_to_ship(row, hold_col="HOLD", remark_col="Remark"):
 
 
 def convert_string_to_dd_mmm_yy(val_str):
-    """แปลงข้อความวันที่ YYYY-MM-DD หรือ DD/MM/YYYY ให้กลายเป็น '31 Jul 26'"""
     if not val_str or not isinstance(val_str, str):
         return val_str
 
@@ -93,7 +94,6 @@ def process_fis_grouping_preserve_format(
     prefix = f"SJWD{grouping_date_str}-"
     group_counter = 1
 
-    # ดึง Master Map
     master_map = dict(
         zip(
             master_region_df["Delivery Location"].astype(str).str.strip(),
@@ -101,7 +101,6 @@ def process_fis_grouping_preserve_format(
         )
     )
 
-    # ตรวจสอบสถานที่ส่งที่ไม่มีใน Master
     df_delivery_clean = df[delivery_col].astype(str).str.strip()
     missing_locations = [
         loc
@@ -112,20 +111,17 @@ def process_fis_grouping_preserve_format(
     if missing_locations:
         return None, None, None, missing_locations
 
-    # แมป Region เพิ่มเติม
     df["Mapped_Region"] = df_delivery_clean.map(master_map)
     df[region_col] = df[region_col].fillna(df["Mapped_Region"])
 
     df[group_no_col] = df[group_no_col].astype(object)
     df[group_date_col] = df[group_date_col].astype(object)
 
-    # 1. กรองเฉพาะรถที่พร้อมส่ง (ข้อ 9)
     df["Ready_Flag"] = df.apply(
         lambda r: is_car_ready_to_ship(r, hold_col, remark_col), axis=1
     )
     ready_df = df[df["Ready_Flag"] == True].copy()
 
-    # 2. ข้อ 8: เรียงลำดับคิวตาม Aging Allocation Date
     if alloc_date_col in ready_df.columns:
         temp_alloc_date = pd.to_datetime(
             ready_df[alloc_date_col], errors="coerce"
@@ -250,12 +246,10 @@ st.set_page_config(
     layout="wide",
 )
 
-# --- SIDEBAR: ALL FILE UPLOADS & CONTROL PANEL ---
-logo_path = "siam_jwd_logo.png"
-if os.path.exists(logo_path):
-    st.sidebar.image(logo_path, use_container_width=True)
-
-st.sidebar.title("⚙️ Control Panel")
+# --- SIDEBAR: CONTROL PANEL ---
+st.sidebar.markdown(
+    "## **SIAM JWD LOGISTICS**\n### **LOGISTICS OPTIMIZATION**"
+)
 st.sidebar.caption("ศูนย์จัดการไฟล์และตั้งค่าการประมวลผล")
 
 st.sidebar.subheader("1. Master list")
@@ -272,7 +266,6 @@ uploaded_file = st.sidebar.file_uploader(
     help="ไฟล์รายการรถที่ต้องการนำมาจัดกลุ่ม",
 )
 
-# ใช้วันที่ ณ วันนั้นเสมอ
 date_input = datetime.now()
 
 run_btn = False
@@ -286,24 +279,13 @@ st.sidebar.divider()
 st.sidebar.caption("SIAM JWD LOGISTICS CO., LTD.")
 
 
-# --- MAIN PANEL: HERO DASHBOARD & RESULTS ---
-
+# --- MAIN PANEL ---
 st.title("SIAM JWD LOGISTICS")
 st.markdown("### **Auto Fleet Grouping & Logistics Optimization System**")
 st.caption(
     "ระบบคำนวณและวางแผนจัดกลุ่มรถขนส่งสินค้าอัตโนมัติ (Automated Car Carrier Optimization)"
 )
 
-# แสดงรูปภาพ Trailer Carrier
-banner_path = "trailer_banner.jpg"
-if os.path.exists(banner_path):
-    st.image(
-        banner_path,
-        caption="SIAM JWD LOGISTICS - Vehicle Carrier Operations",
-        use_container_width=True,
-    )
-
-# กรณีสภาวะปกติ (ยังไม่ได้กดประมวลผล)
 if not run_btn:
     st.divider()
     col_f1, col_f2, col_f3 = st.columns(3)
@@ -375,3 +357,4 @@ else:
             file_name=f"FIS_Grouped_{date_input.strftime('%Y%m%d')}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
+        
