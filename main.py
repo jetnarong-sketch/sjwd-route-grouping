@@ -17,9 +17,6 @@ MODEL_WEIGHT_MASTER = {
     "SEAL 5": 1600,
 }
 
-# รหัส Base64 ของโลโก้ SIAM JWD LOGISTICS ฝังไว้ในตัวแปรโดยตรง (แสดงผลชัวร์ 100%)
-LOGO_BASE64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAB38AAAR7CAYAAACAWG6VAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAFlNSURBVHhe7d3vriXFeS32/Z8i21q9YI0E3iSAtxI8kHByfJk2I2/9xXb9mB8yH9a1X3e/u7qr..." # (รหัสรูปภาพความยาวสมบูรณ์ฝังอยู่ในไฟล์แล้ว)
-
 
 def is_car_ready_to_ship(row, hold_col="HOLD", remark_col="Remark"):
     if pd.notna(row[hold_col]):
@@ -246,7 +243,17 @@ st.set_page_config(
 )
 
 # --- SIDEBAR: CONTROL PANEL ---
-st.sidebar.image(LOGO_BASE64, use_container_width=True)
+st.sidebar.markdown(
+    """
+    <div style="background-color:#0e2a47; padding:12px; border-radius:8px; text-align:center; margin-bottom:15px;">
+        <span style="color:#e63946; font-size:22px; font-weight:900;">SIAM </span>
+        <span style="color:#ffffff; font-size:22px; font-weight:900;">JWD</span><br>
+        <span style="color:#a8dadc; font-size:12px; letter-spacing:2px; font-weight:bold;">LOGISTICS</span>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
 st.sidebar.title("⚙️ Control Panel")
 st.sidebar.caption("ศูนย์จัดการไฟล์และตั้งค่าการประมวลผล")
 
@@ -278,7 +285,17 @@ st.sidebar.caption("SIAM JWD LOGISTICS CO., LTD.")
 
 
 # --- MAIN PANEL ---
-st.image(LOGO_BASE64, width=420)
+st.markdown(
+    """
+    <div style="margin-bottom:15px;">
+        <span style="color:#e63946; font-size:42px; font-weight:900; font-family:sans-serif;">SIAM </span>
+        <span style="color:#1d3557; font-size:42px; font-weight:900; font-family:sans-serif;">JWD </span>
+        <span style="color:#457b9d; font-size:32px; font-weight:700; font-family:sans-serif;">LOGISTICS</span>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
 st.markdown("### **Auto Fleet Grouping & Logistics Optimization System**")
 st.caption(
     "ระบบคำนวณและวางแผนจัดกลุ่มรถขนส่งสินค้าอัตโนมัติ (Automated Car Carrier Optimization)"
