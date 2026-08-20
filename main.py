@@ -1,5 +1,6 @@
 from datetime import datetime, date
 import io
+import os
 import openpyxl
 import pandas as pd
 import streamlit as st
@@ -244,14 +245,14 @@ def process_fis_grouping_preserve_format(
 
 # --- Streamlit Layout Configuration ---
 st.set_page_config(
-    page_title="SJWD - FIS Auto Grouping System",
+    page_title="SIAM JWD LOGISTICS - Auto Grouping System",
     page_icon="🚛",
     layout="wide",
 )
 
 # --- SIDEBAR: ALL FILE UPLOADS & CONTROL PANEL ---
-st.sidebar.title("🛠️ Control Panel")
-st.sidebar.caption("ศูนย์จัดการไฟล์และประมวลผลระบบ")
+st.sidebar.title("⚙️ Control Panel")
+st.sidebar.caption("ศูนย์จัดการไฟล์และตั้งค่าการประมวลผล")
 
 st.sidebar.subheader("1. ไฟล์ Master")
 master_region_file = st.sidebar.file_uploader(
@@ -276,19 +277,31 @@ run_btn = st.sidebar.button(
 )
 
 st.sidebar.divider()
-st.sidebar.info("💡 **สถานะ:** พร้อมใช้งาน")
+st.sidebar.caption("SIAM JWD LOGISTICS CO., LTD.")
 
 
 # --- MAIN PANEL: HERO DASHBOARD & RESULTS ---
-st.title("🚛 SJWD - Auto Fleet Grouping & Logistics System")
-st.caption("ระบบคำนวณและวางแผนจัดกลุ่มรถขนส่งสินค้าอัตโนมัติ (Automated Car Carrier Optimization)")
 
-# ภาพ Banner Trailer Carrier สวยๆ ด้านบน
-st.image(
-    "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=1200&q=80",
-    caption="SJWD Logistics - Vehicle Carrier Operations",
-    use_container_width=True,
+# แสดงโลโก้บริษัทขนาดใหญ่ เด่นชัด
+logo_path = "siam_jwd_logo.png"
+if os.path.exists(logo_path):
+    st.image(logo_path, width=420)
+else:
+    st.title("SIAM JWD LOGISTICS")
+
+st.markdown("### **Auto Fleet Grouping & Logistics Optimization System**")
+st.caption(
+    "ระบบคำนวณและวางแผนจัดกลุ่มรถขนส่งสินค้าอัตโนมัติ (Automated Car Carrier Optimization)"
 )
+
+# แสดงรูปภาพ Trailer Carrier ตกแต่ง
+banner_path = "trailer_banner.jpg"
+if os.path.exists(banner_path):
+    st.image(
+        banner_path,
+        caption="SIAM JWD LOGISTICS - Vehicle Carrier Operations",
+        use_container_width=True,
+    )
 
 # กรณีสภาวะปกติ (ยังไม่ได้กดประมวลผล)
 if not run_btn:
@@ -296,22 +309,34 @@ if not run_btn:
     col_f1, col_f2, col_f3 = st.columns(3)
     with col_f1:
         st.markdown("### 🎯 Auto Matching")
-        st.write("จับคู่ Delivery Location กับ Region และเติมช่องตกหล่นจาก Master อัตโนมัติ")
+        st.write(
+            "จับคู่ Delivery Location กับ Region และเติมช่องตกหล่นจาก Master อัตโนมัติ"
+        )
     with col_f2:
         st.markdown("### ⏳ Aging Priority")
-        st.write("เรียงลำดับคิวรถตาม Allocation Date จากอดีตไปหาปัจจุบัน ป้องกันสินค้าค้างส่ง")
+        st.write(
+            "เรียงลำดับคิวรถตาม Allocation Date จากอดีตไปหาปัจจุบัน ป้องกันสินค้าค้างส่ง"
+        )
     with col_f3:
         st.markdown("### 🚛 Route Control")
-        st.write("คุมจำนวนรถ 6-8 คันต่อเทรลเลอร์ และจุดรับ-ส่งไม่เกินอย่างละ 3 จุดต่อเที่ยววิ่ง")
+        st.write(
+            "คุมจำนวนรถ 6-8 คันต่อเทรลเลอร์ และจุดรับ-ส่งไม่เกินอย่างละ 3 จุดต่อเที่ยววิ่ง"
+        )
 
-    st.info("👈 **เริ่มต้นใช้งาน:** กรุณาอัปโหลดไฟล์ Master และไฟล์งานประจำวันที่แถบซ้ายมือ (Sidebar) จากนั้นกดปุ่ม 'ประมวลผลจัดกลุ่มอัตโนมัติ'")
+    st.info(
+        "👈 **เริ่มต้นใช้งาน:** กรุณาอัปโหลดไฟล์ Master และไฟล์งานประจำวันที่แถบซ้ายมือ (Sidebar) จากนั้นกดปุ่ม 'ประมวลผลจัดกลุ่มอัตโนมัติ'"
+    )
 
 else:
     # ตรวจสอบความพร้อมของไฟล์ก่อนประมวลผล
     if not master_region_file:
-        st.error("❌ กรุณาอัปโหลดไฟล์ Master Region (Dealer (Region).xlsx) ที่แถบซ้ายมือให้เรียบร้อยก่อนครับ")
+        st.error(
+            "❌ กรุณาอัปโหลดไฟล์ Master Region (Dealer (Region).xlsx) ที่แถบซ้ายมือให้เรียบร้อยก่อนครับ"
+        )
     elif not uploaded_file:
-        st.error("❌ กรุณาอัปโหลดไฟล์งานประจำวัน (FIS Ready to Grouping for delivery.xlsx) ที่แถบซ้ายมือให้เรียบร้อยก่อนครับ")
+        st.error(
+            "❌ กรุณาอัปโหลดไฟล์งานประจำวัน (FIS Ready to Grouping for delivery.xlsx) ที่แถบซ้ายมือให้เรียบร้อยก่อนครับ"
+        )
     else:
         file_bytes = io.BytesIO(uploaded_file.getvalue())
         master_df = pd.read_excel(master_region_file)
@@ -334,7 +359,7 @@ else:
                 st.write(f"- 📍 **{m_loc}**")
         else:
             st.divider()
-            st.subheader("📊 สรุปผลการจัดกลุ่มจัดส่ง")
+            st.subheader("📊 สรุปผลการจัดกลุ่มจัดส่ง (SIAM JWD LOGISTICS)")
 
             m1, m2, m3 = st.columns(3)
             m1.metric("จำนวนกลุ่มที่สร้างได้", f"{len(df_summary)} กลุ่ม")
@@ -360,3 +385,4 @@ else:
                 file_name=f"FIS_Grouped_{date_input.strftime('%Y%m%d')}.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             )
+            
