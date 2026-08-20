@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 import io
 import openpyxl
 import pandas as pd
@@ -42,19 +42,42 @@ def is_car_ready_to_ship(row, hold_col="HOLD", remark_col="Remark"):
     return True
 
 
-def clean_date_display(val):
-    """ฟังก์ชันตัดเวลา 00:00:00 ออก ให้เหลือเฉพาะ YYYY-MM-DD"""
-    if pd.isna(val) or val == "":
-        return ""
-    if isinstance(val, (pd.Timestamp, datetime)):
-        return val.strftime("%Y-%m-%d")
-    val_str = str(val).split(" ")[0].strip()
-    return val_str if val_str != "nan" else ""
+def convert_string_to_dd_mmm_yy(val_str):
+    """แปลงข้อความวันที่ YYYY-MM-DD หรือ DD/MM/YYYY ให้กลายเป็น '31 Jul 26'"""
+    if not val_str or not isinstance(val_str, str):
+        return val_str
+
+    clean_str = val_str.replace(" 00:00:00", "").strip()
+
+    # ลองแปลงรูปแบบ YYYY-MM-DD
+    try:
+        dt = datetime.strptime(clean_str, "%Y-%m-%d")
+        return dt.strftime("%d %b %y")
+    except ValueError:
+        pass
+
+    # ลองแปลงรูปแบบ DD/MM/YYYY
+    try:
+        dt = datetime.strptime(clean_str, "%d/%m/%Y")
+        return dt.strftime("%d %b %y")
+    except ValueError:
+        pass
+
+    # ใช้ pandas to_datetime สำรองกรณีติดรูปแบบอื่น
+    try:
+        dt = pd.to_datetime(clean_str, errors="coerce")
+        if pd.notna(dt):
+            return dt.strftime("%d %b %y")
+    except Exception:
+        pass
+
+    return val_str
 
 
 def process_fis_grouping_preserve_format(file_bytes, grouping_date_obj):
     grouping_date_str = grouping_date_obj.strftime("%y%m%d")  # รูปแบบ YYMMDD
-    grouping_date_display = grouping_date_obj.strftime("%d/%m/%Y")
+    # ตั้งค่า Grouping Date ให้อยู่ในฟอร์แมต '31 Jul 26'
+    grouping_date_display = grouping_date_obj.strftime("%d %b %y")
 
     # อ่าน DataFrame มาประมวลผล Logic
     df = pd.read_excel(file_bytes)
@@ -157,7 +180,7 @@ def process_fis_grouping_preserve_format(file_bytes, grouping_date_obj):
             else:
                 break
 
-    # นำผลลัพธ์ใส่กลับลงใน openpyxl เพื่อรักษา Format เดิม + ลบเวลา 00:00:00 ออก
+    # โหลดไฟล์เข้า openpyxl เพื่อเขียนผลลัพธ์และบังคับแปลง Format วันที่
     wb = openpyxl.load_workbook(file_bytes)
     ws = wb.active
 
@@ -165,16 +188,15 @@ def process_fis_grouping_preserve_format(file_bytes, grouping_date_obj):
     g_no_col_idx = headers.index(group_no_col) + 1
     g_date_col_idx = headers.index(group_date_col) + 1
 
-    # ค้นหาคอลัมน์ที่เป็นวันที่เพื่อ Clean เอาเวลา 00:00:00 ออก
-    date_columns_to_clean = []
-    for date_header in ["Gate In", "Allocation Date", "วันที่รับ"]:
-        if date_header in headers:
-            date_columns_to_clean.append(headers.index(date_header) + 1)
+    # ระบุคอลัมน์เป้าหมายที่เป็นวันที่
+    date_header_names = ["Gate In", "Allocation Date", "Grouping Date", "วันที่รับ"]
+    target_date_cols = [
+        headers.index(h) + 1 for h in date_header_names if h in headers
+    ]
 
+    # 1. เขียนข้อมูล Grouping Number & Date
     for idx, row in df.iterrows():
-        excel_row_num = idx + 2  # +2 เพราะมี Header อยู่แถวที่ 1
-
-        # 1. เขียนข้อมูล Grouping Number & Date
+        excel_row_num = idx + 2
         calc_no = row["Calc_Group_No"]
         calc_date = row["Calc_Group_Date"]
 
@@ -182,14 +204,16 @@ def process_fis_grouping_preserve_format(file_bytes, grouping_date_obj):
             ws.cell(row=excel_row_num, column=g_no_col_idx, value=calc_no)
             ws.cell(row=excel_row_num, column=g_date_col_idx, value=calc_date)
 
-        # 2. ลบเวลา 00:00:00 ออกจากคอลัมน์วันที่
-        for c_idx in date_columns_to_clean:
-            cell = ws.cell(row=excel_row_num, column=c_idx)
+    # 2. บังคับเปลี่ยนวันที่ในคอลัมน์วันที่ทั้งหมดให้เป็น '31 Jul 26'
+    for r in range(2, ws.max_row + 1):
+        for c in target_date_cols:
+            cell = ws.cell(row=r, column=c)
             if cell.value is not None:
-                cleaned_val = clean_date_display(cell.value)
-                if cleaned_val:
-                    cell.value = cleaned_val
-                    cell.number_format = "YYYY-MM-DD"
+                if isinstance(cell.value, (datetime, date)):
+                    cell.value = cell.value.strftime("%d %b %y")
+                else:
+                    cell.value = convert_string_to_dd_mmm_yy(str(cell.value))
+                cell.number_format = "@"
 
     output_buffer = io.BytesIO()
     wb.save(output_buffer)
@@ -230,7 +254,7 @@ if uploaded_file:
         run_btn = st.button("🚀 ประมวลผลจัดกลุ่มอัตโนมัติ", type="primary")
 
     if run_btn:
-        with st.spinner("กำลังประมวลผลและลบเวลาส่วนเกินออกจากคอลัมน์วันที่..."):
+        with st.spinner("กำลังประมวลผลและเปลี่ยน Format วันที่เป็น '31 Jul 26'..."):
             out_buffer, df_summary, total_cars = (
                 process_fis_grouping_preserve_format(file_bytes, date_input)
             )
@@ -257,8 +281,9 @@ if uploaded_file:
             )
 
         st.download_button(
-            label="📥 ดาวน์โหลดไฟล์ Excel ผลลัพธ์",
+            label="📥 ดาวน์โหลดไฟล์ Excel ผลลัพธ์ (Format วันที่: 31 Jul 26)",
             data=out_buffer,
             file_name=f"FIS_Grouped_{date_input.strftime('%Y%m%d')}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
+        
