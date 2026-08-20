@@ -1,7 +1,9 @@
 from datetime import datetime, date
 import io
+import os
 import openpyxl
 import pandas as pd
+from PIL import Image
 import streamlit as st
 
 # Master Data น้ำหนักรถ (กก.)
@@ -17,8 +19,17 @@ MODEL_WEIGHT_MASTER = {
     "SEAL 5": 1600,
 }
 
-# LOGO Base64 จากรูปภาพต้นฉบับจริง 100% (ไม่เพี้ยน ไม่ย้วย)
-LOGO_BASE64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAB38AAAR7CAYAAACAWG6VAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAFlNSURBVHhe7d3vriXFeS32/Z8i21q9YI0E3iSAtxI8kHByfJk2I2/9xXb9mB8yH9a1X3e/u7qr..." # (รหัสรูปภาพสมบูรณ์ถูกฝังในไฟล์เรียบร้อย)
+
+def load_logo_image():
+    """โหลดรูปภาพ logo.png เข้า Streamlit ผ่าน PIL Image เพื่อให้แสดงผล 100% ชัวร์"""
+    logo_names = ["logo.png", "logo siam jwd logistics_5.jpg", "siam_jwd_logo.png"]
+    for name in logo_names:
+        if os.path.exists(name):
+            try:
+                return Image.open(name)
+            except Exception:
+                pass
+    return None
 
 
 def is_car_ready_to_ship(row, hold_col="HOLD", remark_col="Remark"):
@@ -245,11 +256,14 @@ st.set_page_config(
     layout="wide",
 )
 
+# โหลดรูปภาพโลโก้ผ่าน PIL Image Object
+logo_image = load_logo_image()
+
 # --- SIDEBAR: CONTROL PANEL ---
-st.sidebar.markdown(
-    f'<div style="max-width:240px; margin-bottom:15px;"><img src="{LOGO_BASE64}" style="width:100%; height:auto;"></div>',
-    unsafe_allow_html=True,
-)
+if logo_image is not None:
+    st.sidebar.image(logo_image, use_container_width=True)
+else:
+    st.sidebar.title("SIAM JWD LOGISTICS")
 
 st.sidebar.title("⚙️ Control Panel")
 st.sidebar.caption("ศูนย์จัดการไฟล์และตั้งค่าการประมวลผล")
@@ -282,10 +296,10 @@ st.sidebar.caption("SIAM JWD LOGISTICS CO., LTD.")
 
 
 # --- MAIN PANEL ---
-st.markdown(
-    f'<div style="max-width:460px; margin-bottom:15px;"><img src="{LOGO_BASE64}" style="width:100%; height:auto;"></div>',
-    unsafe_allow_html=True,
-)
+if logo_image is not None:
+    st.image(logo_image, width=420)
+else:
+    st.title("SIAM JWD LOGISTICS")
 
 st.markdown("### **Auto Fleet Grouping & Logistics Optimization System**")
 st.caption(
