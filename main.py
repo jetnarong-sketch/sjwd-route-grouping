@@ -59,7 +59,8 @@ def process_fis_grouping(df, grouping_date_obj):
     remark_col = "Remark"
     alloc_date_col = "Allocation Date"
 
-    prefix = f"ATL{grouping_date_str}-"
+    # เปลี่ยนคำนำหน้าเป็น SJWD
+    prefix = f"SJWD{grouping_date_str}-"
     group_counter = 1
 
     # 1. กรองเฉพาะรถที่พร้อมส่ง (ข้อ 9)
@@ -144,7 +145,6 @@ def process_fis_grouping(df, grouping_date_obj):
                 for g_idx in group_indices:
                     pending_indices.remove(g_idx)
             else:
-                # ถ้าไม่สามารถจัดให้ครบอย่างน้อย 6 คันตามเงื่อนไข Multi-stop ได้ ให้ข้ามไป
                 break
 
     # ข้อ 4: อัปเดตคอลัมน์ (คันที่จัดไม่ได้ ให้คงค่าเดิมไว้)
@@ -227,3 +227,4 @@ if uploaded_file:
             file_name=f"FIS_Grouped_{date_input.strftime('%Y%m%d')}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
+        
