@@ -251,30 +251,36 @@ st.set_page_config(
 )
 
 # --- SIDEBAR: ALL FILE UPLOADS & CONTROL PANEL ---
+logo_path = "siam_jwd_logo.png"
+if os.path.exists(logo_path):
+    st.sidebar.image(logo_path, use_container_width=True)
+
 st.sidebar.title("⚙️ Control Panel")
 st.sidebar.caption("ศูนย์จัดการไฟล์และตั้งค่าการประมวลผล")
 
-st.sidebar.subheader("1. ไฟล์ Master")
+st.sidebar.subheader("1. Master list")
 master_region_file = st.sidebar.file_uploader(
     "📂 Upload Dealer (Region).xlsx",
     type=["xlsx", "xls"],
     help="ไฟล์ Master แมปสถานที่ส่งกับ Region",
 )
 
-st.sidebar.subheader("2. ไฟล์งานประจำวัน")
+st.sidebar.subheader("2. Grouping order")
 uploaded_file = st.sidebar.file_uploader(
     "📁 Upload FIS Ready to Grouping (.xlsx)",
     type=["xlsx", "xls"],
     help="ไฟล์รายการรถที่ต้องการนำมาจัดกลุ่ม",
 )
 
-st.sidebar.subheader("3. การตั้งค่าการจัดกลุ่ม")
-date_input = st.sidebar.date_input("เลือกวันที่จัดกลุ่ม", datetime.now())
+# ใช้วันที่ ณ วันนั้นเสมอ
+date_input = datetime.now()
 
-st.sidebar.write("")
-run_btn = st.sidebar.button(
-    "🚀 ประมวลผลจัดกลุ่มอัตโนมัติ", type="primary", use_container_width=True
-)
+run_btn = False
+if uploaded_file and master_region_file:
+    st.sidebar.write("")
+    run_btn = st.sidebar.button(
+        "🚀 ประมวลผลจัดกลุ่มอัตโนมัติ", type="primary", use_container_width=True
+    )
 
 st.sidebar.divider()
 st.sidebar.caption("SIAM JWD LOGISTICS CO., LTD.")
@@ -282,19 +288,13 @@ st.sidebar.caption("SIAM JWD LOGISTICS CO., LTD.")
 
 # --- MAIN PANEL: HERO DASHBOARD & RESULTS ---
 
-# แสดงโลโก้บริษัทขนาดใหญ่ เด่นชัด
-logo_path = "siam_jwd_logo.png"
-if os.path.exists(logo_path):
-    st.image(logo_path, width=420)
-else:
-    st.title("SIAM JWD LOGISTICS")
-
+st.title("SIAM JWD LOGISTICS")
 st.markdown("### **Auto Fleet Grouping & Logistics Optimization System**")
 st.caption(
     "ระบบคำนวณและวางแผนจัดกลุ่มรถขนส่งสินค้าอัตโนมัติ (Automated Car Carrier Optimization)"
 )
 
-# แสดงรูปภาพ Trailer Carrier ตกแต่ง
+# แสดงรูปภาพ Trailer Carrier
 banner_path = "trailer_banner.jpg"
 if os.path.exists(banner_path):
     st.image(
@@ -324,65 +324,54 @@ if not run_btn:
         )
 
     st.info(
-        "👈 **เริ่มต้นใช้งาน:** กรุณาอัปโหลดไฟล์ Master และไฟล์งานประจำวันที่แถบซ้ายมือ (Sidebar) จากนั้นกดปุ่ม 'ประมวลผลจัดกลุ่มอัตโนมัติ'"
+        "👈 **เริ่มต้นใช้งาน:** กรุณาอัปโหลดไฟล์ Master list และ Grouping order ที่แถบซ้ายมือ (Control Panel)"
     )
 
 else:
-    # ตรวจสอบความพร้อมของไฟล์ก่อนประมวลผล
-    if not master_region_file:
-        st.error(
-            "❌ กรุณาอัปโหลดไฟล์ Master Region (Dealer (Region).xlsx) ที่แถบซ้ายมือให้เรียบร้อยก่อนครับ"
+    file_bytes = io.BytesIO(uploaded_file.getvalue())
+    master_df = pd.read_excel(master_region_file)
+
+    with st.spinner("กำลังตรวจสอบ Master Region และประมวลผลคิวขนส่ง..."):
+        out_buffer, df_summary, total_cars, missing_locs = (
+            process_fis_grouping_preserve_format(
+                file_bytes, master_df, date_input
+            )
         )
-    elif not uploaded_file:
+
+    if missing_locs:
         st.error(
-            "❌ กรุณาอัปโหลดไฟล์งานประจำวัน (FIS Ready to Grouping for delivery.xlsx) ที่แถบซ้ายมือให้เรียบร้อยก่อนครับ"
+            "❌ ไม่สามารถประมวลผลได้ เนื่องจากพบ Delivery Location ที่ไม่มีในไฟล์ Master!"
         )
+        st.warning(
+            "กรุณาเพิ่มข้อมูล Delivery Location ดังต่อไปนี้ลงในไฟล์ Master list (Dealer (Region).xlsx) ก่อนประมวลผลใหม่:"
+        )
+        for m_loc in missing_locs:
+            st.write(f"- 📍 **{m_loc}**")
     else:
-        file_bytes = io.BytesIO(uploaded_file.getvalue())
-        master_df = pd.read_excel(master_region_file)
+        st.divider()
+        st.subheader("📊 สรุปผลการจัดกลุ่มจัดส่ง (SIAM JWD LOGISTICS)")
 
-        with st.spinner("กำลังตรวจสอบ Master Region และประมวลผลคิวขนส่ง..."):
-            out_buffer, df_summary, total_cars, missing_locs = (
-                process_fis_grouping_preserve_format(
-                    file_bytes, master_df, date_input
-                )
-            )
+        m1, m2, m3 = st.columns(3)
+        m1.metric("จำนวนกลุ่มที่สร้างได้", f"{len(df_summary)} กลุ่ม")
+        grouped_cars_count = (
+            df_summary["Car Count"].sum() if not df_summary.empty else 0
+        )
+        m2.metric("จำนวนรถที่จัดกลุ่มสำเร็จ", f"{grouped_cars_count} คัน")
+        m3.metric(
+            "รถที่ไม่เข้าเงื่อนไข/รอจัดกลุ่มใหม่",
+            f"{total_cars - grouped_cars_count} คัน",
+        )
 
-        if missing_locs:
-            st.error(
-                "❌ ไม่สามารถประมวลผลได้ เนื่องจากพบ Delivery Location ที่ไม่มีในไฟล์ Master!"
-            )
-            st.warning(
-                "กรุณาเพิ่มข้อมูล Delivery Location ดังต่อไปนี้ลงในไฟล์ Master Region (Dealer (Region).xlsx) ก่อนประมวลผลใหม่:"
-            )
-            for m_loc in missing_locs:
-                st.write(f"- 📍 **{m_loc}**")
+        if not df_summary.empty:
+            st.dataframe(df_summary, use_container_width=True)
         else:
-            st.divider()
-            st.subheader("📊 สรุปผลการจัดกลุ่มจัดส่ง (SIAM JWD LOGISTICS)")
-
-            m1, m2, m3 = st.columns(3)
-            m1.metric("จำนวนกลุ่มที่สร้างได้", f"{len(df_summary)} กลุ่ม")
-            grouped_cars_count = (
-                df_summary["Car Count"].sum() if not df_summary.empty else 0
-            )
-            m2.metric("จำนวนรถที่จัดกลุ่มสำเร็จ", f"{grouped_cars_count} คัน")
-            m3.metric(
-                "รถที่ไม่เข้าเงื่อนไข/รอจัดกลุ่มใหม่",
-                f"{total_cars - grouped_cars_count} คัน",
+            st.warning(
+                "ไม่พบคันรถที่ตรงตามเงื่อนไขครบ 6-8 คัน หรือรถส่วนใหญ่อยู่ในสถานะ HOLD/เลื่อนส่ง"
             )
 
-            if not df_summary.empty:
-                st.dataframe(df_summary, use_container_width=True)
-            else:
-                st.warning(
-                    "ไม่พบคันรถที่ตรงตามเงื่อนไขครบ 6-8 คัน หรือรถส่วนใหญ่อยู่ในสถานะ HOLD/เลื่อนส่ง"
-                )
-
-            st.download_button(
-                label="📥 Download Result grouping",
-                data=out_buffer,
-                file_name=f"FIS_Grouped_{date_input.strftime('%Y%m%d')}.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            )
-            
+        st.download_button(
+            label="📥 Download Result grouping",
+            data=out_buffer,
+            file_name=f"FIS_Grouped_{date_input.strftime('%Y%m%d')}.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
