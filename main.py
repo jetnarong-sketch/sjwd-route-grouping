@@ -17,6 +17,28 @@ MODEL_WEIGHT_MASTER = {
     "SEAL 5": 1600,
 }
 
+# โค้ด SVG โลโก้ SIAM JWD LOGISTICS ชัดเจน ไม่ต้องโหลดไฟล์ แสดงผล 100%
+LOGO_SVG = """
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 120" width="100%" height="auto">
+  <g>
+    <!-- Gear Left Red/Blue Icon -->
+    <path d="M 68 15 C 64 15 52 25 42 32 L 25 45 C 22 47 18 53 18 58 C 18 63 22 69 25 71 L 42 84 C 52 91 64 101 68 101 C 72 101 84 91 94 84 L 111 71 C 114 69 118 63 118 58 C 118 53 114 47 111 45 L 94 32 C 84 25 72 15 68 15 Z" fill="none"/>
+    <!-- Red Top Half Gear -->
+    <path d="M 65 10 C 50 10 32 20 22 30 L 10 40 C 5 45 2 52 2 58 L 75 58 C 75 42 62 30 45 30 L 35 30 C 50 18 80 18 95 30 L 85 30 C 68 30 55 42 55 58 L 132 58 C 132 52 129 45 124 40 L 112 30 C 102 20 84 10 65 10 Z" fill="#ED1C24"/>
+    <!-- Blue Bottom Half Gear -->
+    <path d="M 65 106 C 80 106 98 96 108 86 L 120 76 C 125 71 128 64 128 58 L 55 58 C 55 74 68 86 85 86 L 95 86 C 80 98 50 98 35 86 L 45 86 C 62 86 75 74 75 58 L 2 58 C 2 64 5 71 10 76 L 22 86 C 32 96 50 106 65 106 Z" fill="#0066B3"/>
+    <!-- White S Cutout inside Gear -->
+    <path d="M 85 38 L 45 38 C 35 38 28 44 28 52 C 28 58 35 62 48 62 L 82 62 C 95 62 102 66 102 72 C 102 80 95 86 85 86 L 45 86" fill="none" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+    
+    <!-- Text: SIAM JWD -->
+    <text x="145" y="62" font-family="'Arial Black', 'Arial', sans-serif" font-weight="900" font-style="italic" font-size="44" fill="#000000" letter-spacing="-1">SIAM JWD</text>
+    
+    <!-- Text: LOGISTICS -->
+    <text x="185" y="94" font-family="'Arial', sans-serif" font-weight="700" font-size="22" fill="#000000" letter-spacing="9">LOGISTICS</text>
+  </g>
+</svg>
+"""
+
 
 def is_car_ready_to_ship(row, hold_col="HOLD", remark_col="Remark"):
     if pd.notna(row[hold_col]):
@@ -244,13 +266,7 @@ st.set_page_config(
 
 # --- SIDEBAR: CONTROL PANEL ---
 st.sidebar.markdown(
-    """
-    <div style="background-color:#0e2a47; padding:12px; border-radius:8px; text-align:center; margin-bottom:15px;">
-        <span style="color:#e63946; font-size:22px; font-weight:900;">SIAM </span>
-        <span style="color:#ffffff; font-size:22px; font-weight:900;">JWD</span><br>
-        <span style="color:#a8dadc; font-size:12px; letter-spacing:2px; font-weight:bold;">LOGISTICS</span>
-    </div>
-    """,
+    f'<div style="max-width:280px; margin-bottom:10px;">{LOGO_SVG}</div>',
     unsafe_allow_html=True,
 )
 
@@ -286,13 +302,7 @@ st.sidebar.caption("SIAM JWD LOGISTICS CO., LTD.")
 
 # --- MAIN PANEL ---
 st.markdown(
-    """
-    <div style="margin-bottom:15px;">
-        <span style="color:#e63946; font-size:42px; font-weight:900; font-family:sans-serif;">SIAM </span>
-        <span style="color:#1d3557; font-size:42px; font-weight:900; font-family:sans-serif;">JWD </span>
-        <span style="color:#457b9d; font-size:32px; font-weight:700; font-family:sans-serif;">LOGISTICS</span>
-    </div>
-    """,
+    f'<div style="max-width:440px; margin-bottom:15px;">{LOGO_SVG}</div>',
     unsafe_allow_html=True,
 )
 
