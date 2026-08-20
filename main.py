@@ -19,13 +19,11 @@ MODEL_WEIGHT_MASTER = {
 
 def is_car_ready_to_ship(row, hold_col="HOLD", remark_col="Remark"):
     """ข้อ 9: ตรวจสอบความพร้อมในการจัดส่งผ่านช่อง HOLD และ Remark"""
-    # 9.1 ตรวจสอบช่อง HOLD (ต้องเป็นค่าว่าง/Blank เท่านั้น)
     if pd.notna(row[hold_col]):
         hold_val = str(row[hold_col]).strip()
         if hold_val != "":
             return False
 
-    # 9.2 ตรวจสอบช่อง Remark (ต้องไม่มีคำสั่ง Hold หรือเลื่อนการส่ง)
     if pd.notna(row[remark_col]):
         remark_val = str(row[remark_col]).strip().lower()
         unready_keywords = [
@@ -45,9 +43,7 @@ def is_car_ready_to_ship(row, hold_col="HOLD", remark_col="Remark"):
 
 def process_fis_grouping(df, grouping_date_obj):
     grouping_date_str = grouping_date_obj.strftime("%y%m%d")  # รูปแบบ YYMMDD
-    grouping_date_display = grouping_date_obj.strftime(
-        "%d/%m/%Y"
-    )  # สำหรับลงในช่อง Grouping Date
+    grouping_date_display = grouping_date_obj.strftime("%d/%m/%Y")
 
     pickup_col = "Pick up Location"
     delivery_col = "Delivery Location"
@@ -59,9 +55,12 @@ def process_fis_grouping(df, grouping_date_obj):
     remark_col = "Remark"
     alloc_date_col = "Allocation Date"
 
-    # เปลี่ยนคำนำหน้าเป็น SJWD
     prefix = f"SJWD{grouping_date_str}-"
     group_counter = 1
+
+    # ป้องกัน TypeError โดยแปลงคอลัมน์เป้าหมายให้รองรับข้อความ (String/Object)
+    df[group_no_col] = df[group_no_col].astype(object)
+    df[group_date_col] = df[group_date_col].astype(object)
 
     # 1. กรองเฉพาะรถที่พร้อมส่ง (ข้อ 9)
     df["Ready_Flag"] = df.apply(
@@ -76,7 +75,6 @@ def process_fis_grouping(df, grouping_date_obj):
         )
         ready_df = ready_df.sort_values(by=alloc_date_col, ascending=True)
 
-    # คำนวณน้ำหนักประเมิน
     ready_df["Estimated_Weight_KG"] = (
         ready_df[model_col]
         .astype(str)
@@ -88,7 +86,6 @@ def process_fis_grouping(df, grouping_date_obj):
     df["Calc_Group_Date"] = ""
     summary_list = []
 
-    # แบ่งกลุ่มตาม Region เพื่อตีกรอบพื้นที่จัดส่ง
     for region_name, region_batch in ready_df.groupby(region_col, dropna=False):
         pending_indices = region_batch.index.tolist()
 
@@ -114,7 +111,6 @@ def process_fis_grouping(df, grouping_date_obj):
                 if len(group_indices) == 8:
                     break
 
-            # ข้อ 3: ตรวจสอบว่ารวมได้ระหว่าง 6 ถึง 8 คันหรือไม่
             if len(group_indices) >= 6:
                 current_group_id = f"{prefix}{group_counter:03d}"
                 df.loc[group_indices, "Calc_Group_No"] = current_group_id
