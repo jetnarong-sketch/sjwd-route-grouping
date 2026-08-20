@@ -17,8 +17,8 @@ MODEL_WEIGHT_MASTER = {
     "SEAL 5": 1600,
 }
 
-# URL รูปภาพออนไลน์ (สำรองเพื่อความเสถียรบน Cloud)
-LOGO_URL = "https://raw.githubusercontent.com/siamjwd/logo/main/siam_jwd_logo.png"  # หรือใช้ URL รูปภาพของบริษัท
+# Image URLs สำหรับแสดงผลบน Web Cloud ชัวร์ 100%
+LOGO_URL = "https://www.siamjwd.com/wp-content/uploads/2023/03/siam-jwd-logo.png"
 BANNER_URL = "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=1200&q=80"
 
 
@@ -247,9 +247,7 @@ st.set_page_config(
 )
 
 # --- SIDEBAR: CONTROL PANEL ---
-st.sidebar.markdown(
-    "## **SIAM JWD LOGISTICS**\n### **LOGISTICS OPTIMIZATION**"
-)
+st.sidebar.markdown("## **SIAM JWD LOGISTICS**")
 st.sidebar.caption("ศูนย์จัดการไฟล์และตั้งค่าการประมวลผล")
 
 st.sidebar.subheader("1. Master list")
@@ -280,10 +278,18 @@ st.sidebar.caption("SIAM JWD LOGISTICS CO., LTD.")
 
 
 # --- MAIN PANEL ---
-st.title("SIAM JWD LOGISTICS")
+# แสดงโลโก้บริษัทและแบนเนอร์ผ่าน URL
+st.image(LOGO_URL, width=380)
+
 st.markdown("### **Auto Fleet Grouping & Logistics Optimization System**")
 st.caption(
     "ระบบคำนวณและวางแผนจัดกลุ่มรถขนส่งสินค้าอัตโนมัติ (Automated Car Carrier Optimization)"
+)
+
+st.image(
+    BANNER_URL,
+    caption="SIAM JWD LOGISTICS - Vehicle Carrier Operations",
+    use_container_width=True,
 )
 
 if not run_btn:
