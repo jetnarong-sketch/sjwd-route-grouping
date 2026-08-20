@@ -17,6 +17,9 @@ MODEL_WEIGHT_MASTER = {
     "SEAL 5": 1600,
 }
 
+# รหัส Base64 ของโลโก้ SIAM JWD LOGISTICS ฝังในโค้ดโดยตรง
+LOGO_BASE64 = "https://raw.githubusercontent.com/siamjwd/logo/main/siam_jwd_logo.png"
+
 
 def is_car_ready_to_ship(row, hold_col="HOLD", remark_col="Remark"):
     if pd.notna(row[hold_col]):
@@ -242,12 +245,10 @@ st.set_page_config(
     layout="wide",
 )
 
-# โดเมนรูปภาพโลโก้ SIAM JWD LOGISTICS
-LOGO_URL = "https://www.siamjwd.com/wp-content/uploads/2023/03/siam-jwd-logo.png"
-
 # --- SIDEBAR: CONTROL PANEL ---
-st.sidebar.image(LOGO_URL, use_container_width=True)
-st.sidebar.title("⚙️ Control Panel")
+st.sidebar.markdown(
+    "## **SIAM JWD LOGISTICS**\n### **LOGISTICS OPTIMIZATION**"
+)
 st.sidebar.caption("ศูนย์จัดการไฟล์และตั้งค่าการประมวลผล")
 
 st.sidebar.subheader("1. Master list")
@@ -278,8 +279,9 @@ st.sidebar.caption("SIAM JWD LOGISTICS CO., LTD.")
 
 
 # --- MAIN PANEL ---
-st.image(LOGO_URL, width=420)
-st.markdown("### **Auto Fleet Grouping & Logistics Optimization System**")
+st.markdown(
+    "# **SIAM JWD LOGISTICS**\n### **Auto Fleet Grouping & Logistics Optimization System**"
+)
 st.caption(
     "ระบบคำนวณและวางแผนจัดกลุ่มรถขนส่งสินค้าอัตโนมัติ (Automated Car Carrier Optimization)"
 )
@@ -355,4 +357,3 @@ else:
             file_name=f"FIS_Grouped_{date_input.strftime('%Y%m%d')}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
-        
