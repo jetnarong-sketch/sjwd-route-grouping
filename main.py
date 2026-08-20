@@ -19,20 +19,22 @@ MODEL_WEIGHT_MASTER = {
     "SEAL 5": 1600,
 }
 
-# ดึงรูปจาก GitHub Raw หรือ Local File
-GITHUB_RAW_LOGO = "https://raw.githubusercontent.com/jetnarong-sketch/Project-grouping-auto/main/logo.png"
 
 def load_logo_image():
-    # 1. ลองอ่านจาก local file ในโปรเจกต์ก่อน
-    local_files = ["logo.png", "logo siam jwd logistics_5.jpg", "input_file_21.png"]
-    for f in local_files:
-        if os.path.exists(f):
+    """ค้นหาไฟล์ภาพโลโก้ในโฟลเดอร์โครงการ"""
+    logo_names = [
+        "logo.png",
+        "logo siam jwd logistics_5.jpg",
+        "siam_jwd_logo.png",
+        "siam_jwd_logo.png.jpg",
+    ]
+    for name in logo_names:
+        if os.path.exists(name):
             try:
-                return Image.open(f)
+                return Image.open(name)
             except Exception:
                 pass
-    # 2. ถ้าระบบ Cloud มองไม่เห็น local file ให้ใช้ GitHub Raw URL
-    return GITHUB_RAW_LOGO
+    return None
 
 
 def is_car_ready_to_ship(row, hold_col="HOLD", remark_col="Remark"):
@@ -259,12 +261,14 @@ st.set_page_config(
     layout="wide",
 )
 
-# โหลดโลโก้
-logo = load_logo_image()
+# โหลดรูปภาพโลโก้
+logo_img = load_logo_image()
+
+# เรียกใช้ st.logo() ซึ่งเป็น API ตรงของ Streamlit สำหรับแสดงโลโก้
+if logo_img is not None:
+    st.logo(logo_img, icon_image=logo_img)
 
 # --- SIDEBAR: CONTROL PANEL ---
-st.sidebar.image(logo, use_container_width=True)
-
 st.sidebar.title("⚙️ Control Panel")
 st.sidebar.caption("ศูนย์จัดการไฟล์และตั้งค่าการประมวลผล")
 
@@ -296,8 +300,7 @@ st.sidebar.caption("SIAM JWD LOGISTICS CO., LTD.")
 
 
 # --- MAIN PANEL ---
-st.image(logo, width=420)
-
+st.markdown("# **SIAM JWD LOGISTICS**")
 st.markdown("### **Auto Fleet Grouping & Logistics Optimization System**")
 st.caption(
     "ระบบคำนวณและวางแผนจัดกลุ่มรถขนส่งสินค้าอัตโนมัติ (Automated Car Carrier Optimization)"
