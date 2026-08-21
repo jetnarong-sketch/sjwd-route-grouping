@@ -1,6 +1,4 @@
-# Generate updated main.py where Top Header contains:
-# Left side: SIAM JWD LOGISTICS Header
-# Right side: Language Switcher + User Info Card (Name, Role, Logout button) matching image 2 layout perfectly.
+# Update main.py to fix sidebar collapse toggle button, hover styles, and sidebar styling matching image 2.
 
 updated_main = '''from datetime import datetime, date
 import io
@@ -338,11 +336,12 @@ def process_fis_grouping_with_capacity(file_bytes, master_region_df, grouping_da
     return output_buffer, pd.DataFrame(summary_list), total_cars, [], df
 
 
-# --- STREAMLIT CONFIG & COMPACT RESPONSIVE THEME ---
+# --- STREAMLIT CONFIG & LIGHTWEIGHT SIDEBAR THEME ---
 st.set_page_config(
     page_title="SIAM JWD LOGISTICS - Car Carrier TMS",
     page_icon="🚚",
     layout="wide",
+    initial_sidebar_state="expanded",
 )
 
 if "lang" not in st.session_state:
@@ -353,15 +352,20 @@ car_carrier_bg_url = "https://images.unsplash.com/photo-1601584115197-04ecc0da31
 st.markdown(
     f"""
     <style>
+    /* ปรับขนาดระยะขอบหน้าจอให้อยู่ในสัดส่วนกำลังพอดี */
     .block-container {{
-        padding-top: 0.5rem !important;
+        padding-top: 1rem !important;
         padding-bottom: 1rem !important;
         padding-left: 1.5rem !important;
         padding-right: 1.5rem !important;
         max-width: 100% !important;
     }}
     
-    .css-1544g2n, .e1ewe6wb4, [data-testid="stHeader"], footer {{
+    /* ซ่อนเฉพาะ Header ซ้ำซ้อน แต่เปิดให้ปุ่มลูกศร Sidebar (Sidebar Toggle) แสดงผลและกดได้ปกติ */
+    [data-testid="stHeader"] {{
+        background: transparent !important;
+    }}
+    footer {{
         visibility: hidden !important;
         height: 0px !important;
     }}
@@ -369,6 +373,53 @@ st.markdown(
         display: none !important;
     }}
     
+    /* ตกแต่ง Sidebar โทนสีขาวสว่างกระชับเหมือนภาพตัวอย่างที่ 2 */
+    [data-testid="stSidebar"] {{
+        background-color: #f8fafc !important;
+        border-right: 1px solid #e2e8f0 !important;
+        width: 260px !important;
+    }}
+    
+    /* บังคับสไตล์ข้อความใน Sidebar ให้ชัดเจน */
+    [data-testid="stSidebar"] * {{
+        color: #1e293b !important;
+    }}
+    
+    /* สไตล์ปุ่มตัวเลือกใน Sidebar พร้อม Hover สีเทาอ่อน (Light Gray Hover) */
+    [data-testid="stSidebar"] label {{
+        padding: 8px 12px !important;
+        border-radius: 8px !important;
+        transition: all 0.2s ease-in-out !important;
+        font-size: 13px !important;
+        font-weight: 500 !important;
+        margin-bottom: 2px !important;
+        cursor: pointer !important;
+    }}
+    
+    [data-testid="stSidebar"] label:hover {{
+        background-color: #e2e8f0 !important;
+        color: #0b2545 !important;
+    }}
+    
+    /* Highlight รายการที่เลือกใน Sidebar */
+    [data-testid="stSidebar"] [aria-checked="true"] {{
+        background-color: #e0f2fe !important;
+        color: #0066B3 !important;
+        font-weight: 700 !important;
+    }}
+    
+    /* ตกแต่งปุ่มเปิด-ปิด Sidebar (Expand/Collapse Arrow) ให้เห็นชัดเจนเสมอ */
+    [data-testid="stSidebarCollapseButton"] button, [data-testid="collapsedControl"] button {{
+        color: #0b2545 !important;
+        background-color: #f1f5f9 !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 6px !important;
+    }}
+    [data-testid="stSidebarCollapseButton"] button:hover, [data-testid="collapsedControl"] button:hover {{
+        background-color: #e2e8f0 !important;
+    }}
+    
+    /* สไตล์ Banner หน้า Login */
     .login-bg {{
         background: linear-gradient(rgba(11, 37, 69, 0.85), rgba(11, 37, 69, 0.90)), url('{car_carrier_bg_url}');
         background-size: cover;
@@ -379,16 +430,9 @@ st.markdown(
         margin-bottom: 15px;
     }}
     
-    [data-testid="stSidebar"] {{
-        background-color: #0b2545 !important;
-    }}
-    [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3, 
-    [data-testid="stSidebar"] p, [data-testid="stSidebar"] span, [data-testid="stSidebar"] label {{
-        color: #ffffff !important;
-    }}
-    
+    /* กล่อง File Uploader */
     [data-testid="stFileUploader"] {{
-        background-color: #f8f9fa !important;
+        background-color: #ffffff !important;
         border-radius: 8px !important;
         padding: 6px !important;
         border: 1px solid #cbd5e1 !important;
@@ -403,6 +447,7 @@ st.markdown(
         border: none !important;
     }}
     
+    /* ปุ่มสีแดงประจำองค์กร */
     div.stButton > button:first-child {{
         background-color: #ED1C24 !important;
         color: white !important;
@@ -413,6 +458,7 @@ st.markdown(
         box-shadow: 0px 4px 10px rgba(237, 28, 36, 0.3) !important;
     }}
     
+    /* การ์ดสไตล์องค์กร */
     .clean-card {{
         background-color: #ffffff;
         border-left: 5px solid #0066B3;
@@ -430,7 +476,7 @@ st.markdown(
         margin-bottom: 10px;
     }}
     
-    /* สไตล์การ์ดผู้ใช้งานมุมขวาบนตรงตามตัวอย่างระบบ SIAM JWD */
+    /* การ์ดผู้ใช้งานมุมขวาบน */
     .user-profile-box {{
         background: #ffffff;
         border: 1px solid #cbd5e1;
@@ -441,22 +487,20 @@ st.markdown(
         justify-content: space-between;
         box-shadow: 0 2px 6px rgba(0,0,0,0.04);
     }}
-    
     .user-name-text {{
         font-weight: 800;
         font-size: 13px;
         color: #0b2545;
         line-height: 1.1;
     }}
-    
     .user-role-text {{
         font-size: 11px;
         color: #64748b;
     }}
     
-    .lang-btn-box [data-testid="stMarkdownContainer"] p {{
-        font-size: 12px;
-        font-weight: bold;
+    /* เอฟเฟกต์ Hover สีเทาสำหรับปุ่มและฟีเจอร์อื่นๆ */
+    .stSelectbox:hover, .stTextInput:hover {{
+        border-color: #94a3b8 !important;
     }}
     </style>
     """,
@@ -539,10 +583,10 @@ if not st.session_state["authenticated"]:
 # --- SIDEBAR BRANDING & MENU ---
 st.sidebar.markdown(
     """
-    <div style="text-align:center; padding: 10px 0px 15px 0px;">
-        <span style="color:#ED1C24; font-size:26px; font-weight:900;">SIAM </span>
-        <span style="color:#ffffff; font-size:26px; font-weight:900;">JWD</span><br>
-        <span style="color:#8da9c4; font-size:11px; letter-spacing:4px; font-weight:bold;">LOGISTICS</span>
+    <div style="padding: 10px 0px 10px 0px; border-bottom: 1px solid #e2e8f0; margin-bottom: 10px;">
+        <span style="color:#ED1C24; font-size:22px; font-weight:900;">SIAM </span>
+        <span style="color:#0066B3; font-size:22px; font-weight:900;">JWD</span><br>
+        <span style="color:#64748b; font-size:10px; letter-spacing:3px; font-weight:bold;">LOGISTICS</span>
     </div>
     """,
     unsafe_allow_html=True,
@@ -560,22 +604,22 @@ menu_options = [
     txt["menu_revise"],
 ]
 
-active_feature = st.sidebar.radio(txt["select_menu"], menu_options, index=0)
+active_feature = st.sidebar.radio("Navigation", menu_options, index=0, label_visibility="collapsed")
 
-st.sidebar.divider()
+st.sidebar.markdown("---")
 st.sidebar.caption("SIAM JWD LOGISTICS CO., LTD.")
 
 
 # --- TOP MAIN HEADER: LOGO LEFT & USER + LANG TOP RIGHT ---
-head_col1, head_col2 = st.columns([0.60, 0.40])
+head_col1, head_col2 = st.columns([0.58, 0.42])
 
 with head_col1:
     st.markdown(
         """
-        <div style="padding-top: 5px;">
-            <span style="color:#ED1C24; font-size:36px; font-weight:900;">SIAM </span>
-            <span style="color:#0066B3; font-size:36px; font-weight:900;">JWD </span>
-            <span style="color:#1d3557; font-size:24px; font-weight:700;">LOGISTICS</span>
+        <div style="padding-top: 2px;">
+            <span style="color:#ED1C24; font-size:32px; font-weight:900;">SIAM </span>
+            <span style="color:#0066B3; font-size:32px; font-weight:900;">JWD </span>
+            <span style="color:#1d3557; font-size:22px; font-weight:700;">LOGISTICS</span>
         </div>
         """,
         unsafe_allow_html=True,
@@ -584,7 +628,6 @@ with head_col1:
     st.caption(txt["subtitle"])
 
 with head_col2:
-    # Top Right Controls: Language Selector + User Profile Card & Logout Button
     u_col1, u_col2, u_col3 = st.columns([0.42, 0.43, 0.15])
     
     with u_col1:
@@ -875,4 +918,4 @@ elif active_feature == txt["menu_revise"]:
 with open("main.py", "w", encoding="utf-8") as f:
     f.write(updated_main)
 
-print("Successfully generated main.py matching image 2 UI layout!")
+print("Successfully updated main.py with sidebar toggle button fix and light hover style!")
