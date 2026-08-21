@@ -456,17 +456,18 @@ st.markdown(
         margin-bottom: 10px;
     }}
     
-    /* กล่องข้อมูลผู้ใช้งาน */
+    /* กล่องข้อมูลผู้ใช้งานขนานสมดุล */
     .user-profile-box {{
         background: #ffffff;
         border: 1px solid #cbd5e1;
         border-radius: 8px;
-        padding: 6px 12px;
+        padding: 4px 12px;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
         height: 38px;
+        margin-top: 0px;
     }}
     .user-name-text {{
         font-weight: 800;
@@ -479,7 +480,7 @@ st.markdown(
         color: #64748b;
     }}
     
-    /* สไตล์สวิตช์แปลภาษาดีไซน์มินิมอล (文A TH | EN) */
+    /* สไตล์สวิตช์แปลภาษาแคปซูลมินิมอล TH | EN บาลานซ์เป๊ะ */
     .lang-capsule-box {{
         background: #ffffff;
         border: 1px solid #cbd5e1;
@@ -487,16 +488,18 @@ st.markdown(
         height: 38px;
         display: flex;
         align-items: center;
-        padding: 2px 8px;
+        justify-content: center;
+        padding: 0px 8px;
         box-shadow: 0 1px 3px rgba(0,0,0,0.04);
     }}
     
     .lang-btn-sub div.stButton > button {{
         background-color: transparent !important;
+        color: #64748b !important;
         border: none !important;
         box-shadow: none !important;
-        height: 32px !important;
-        padding: 0px 4px !important;
+        height: 30px !important;
+        padding: 0px 8px !important;
         font-size: 13px !important;
         font-weight: 600 !important;
     }}
@@ -506,8 +509,8 @@ st.markdown(
         color: #0066B3 !important;
         border: none !important;
         box-shadow: none !important;
-        height: 32px !important;
-        padding: 0px 4px !important;
+        height: 30px !important;
+        padding: 0px 8px !important;
         font-size: 13px !important;
         font-weight: 800 !important;
     }}
@@ -537,14 +540,11 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# HELPER FUNCTION FOR CAPSULE LANGUAGE SWITCHER (文A TH | EN)
+# HELPER FUNCTION FOR CAPSULE LANGUAGE SWITCHER (TH | EN)
 def render_capsule_lang_switch(key_suffix=""):
     is_th = st.session_state["lang"] == "TH"
     
-    c_icon, c_th, c_sep, c_en = st.columns([0.25, 0.35, 0.05, 0.35])
-    
-    with c_icon:
-        st.markdown('<span style="font-size:15px; font-weight:bold; color:#1e293b;">文<sub>A</sub></span>', unsafe_allow_html=True)
+    c_th, c_sep, c_en = st.columns([0.45, 0.10, 0.45])
     
     with c_th:
         css_class = "lang-btn-active" if is_th else "lang-btn-sub"
@@ -556,7 +556,7 @@ def render_capsule_lang_switch(key_suffix=""):
         st.markdown('</div>', unsafe_allow_html=True)
         
     with c_sep:
-        st.markdown('<span style="color:#cbd5e1; font-weight:300;">|</span>', unsafe_allow_html=True)
+        st.markdown('<div style="text-align:center; color:#cbd5e1; font-weight:300; line-height:30px;">|</div>', unsafe_allow_html=True)
         
     with c_en:
         css_class = "lang-btn-active" if not is_th else "lang-btn-sub"
@@ -662,7 +662,7 @@ st.sidebar.caption("SIAM JWD LOGISTICS CO., LTD.")
 
 
 # --- TOP MAIN HEADER: LOGO LEFT & USER + LANG TOP RIGHT ---
-head_col1, head_col2 = st.columns([0.60, 0.40])
+head_col1, head_col2 = st.columns([0.55, 0.45])
 
 with head_col1:
     st.markdown(
@@ -679,7 +679,7 @@ with head_col1:
     st.caption(txt["subtitle"])
 
 with head_col2:
-    u_col1, u_col2, u_col3 = st.columns([0.40, 0.48, 0.12])
+    u_col1, u_col2, u_col3 = st.columns([0.38, 0.50, 0.12])
     
     with u_col1:
         st.markdown('<div class="lang-capsule-box">', unsafe_allow_html=True)
