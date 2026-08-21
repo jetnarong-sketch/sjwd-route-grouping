@@ -1,9 +1,4 @@
-# Solve the problem once and for all:
-# 1. Flag icons: Render actual HTML <img> tags with FlagCDN URLs inside Markdown/Custom HTML so Streamlit doesn't fallback to text "TH" or "GB".
-# 2. Logout button: Custom HTML/CSS button styled exactly as image 2 (a clean square box with the sign-out svg icon [->).
-# 3. Clean main.py file.
-
-updated_main = '''from datetime import datetime, date
+from datetime import datetime, date
 import io
 import os
 import json
@@ -368,7 +363,7 @@ st.markdown(
     f"""
     <style>
     .block-container {{
-        padding-top: 0.5rem !important;
+        padding-top: 1.5rem !important;
         padding-bottom: 1rem !important;
         padding-left: 1.5rem !important;
         padding-right: 1.5rem !important;
@@ -483,43 +478,37 @@ st.markdown(
         color: #64748b;
     }}
     
-    /* บังคับปุ่มเปลี่ยนภาษาให้เป็นกรอบสีขาว สะอาดตา ไม่ใช้ปุ่มแดงแบบเดิม */
-    .flag-btn-clean div.stButton > button {{
+    /* บังคับเฉพาะปุ่มเปลี่ยนภาษาให้เป็นกรอบสีขาว โทนสีสะอาดตา */
+    .flag-btn-clean button {{
         background-color: #ffffff !important;
         color: #1e293b !important;
         border: 1px solid #cbd5e1 !important;
         border-radius: 8px !important;
-        padding: 4px 8px !important;
-        font-size: 13px !important;
+        padding: 2px 6px !important;
+        font-size: 12px !important;
         font-weight: 700 !important;
         box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
         height: 38px !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
     }}
-    .flag-btn-clean div.stButton > button:hover {{
+    .flag-btn-clean button:hover {{
         background-color: #f1f5f9 !important;
         border-color: #0066B3 !important;
         color: #0066B3 !important;
     }}
     
-    /* ปุ่ม Logout ไอคอนสัญลักษณ์ [-> สีขาว สะอาดตา ตรงตามตัวอย่างภาพ 2 */
-    .logout-icon-btn div.stButton > button {{
+    /* ปุ่ม Logout แบบไอคอนสัญลักษณ์ [-> สีขาว สะอาดตา */
+    .logout-icon-btn button {{
         background-color: #ffffff !important;
         color: #0b2545 !important;
         border: 1px solid #cbd5e1 !important;
         border-radius: 8px !important;
         padding: 0px !important;
-        font-size: 18px !important;
+        font-size: 16px !important;
         font-weight: bold !important;
         box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
         height: 38px !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
     }}
-    .logout-icon-btn div.stButton > button:hover {{
+    .logout-icon-btn button:hover {{
         background-color: #fee2e2 !important;
         border-color: #ef4444 !important;
         color: #dc2626 !important;
@@ -528,7 +517,7 @@ st.markdown(
     .flag-img {{
         width: 18px;
         height: 12px;
-        margin-left: 6px;
+        margin-left: 4px;
         vertical-align: middle;
         border-radius: 2px;
         box-shadow: 0 1px 2px rgba(0,0,0,0.2);
@@ -538,7 +527,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# HELPER FUNCTION FOR CLEAN WHITE FLAG SWITCHING BUTTONS WITH IMAGE FLAGS
+# HELPER FUNCTION FOR CLEAN WHITE FLAG SWITCHING BUTTONS WITH REAL IMAGE FLAGS
 def render_clean_flag_switch(key_suffix=""):
     c_th, c_eng = st.columns([1, 1])
     
@@ -651,7 +640,7 @@ st.sidebar.caption("SIAM JWD LOGISTICS CO., LTD.")
 
 
 # --- TOP MAIN HEADER: LOGO LEFT & USER + LANG TOP RIGHT ---
-head_col1, head_col2 = st.columns([0.56, 0.44])
+head_col1, head_col2 = st.columns([0.55, 0.45])
 
 with head_col1:
     st.markdown(
@@ -689,7 +678,7 @@ with head_col2:
 
     with u_col3:
         st.markdown('<div class="logout-icon-btn">', unsafe_allow_html=True)
-        if st.button("🚪", help="Logout / ออกจากระบบ", use_container_width=True):
+        if st.button("↪", help="Logout / ออกจากระบบ", use_container_width=True):
             st.session_state["authenticated"] = False
             st.session_state["user_info"] = None
             st.rerun()
@@ -945,9 +934,3 @@ elif active_feature == txt["menu_revise"]:
                     st.session_state["df_last_processed"] = df_proc
                     st.success(f"Swapped VIN {vin_a_selected} ↔ {vin_b_selected}!")
                     st.rerun()
-'''
-
-with open("main.py", "w", encoding="utf-8") as f:
-    f.write(updated_main)
-
-print("Directly replaced main.py with forced CSS override for white flag buttons!")
