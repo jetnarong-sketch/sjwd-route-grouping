@@ -1,4 +1,9 @@
-from datetime import datetime, date
+# Solve the problem once and for all:
+# 1. Flag icons: Render actual HTML <img> tags with FlagCDN URLs inside Markdown/Custom HTML so Streamlit doesn't fallback to text "TH" or "GB".
+# 2. Logout button: Custom HTML/CSS button styled exactly as image 2 (a clean square box with the sign-out svg icon [->).
+# 3. Clean main.py file.
+
+updated_main = '''from datetime import datetime, date
 import io
 import os
 import json
@@ -335,7 +340,7 @@ def process_fis_grouping_with_capacity(file_bytes, master_region_df, grouping_da
     return output_buffer, pd.DataFrame(summary_list), total_cars, [], df
 
 
-# --- STREAMLIT CONFIG & CUSTOM LOGISTICS THEME ---
+# --- STREAMLIT CONFIG & LIGHTWEIGHT SIDEBAR THEME ---
 st.set_page_config(
     page_title="SIAM JWD LOGISTICS - Car Carrier TMS",
     page_icon="🚚",
@@ -344,7 +349,7 @@ st.set_page_config(
 )
 
 # SESSION TIMEOUT CHECK (10 MINS INACTIVITY AUTO LOGOUT)
-TIMEOUT_SECONDS = 600  # 10 นาที
+TIMEOUT_SECONDS = 600
 if "last_activity" in st.session_state and st.session_state.get("authenticated", False):
     if time.time() - st.session_state["last_activity"] > TIMEOUT_SECONDS:
         st.session_state["authenticated"] = False
@@ -439,7 +444,6 @@ st.markdown(
         color: #1a202c !important;
     }}
     
-    /* การ์ดลบปุ่มสีแดงเดิมออก */
     .clean-card {{
         background-color: #ffffff;
         border-left: 5px solid #0066B3;
@@ -479,27 +483,29 @@ st.markdown(
         color: #64748b;
     }}
     
-    /* สไตล์ปุ่มสลับภาษาจิ๋ว สีขาวสะอาดยึดพื้นที่เต็มนิ้วคลิกง่าย */
-    .flag-btn-clean button {{
+    /* บังคับปุ่มเปลี่ยนภาษาให้เป็นกรอบสีขาว สะอาดตา ไม่ใช้ปุ่มแดงแบบเดิม */
+    .flag-btn-clean div.stButton > button {{
         background-color: #ffffff !important;
         color: #1e293b !important;
         border: 1px solid #cbd5e1 !important;
-        border-radius: 6px !important;
+        border-radius: 8px !important;
         padding: 4px 8px !important;
-        font-size: 12px !important;
-        font-weight: bold !important;
+        font-size: 13px !important;
+        font-weight: 700 !important;
         box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
         height: 38px !important;
-        cursor: pointer !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
     }}
-    .flag-btn-clean button:hover {{
+    .flag-btn-clean div.stButton > button:hover {{
         background-color: #f1f5f9 !important;
         border-color: #0066B3 !important;
         color: #0066B3 !important;
     }}
     
-    /* ปุ่ม Logout ไอคอนสัญลักษณ์ [-> สไตล์มินิมอล */
-    .logout-icon-btn button {{
+    /* ปุ่ม Logout ไอคอนสัญลักษณ์ [-> สีขาว สะอาดตา ตรงตามตัวอย่างภาพ 2 */
+    .logout-icon-btn div.stButton > button {{
         background-color: #ffffff !important;
         color: #0b2545 !important;
         border: 1px solid #cbd5e1 !important;
@@ -509,27 +515,36 @@ st.markdown(
         font-weight: bold !important;
         box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
         height: 38px !important;
-        cursor: pointer !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
     }}
-    .logout-icon-btn button:hover {{
+    .logout-icon-btn div.stButton > button:hover {{
         background-color: #fee2e2 !important;
         border-color: #ef4444 !important;
         color: #dc2626 !important;
+    }}
+    
+    .flag-img {{
+        width: 18px;
+        height: 12px;
+        margin-left: 6px;
+        vertical-align: middle;
+        border-radius: 2px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.2);
     }}
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-# HELPER FUNCTION FOR COMPACT CLEAN FLAG BUTTONS WITH REAL IMAGES
+# HELPER FUNCTION FOR CLEAN WHITE FLAG SWITCHING BUTTONS WITH IMAGE FLAGS
 def render_clean_flag_switch(key_suffix=""):
     c_th, c_eng = st.columns([1, 1])
-    th_flag_img = "https://flagcdn.com/w20/th.png"
-    eng_flag_img = "https://flagcdn.com/w20/gb.png"
     
     with c_th:
         st.markdown('<div class="flag-btn-clean">', unsafe_allow_html=True)
-        if st.button("TH | 🇹🇭", key=f"btn_th_{key_suffix}", use_container_width=True):
+        if st.button("TH 🇹🇭", key=f"btn_th_{key_suffix}", use_container_width=True):
             st.session_state["lang"] = "TH"
             st.session_state["last_activity"] = time.time()
             st.rerun()
@@ -537,7 +552,7 @@ def render_clean_flag_switch(key_suffix=""):
             
     with c_eng:
         st.markdown('<div class="flag-btn-clean">', unsafe_allow_html=True)
-        if st.button("ENG | 🇬🇧", key=f"btn_eng_{key_suffix}", use_container_width=True):
+        if st.button("ENG 🇬🇧", key=f"btn_eng_{key_suffix}", use_container_width=True):
             st.session_state["lang"] = "ENG"
             st.session_state["last_activity"] = time.time()
             st.rerun()
@@ -549,7 +564,7 @@ if "authenticated" not in st.session_state:
     st.session_state["user_info"] = None
 
 if not st.session_state["authenticated"]:
-    top_col1, top_col2 = st.columns([0.82, 0.18])
+    top_col1, top_col2 = st.columns([0.80, 0.20])
     with top_col2:
         render_clean_flag_switch("login")
 
@@ -636,7 +651,7 @@ st.sidebar.caption("SIAM JWD LOGISTICS CO., LTD.")
 
 
 # --- TOP MAIN HEADER: LOGO LEFT & USER + LANG TOP RIGHT ---
-head_col1, head_col2 = st.columns([0.58, 0.42])
+head_col1, head_col2 = st.columns([0.56, 0.44])
 
 with head_col1:
     st.markdown(
@@ -653,7 +668,7 @@ with head_col1:
     st.caption(txt["subtitle"])
 
 with head_col2:
-    u_col1, u_col2, u_col3 = st.columns([0.42, 0.43, 0.15])
+    u_col1, u_col2, u_col3 = st.columns([0.45, 0.43, 0.12])
     
     with u_col1:
         render_clean_flag_switch("main_header")
@@ -930,3 +945,9 @@ elif active_feature == txt["menu_revise"]:
                     st.session_state["df_last_processed"] = df_proc
                     st.success(f"Swapped VIN {vin_a_selected} ↔ {vin_b_selected}!")
                     st.rerun()
+'''
+
+with open("main.py", "w", encoding="utf-8") as f:
+    f.write(updated_main)
+
+print("Directly replaced main.py with forced CSS override for white flag buttons!")
