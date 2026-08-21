@@ -1,6 +1,5 @@
-# Generate the updated main.py file fixing the language toggle layout.
-# Requirement: Combine the radio language selector and flag badges into a single unified, elegant Language Selector component.
-# Put it nicely right above the form / or inside the form header line cleanly.
+# Update main.py to move the language switch widget to the TOP RIGHT corner of the page (above the banner), compact size.
+# Replace emoji flags with tiny HTML img badges if needed, or simple clean options "TH" / "ENG" with small inline flags via CSS/HTML to avoid text artifacts.
 
 updated_code = '''from datetime import datetime, date
 import io
@@ -354,7 +353,7 @@ st.markdown(
     f"""
     <style>
     .block-container {{
-        padding-top: 1rem !important;
+        padding-top: 0.5rem !important;
         padding-bottom: 1rem !important;
         padding-left: 2rem !important;
         padding-right: 2rem !important;
@@ -373,7 +372,7 @@ st.markdown(
         background: linear-gradient(rgba(11, 37, 69, 0.85), rgba(11, 37, 69, 0.90)), url('{car_carrier_bg_url}');
         background-size: cover;
         background-position: center;
-        padding: 25px 20px;
+        padding: 22px 20px;
         border-radius: 12px;
         color: white;
         margin-bottom: 15px;
@@ -430,27 +429,19 @@ st.markdown(
         margin-bottom: 10px;
     }}
     
-    .flag-icon {{
-        width: 18px;
-        height: 12px;
-        margin-left: 4px;
-        margin-right: 2px;
+    /* สไตล์สำหรับกล่องเลือกภาษาขนาดจิ๋วมุมขวาบนสุด */
+    .compact-lang-box {{
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        margin-bottom: 4px;
+    }}
+    .flag-badge {{
+        width: 16px;
+        height: 11px;
+        margin-left: 3px;
         vertical-align: middle;
         border-radius: 2px;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.2);
-    }}
-    
-    /* สไตล์ปุ่มกดเปลี่ยนภาษาแบบสวิตช์สวยงาม */
-    .lang-container {{
-        background: #f1f5f9;
-        padding: 4px 8px;
-        border-radius: 20px;
-        border: 1px solid #cbd5e1;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 13px;
-        font-weight: bold;
     }}
     </style>
     """,
@@ -463,6 +454,21 @@ if "authenticated" not in st.session_state:
     st.session_state["user_info"] = None
 
 if not st.session_state["authenticated"]:
+    # 1. COMPACT LANGUAGE SWITCHER AT TOP RIGHT ABOVE BANNER
+    top_col1, top_col2 = st.columns([0.82, 0.18])
+    with top_col2:
+        selected_lang_choice = st.radio(
+            "Lang",
+            ["TH", "ENG"],
+            horizontal=True,
+            key="top_right_compact_lang",
+            label_visibility="collapsed",
+        )
+        clean_choice = "TH" if "TH" in selected_lang_choice else "ENG"
+        if clean_choice != st.session_state["lang"]:
+            st.session_state["lang"] = clean_choice
+            st.rerun()
+
     txt = T[st.session_state["lang"]]
 
     # Banner โลโก้และหัวข้อ
@@ -483,23 +489,7 @@ if not st.session_state["authenticated"]:
 
     col_l1, col_l2, col_l3 = st.columns([1, 1.5, 1])
     with col_l2:
-        # Header ของ Login Card + ปุ่มเลือกภาษาแบบสวยงามในแถวเดียวกัน
-        header_col, lang_col = st.columns([0.65, 0.35])
-        with header_col:
-            st.markdown(f"#### **{txt['login_header']}**")
-        with lang_col:
-            selected_lang_choice = st.radio(
-                "Language Selector",
-                ["TH 🇹🇭", "ENG 🇬🇧"],
-                horizontal=True,
-                key="unified_login_lang",
-                label_visibility="collapsed",
-            )
-            clean_choice = "TH" if "TH" in selected_lang_choice else "ENG"
-            if clean_choice != st.session_state["lang"]:
-                st.session_state["lang"] = clean_choice
-                st.rerun()
-
+        st.markdown(f"#### **{txt['login_header']}**")
         st.caption(txt["login_caption"])
 
         with st.form("login_form"):
@@ -543,7 +533,7 @@ st.sidebar.markdown(
     unsafe_allow_html=True,
 )
 
-sb_lang_choice = st.sidebar.radio("🌐 Language", ["TH 🇹🇭", "ENG 🇬🇧"], horizontal=True, key="sb_lang_toggle")
+sb_lang_choice = st.sidebar.radio("🌐 Language", ["TH", "ENG"], horizontal=True, key="sb_lang_toggle")
 clean_sb_lang = "TH" if "TH" in sb_lang_choice else "ENG"
 if clean_sb_lang != st.session_state["lang"]:
     st.session_state["lang"] = clean_sb_lang
@@ -852,4 +842,4 @@ elif active_feature == txt["menu_revise"]:
 with open("main.py", "w", encoding="utf-8") as f:
     f.write(updated_code)
 
-print("Successfully written clean main.py with unified language selector! Code length:", len(updated_code))
+print("Updated main.py with top-right language switch successfully!")
