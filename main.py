@@ -1,11 +1,6 @@
-# Rewrite main.py cleanly with:
-# 1. Sidebar menu option: "🚀 วางแผนจัดกลุ่ม" (Without "(Auto Grouping)")
-# 2. Sidebar options list ONLY has 6 items (removed "นำเข้าผลจัดกลุ่ม Manual" from sidebar list)
-# 3. Inside "🚀 วางแผนจัดกลุ่ม", two sub-tabs:
-#    - Tab 1: "🚀 จัดกลุ่ม (Auto grouping)"
-#    - Tab 2: "📥 จัดกลุ่ม Manual"
+# Test updated main.py with Dashboard, History Search, and detailed Unready/Yard breakdown
 
-full_code = '''from datetime import datetime, date
+dashboard_main_code = '''from datetime import datetime, date
 import io
 import os
 import json
@@ -44,10 +39,7 @@ T = {
         "password": "🔑 Password (รหัสผ่าน)",
         "login_btn": "🔑 เข้าสู่ระบบ (Sign In)",
         "login_err": "❌ Username หรือ Password ไม่ถูกต้อง!",
-        "user_label": "ผู้ใช้งาน",
-        "role_label": "สิทธิ์ระบบ",
-        "logout_btn": "Logout",
-        "select_menu": "เลือกหัวข้อทำงาน:",
+        "menu_dashboard": "📊 แดชบอร์ดสรุปภาพรวม",
         "menu_grouping": "🚀 วางแผนจัดกลุ่ม",
         "menu_master": "📂 ข้อมูลมาสเตอร์",
         "menu_cond": "📋 เงื่อนไขการจัดกลุ่ม",
@@ -58,7 +50,7 @@ T = {
         "upload_fis_title": "📁 อัปโหลดไฟล์ FIS Ready to Grouping (.xlsx)",
         "upload_fis_desc": "อัปโหลดไฟล์รายการคิวรถที่ต้องการนำมาจัดกลุ่มส่งมอบ",
         "upload_fis_label": "📁 เลือกไฟล์ FIS Ready to Grouping (.xlsx)",
-        "process_btn": "🚀 เริ่มคำนวณจัดกลุ่มอัตโนมัติ (Process Grouping)",
+        "process_btn": "🚀 เริ่มคำวณจัดกลุ่มอัตโนมัติ (Process Grouping)",
         "download_btn": "📥 ดาวน์โหลดผลลัพธ์จัดกลุ่ม (.xlsx)",
         "guide_text": "💡 คำแนะนำ: กรุณาเลือกไฟล์ Grouping order (FIS Ready to Grouping) ด้านบนเพื่อกดปุ่มประมวลผล",
     },
@@ -71,10 +63,7 @@ T = {
         "password": "🔑 Password",
         "login_btn": "🔑 Sign In",
         "login_err": "❌ Invalid Username or Password!",
-        "user_label": "User",
-        "role_label": "System Role",
-        "logout_btn": "Logout",
-        "select_menu": "Select Module:",
+        "menu_dashboard": "📊 Executive Dashboard",
         "menu_grouping": "🚀 Transport Grouping",
         "menu_master": "📂 Master List",
         "menu_cond": "📋 Grouping Conditions",
@@ -142,16 +131,16 @@ def is_car_ready_to_ship(row, hold_col="HOLD", remark_col="Remark"):
     if pd.notna(row[hold_col]):
         hold_val = str(row[hold_col]).strip()
         if hold_val != "":
-            return False
+            return False, f"HOLD: {hold_val}"
 
     if pd.notna(row[remark_col]):
         remark_val = str(row[remark_col]).strip().lower()
         unready_keywords = ["hold", "รอ", "ภายหลัง", "ยังไม่ถึงกำหนด", "รอนัด", "ชะลอ"]
         for kw in unready_keywords:
             if kw in remark_val:
-                return False
+                return False, f"Remark: {str(row[remark_col]).strip()}"
 
-    return True
+    return True, "Ready"
 
 
 def process_fis_grouping_adapted(file_bytes, grouping_date_obj, target_regions=["BKK", "Northeast", "West"]):
@@ -177,8 +166,10 @@ def process_fis_grouping_adapted(file_bytes, grouping_date_obj, target_regions=[
     if group_date_col in df.columns:
         df[group_date_col] = df[group_date_col].astype(object)
 
-    df["Ready_Flag"] = df.apply(lambda r: is_car_ready_to_ship(r, hold_col, remark_col), axis=1)
-    
+    df["Ready_Tuple"] = df.apply(lambda r: is_car_ready_to_ship(r, hold_col, remark_col), axis=1)
+    df["Ready_Flag"] = df["Ready_Tuple"].apply(lambda x: x[0])
+    df["Unready_Reason"] = df["Ready_Tuple"].apply(lambda x: x[1])
+
     df["Is_Express"] = df[remark_col].astype(str).str.contains("จัดส่งด่วน|ด่วน|express", case=False, na=False)
     if alloc_date_col in df.columns:
         df["_sort_date"] = pd.to_datetime(df[alloc_date_col], errors="coerce")
@@ -573,8 +564,9 @@ st.sidebar.markdown(
     unsafe_allow_html=True,
 )
 
-# EXACT 6 MENU OPTIONS IN SIDEBAR
+# 7 SIDEBAR MENU OPTIONS INCLUDING EXECUTIVE DASHBOARD
 menu_options = [
+    txt["menu_dashboard"],
     txt["menu_grouping"],
     txt["menu_master"],
     txt["menu_cond"],
@@ -631,8 +623,80 @@ with head_col2:
 st.divider()
 
 
+# 0. EXECUTIVE DASHBOARD SUMMARY (NEW FEATURE)
+if active_feature == txt["menu_dashboard"]:
+    st.subheader("📊 แดชบอร์ดสรุปภาพรวมแผนจัดกลุ่มรถขนส่ง (Executive Fleet Dashboard)")
+    st.caption("อัปโหลดไฟล์ FIS เพื่อวิเคราะห์สรุปยอดรถจัดกลุ่ม, รถคงเหลือแยกตามยาร์ด (Yard Breakdown) และหมวดหมู่สาเหตุรถติดHold (Unready Reasons)")
+
+    dash_file = st.file_uploader("📁 อัปโหลดไฟล์ FIS เพื่อดูแดชบอร์ดสรุปวิเคราะห์ (.xlsx):", type=["xlsx", "xls"], key="dash_file_up")
+
+    if dash_file:
+        df_dash = pd.read_excel(dash_file)
+        pickup_col = "Location" if "Location" in df_dash.columns else "Pick up Location"
+        hold_col = "HOLD" if "HOLD" in df_dash.columns else None
+        remark_col = "Remark" if "Remark" in df_dash.columns else None
+
+        # Process Ready vs Unready
+        df_dash["Ready_Tuple"] = df_dash.apply(lambda r: is_car_ready_to_ship(r), axis=1)
+        df_dash["Ready_Flag"] = df_dash["Ready_Tuple"].apply(lambda x: x[0])
+        df_dash["Unready_Reason"] = df_dash["Ready_Tuple"].apply(lambda x: x[1])
+
+        # Calculate Grouping status
+        group_col = "Grouping number" if "Grouping number" in df_dash.columns else None
+        if group_col:
+            df_dash["Is_Grouped"] = df_dash[group_col].notna() & (df_dash[group_col] != "เศษรอ Mix")
+        else:
+            df_dash["Is_Grouped"] = False
+
+        total_cars = len(df_dash)
+        grouped_cars = df_dash["Is_Grouped"].sum()
+        ungrouped_cars = total_cars - grouped_cars
+        ready_cars = df_dash["Ready_Flag"].sum()
+        unready_cars = total_cars - ready_cars
+
+        st.divider()
+        st.markdown("### **1. สรุปภาพรวมสถานะจัดกลุ่ม (Overall Grouping Summary)**")
+        d1, d2, d3, d4 = st.columns(4)
+        d1.metric("จำนวนรถทั้งหมดในไฟล์", f"{total_cars} คัน")
+        d2.metric("จัดกลุ่มสำเร็จแล้ว (Grouped)", f"{grouped_cars} คัน", delta=f"{grouped_cars/total_cars*100:.1f}%")
+        d3.metric("คงเหลือยังไม่ได้จัดกลุ่ม (Ungrouped)", f"{ungrouped_cars} คัน", delta=f"-{ungrouped_cars/total_cars*100:.1f}%", delta_color="inverse")
+        d4.metric("รถติดเงื่อนไข Hold/Unready", f"{unready_cars} คัน")
+
+        st.divider()
+        col_db1, col_db2 = st.columns(2)
+
+        # Breakdown by Yard (Location)
+        with col_db1:
+            st.markdown("### **2. รายงานยอดรถคงเหลือแยกตามยาร์ด (Yard Breakdown)**")
+            if pickup_col in df_dash.columns:
+                yard_summary = df_dash.groupby(pickup_col).agg(
+                    Total_Cars=("Vin", "count"),
+                    Grouped=("Is_Grouped", "sum"),
+                    Remaining_Ungrouped=("Is_Grouped", lambda x: (~x).sum()),
+                    Ready_Count=("Ready_Flag", "sum"),
+                    Hold_Count=("Ready_Flag", lambda x: (~x).sum()),
+                ).reset_index()
+                yard_summary.columns = ["ยาร์ด/ลานจอด (Yard Location)", "รถทั้งหมด", "จัดกลุ่มแล้ว", "คงเหลือยังไม่ได้จัด", "พร้อมส่ง", "ติด Hold"]
+                st.dataframe(yard_summary, use_container_width=True)
+            else:
+                st.info("ไม่พบคอลัมน์ Location สำหรับแยกยาร์ด")
+
+        # Breakdown by Unready Reason
+        with col_db2:
+            st.markdown("### **3. จำแนกหมวดหมู่รถยังไม่ได้กรุ๊ป / ติด Hold**")
+            unready_df = df_dash[df_dash["Ready_Flag"] == False]
+            if not unready_df.empty:
+                unready_summary = unready_df["Unready_Reason"].value_counts().reset_index()
+                unready_summary.columns = ["สาเหตุ/หมวดหมู่ที่ยังไม่ได้กรุ๊ป", "จำนวน (คัน)"]
+                st.dataframe(unready_summary, use_container_width=True)
+            else:
+                st.success("🎉 ไม่มีรายการรถติด Hold ในไฟล์นี้")
+    else:
+        st.info("💡 กรุณาอัปโหลดไฟล์ FIS ด้านบนเพื่อแสดงแดชบอร์ดสรุปภาพรวม")
+
+
 # 1. WORKSPACE: วางแผนจัดกลุ่ม (CONTAINS 2 SUB-TABS)
-if active_feature == txt["menu_grouping"]:
+elif active_feature == txt["menu_grouping"]:
     st.subheader("🚀 วางแผนจัดกลุ่ม (Transport Grouping)")
 
     # 2 Sub-Tabs inside "วางแผนจัดกลุ่ม"
@@ -681,8 +745,9 @@ if active_feature == txt["menu_grouping"]:
                 if not df_summary.empty:
                     st.dataframe(df_summary[["Grouping ID", "Type", "Region", "Pick up Locations", "Delivery Locations", "Car Count", "Total Weight (kg)"]], use_container_width=True)
 
+                    # Auto Save to History with full vehicle detail
                     history = load_history()
-                    date_key = datetime.now().strftime("%Y-%m-%d")
+                    date_key = datetime.now().strftime("%Y-%m-%d_%H%M%S_Auto")
                     history[date_key] = {
                         "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                         "mode": "Auto Grouping",
@@ -690,6 +755,7 @@ if active_feature == txt["menu_grouping"]:
                         "grouped_cars": int(grouped_cars_count),
                         "total_groups": len(df_summary),
                         "summary": df_summary.to_dict(orient="records"),
+                        "full_details": df_processed.fillna("").to_dict(orient="records"),
                     }
                     save_history(history)
 
@@ -749,7 +815,7 @@ if active_feature == txt["menu_grouping"]:
 
                 if st.button("💾 บันทึกข้อมูล Manual เข้าสู่ระบบ History Benchmark", type="primary", use_container_width=True, key="save_manual_actual_btn"):
                     history = load_history()
-                    date_key = datetime.now().strftime("%Y-%m-%d_Manual")
+                    date_key = datetime.now().strftime("%Y-%m-%d_%H%M%S_Manual")
                     history[date_key] = {
                         "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                         "mode": "Manual Actual Import",
@@ -757,6 +823,7 @@ if active_feature == txt["menu_grouping"]:
                         "grouped_cars": grouped_act_cars,
                         "total_groups": len(act_summary),
                         "summary": act_summary.to_dict(orient="records"),
+                        "full_details": df_act.fillna("").to_dict(orient="records"),
                     }
                     save_history(history)
                     st.balloons()
@@ -841,28 +908,61 @@ elif active_feature == txt["menu_fleet"]:
     st.success("💾 Settings Saved!")
 
 
-# 5. GROUPING HISTORY & BENCHMARK
+# 5. GROUPING HISTORY & ADVANCED VEHICLE / VIN SEARCH
 elif active_feature == txt["menu_history"]:
-    st.subheader(f"📜 {txt['menu_history']}")
+    st.subheader("📜 ประวัติจัดกลุ่มย้อนหลังและการค้นหาคันรถ (History & Vehicle Search)")
     history_data = load_history()
 
     if not history_data:
-        st.info("No history records found.")
+        st.info("ยังไม่มีข้อมูลประวัติจัดกลุ่มในระบบ")
     else:
-        available_dates = sorted(list(history_data.keys()), reverse=True)
-        selected_date = st.selectbox("📅 Select Date / Record:", available_dates)
+        tab_h_summary, tab_h_search = st.tabs(["📊 สรุปประวัติย้อนหลัง", "🔍 ค้นหาข้อมูลคันรถ / VIN / Grouping Number"])
 
-        if selected_date and selected_date in history_data:
-            record = history_data[selected_date]
-            st.caption(f"Last Execution: {record.get('timestamp')} | Mode: {record.get('mode', 'Auto Grouping')}")
+        with tab_h_summary:
+            available_dates = sorted(list(history_data.keys()), reverse=True)
+            selected_date = st.selectbox("📅 เลือกวันที่ / รายการประวัติที่ต้องการดู:", available_dates)
 
-            h1, h2, h3 = st.columns(3)
-            h1.metric("Total Cars", f"{record.get('total_cars')}")
-            h2.metric("Grouped Cars", f"{record.get('grouped_cars')}")
-            h3.metric("Total Groups", f"{record.get('total_groups')}")
+            if selected_date and selected_date in history_data:
+                record = history_data[selected_date]
+                st.caption(f"⏱️ บันทึกเมื่อ: {record.get('timestamp')} | โหมด: {record.get('mode', 'Auto Grouping')}")
 
-            df_hist_summary = pd.DataFrame(record.get("summary", []))
-            st.dataframe(df_hist_summary, use_container_width=True)
+                h1, h2, h3 = st.columns(3)
+                h1.metric("รถทั้งหมดในไฟล์", f"{record.get('total_cars')} คัน")
+                h2.metric("รถที่จัดกลุ่มสำเร็จ", f"{record.get('grouped_cars')} คัน")
+                h3.metric("จำนวนกลุ่ม/เที่ยว", f"{record.get('total_groups')} เที่ยว")
+
+                df_hist_summary = pd.DataFrame(record.get("summary", []))
+                st.dataframe(df_hist_summary, use_container_width=True)
+
+        with tab_h_search:
+            st.markdown("#### **🔎 ค้นหาข้อมูลจากประวัติเดิม (VIN / Grouping Number / Dealer / Model / Location)**")
+            
+            # Combine all history records into one searchable dataframe
+            all_records = []
+            for key, rec in history_data.items():
+                if "full_details" in rec and rec["full_details"]:
+                    df_rec = pd.DataFrame(rec["full_details"])
+                    df_rec["History_Record_Date"] = rec.get("timestamp", key)
+                    df_rec["History_Mode"] = rec.get("mode", "Auto Grouping")
+                    all_records.append(df_rec)
+
+            if all_records:
+                full_history_df = pd.concat(all_records, ignore_index=True)
+                
+                search_term = st.text_input("🔍 พิมพ์เลข VIN, Grouping number, รุ่นรถ หรือ ดีลเลอร์ ที่ต้องการค้นหา:", placeholder="เช่น SJWD260821-001 หรือ LC0...")
+                
+                if search_term.strip():
+                    term = search_term.strip().lower()
+                    mask = full_history_df.astype(str).apply(lambda row: row.str.lower().str.contains(term, na=False)).any(axis=1)
+                    search_results = full_history_df[mask]
+
+                    st.success(f"🔎 พบข้อมูลทั้งหมด {len(search_results)} รายการ")
+                    show_cols = [c for c in ["History_Record_Date", "History_Mode", "Grouping number", "Vin", "MODEL NAME", "Location", "Delivery Location", "Region", "HOLD", "Remark"] if c in search_results.columns]
+                    st.dataframe(search_results[show_cols], use_container_width=True)
+                else:
+                    st.info("💡 กรุณากรอกคำค้นหาด้านบนเพื่อค้นหาข้อมูลรถในประวัติย้อนหลัง")
+            else:
+                st.warning("⚠️ ยังไม่มีข้อมูลรายละเอียดคันรถในประวัติ ให้ลองประมวลผลจัดกลุ่มใหม่ก่อนครับ")
 
 
 # 6. REVISE & SWAP VIN
@@ -932,6 +1032,6 @@ elif active_feature == txt["menu_revise"]:
 '''
 
 with open("main.py", "w", encoding="utf-8") as f:
-    f.write(full_code)
+    f.write(dashboard_main_code)
 
-print("Directly replaced main.py with 100% updated clean code!")
+print("Successfully written Dashboard & Advanced History Search features to main.py!")
