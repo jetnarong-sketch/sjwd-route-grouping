@@ -1,7 +1,4 @@
-# Rewrite main.py with 100% pure inline HTML/CSS header for perfect pixel-level alignment and compact language switcher size.
-# Eliminates Streamlit st.columns vertical misalignment completely for the top-right toolbar.
-
-perfect_main = '''from datetime import datetime, date
+from datetime import datetime, date
 import io
 import os
 import json
@@ -54,7 +51,7 @@ T = {
         "upload_fis_title": "📁 อัปโหลดไฟล์ FIS Ready to Grouping (.xlsx)",
         "upload_fis_desc": "อัปโหลดไฟล์รายการคิวรถที่ต้องการนำมาจัดกลุ่มส่งมอบ",
         "upload_fis_label": "📁 เลือกไฟล์ FIS Ready to Grouping (.xlsx)",
-        "process_btn": "🚀 เริ่มคำนวณจัดกลุ่มอัตโนมัติ (Process Grouping)",
+        "process_btn": "🚀 เริ่มคำวณจัดกลุ่มอัตโนมัติ (Process Grouping)",
         "download_btn": "📥 ดาวน์โหลดผลลัพธ์จัดกลุ่ม (.xlsx)",
         "guide_text": "💡 คำแนะนำ: กรุณาเลือกไฟล์ Grouping order (FIS Ready to Grouping) ด้านบนเพื่อกดปุ่มประมวลผล",
     },
@@ -451,34 +448,43 @@ st.markdown(
         margin-bottom: 10px;
     }}
 
-    /* ตกแต่งปุ่มเลือกภาษาและส่วนปุ่มกดระดับพิกเซล บาลานซ์ขนาน 100% */
-    .compact-btn div.stButton > button {{
+    /* CSS FLEXBOX บังคับแถบปุ่มมุมขวาบนให้สมดุล เรียงขนานระนาบเดียวกัน 100% */
+    .top-flex-bar {{
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-top: 10px;
+    }}
+
+    /* ปุ่มกดเปลี่ยนภาษาทรงกะทัดรัด */
+    .btn-lang-item div.stButton > button {{
         background-color: #ffffff !important;
-        color: #475569 !important;
+        color: #64748b !important;
         border: 1px solid #cbd5e1 !important;
         border-radius: 6px !important;
         height: 32px !important;
-        padding: 2px 8px !important;
+        padding: 2px 10px !important;
         font-size: 12px !important;
         font-weight: 700 !important;
         margin: 0px !important;
         box-shadow: 0 1px 2px rgba(0,0,0,0.04) !important;
     }}
-    
-    .compact-btn-active div.stButton > button {{
+    .btn-lang-item-active div.stButton > button {{
         background-color: #f1f5f9 !important;
         color: #0066B3 !important;
         border: 1px solid #0066B3 !important;
         border-radius: 6px !important;
         height: 32px !important;
-        padding: 2px 8px !important;
+        padding: 2px 10px !important;
         font-size: 12px !important;
         font-weight: 800 !important;
         margin: 0px !important;
         box-shadow: 0 1px 2px rgba(0,0,0,0.04) !important;
     }}
 
-    .user-profile-card {{
+    /* กล่องข้อมูลผู้ใช้งาน ยืดหยุ่นตามความกว้างชื่อ */
+    .user-card-flex {{
         background: #ffffff;
         border: 1px solid #cbd5e1;
         border-radius: 6px;
@@ -488,25 +494,39 @@ st.markdown(
         flex-direction: column;
         justify-content: center;
         box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+        white-space: nowrap;
+    }}
+    .user-card-title {{
+        font-weight: 800;
+        font-size: 12px;
+        color: #0b2545;
+        line-height: 1.1;
+    }}
+    .user-card-sub {{
+        font-size: 10px;
+        color: #64748b;
+        line-height: 1.1;
     }}
 
-    .logout-square-btn div.stButton > button {{
+    /* ปุ่ม Logout สี่เหลี่ยม [-> */
+    .logout-square-flex div.stButton > button {{
         background-color: #ffffff !important;
         color: #0b2545 !important;
         border: 1px solid #cbd5e1 !important;
         border-radius: 6px !important;
         height: 32px !important;
         width: 34px !important;
+        min-width: 34px !important;
         padding: 0px !important;
-        font-size: 15px !important;
-        font-weight: bold !important;
+        font-size: 14px !important;
+        font-weight: 800 !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
         margin: 0px !important;
         box-shadow: 0 1px 2px rgba(0,0,0,0.04) !important;
     }}
-    .logout-square-btn div.stButton > button:hover {{
+    .logout-square-flex div.stButton > button:hover {{
         background-color: #fee2e2 !important;
         border-color: #ef4444 !important;
         color: #dc2626 !important;
@@ -524,12 +544,12 @@ if "authenticated" not in st.session_state:
 if not st.session_state["authenticated"]:
     # TOP RIGHT LANG SWITCHER FOR LOGIN PAGE
     st.write("")
-    l_col1, l_col2 = st.columns([0.84, 0.16])
+    l_col1, l_col2 = st.columns([0.80, 0.20])
     with l_col2:
         is_th = st.session_state["lang"] == "TH"
         c_th, c_sep, c_en = st.columns([0.45, 0.10, 0.45])
         with c_th:
-            st.markdown(f'<div class="{"compact-btn-active" if is_th else "compact-btn"}">', unsafe_allow_html=True)
+            st.markdown(f'<div class="{"btn-lang-item-active" if is_th else "btn-lang-item"}">', unsafe_allow_html=True)
             if st.button("TH", key="lg_th", use_container_width=True):
                 st.session_state["lang"] = "TH"
                 st.session_state["last_activity"] = time.time()
@@ -538,7 +558,7 @@ if not st.session_state["authenticated"]:
         with c_sep:
             st.markdown("<div style='text-align:center; color:#cbd5e1; line-height:32px; font-weight:300;'>|</div>", unsafe_allow_html=True)
         with c_en:
-            st.markdown(f'<div class="{"compact-btn-active" if not is_th else "compact-btn"}">', unsafe_allow_html=True)
+            st.markdown(f'<div class="{"btn-lang-item-active" if not is_th else "btn-lang-item"}">', unsafe_allow_html=True)
             if st.button("EN", key="lg_en", use_container_width=True):
                 st.session_state["lang"] = "ENG"
                 st.session_state["last_activity"] = time.time()
@@ -627,8 +647,8 @@ st.sidebar.markdown("---")
 st.sidebar.caption("SIAM JWD LOGISTICS CO., LTD.")
 
 
-# --- TOP MAIN HEADER: LOGO LEFT & USER + LANG TOP RIGHT (BALANCED 100%) ---
-head_col1, head_col2 = st.columns([0.52, 0.48])
+# --- TOP MAIN HEADER: LOGO LEFT & USER + LANG TOP RIGHT (PURE FLEXBOX BALANCED) ---
+head_col1, head_col2 = st.columns([0.48, 0.52])
 
 with head_col1:
     st.markdown(
@@ -645,45 +665,49 @@ with head_col1:
     st.caption(txt["subtitle"])
 
 with head_col2:
-    # องค์ประกอบมุมขวาบนขนานระนาบเดียวกัน บาลานซ์พอดีเป๊ะ
-    u1, u2, u3 = st.columns([0.40, 0.48, 0.12])
+    is_th = st.session_state["lang"] == "TH"
     
-    # 1. ปุ่มเปลี่ยนภาษา TH | EN
+    # ใช้วิธีจัดสรรพื้นที่คอลัมน์กว้างพอดีองค์ประกอบ ป้องกันการตัดบรรทัด
+    st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
+    u1, u2, u3, u4, u5 = st.columns([0.18, 0.04, 0.18, 0.48, 0.12])
+    
+    # 1. ปุ่ม TH
     with u1:
-        is_th = st.session_state["lang"] == "TH"
-        c_th, c_sep, c_en = st.columns([0.45, 0.10, 0.45])
-        with c_th:
-            st.markdown(f'<div class="{"compact-btn-active" if is_th else "compact-btn"}">', unsafe_allow_html=True)
-            if st.button("TH", key="hdr_th", use_container_width=True):
-                st.session_state["lang"] = "TH"
-                st.session_state["last_activity"] = time.time()
-                st.rerun()
-            st.markdown('</div>', unsafe_allow_html=True)
-        with c_sep:
-            st.markdown("<div style='text-align:center; color:#cbd5e1; line-height:32px; font-weight:300;'>|</div>", unsafe_allow_html=True)
-        with c_en:
-            st.markdown(f'<div class="{"compact-btn-active" if not is_th else "compact-btn"}">', unsafe_allow_html=True)
-            if st.button("EN", key="hdr_en", use_container_width=True):
-                st.session_state["lang"] = "ENG"
-                st.session_state["last_activity"] = time.time()
-                st.rerun()
-            st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="{"btn-lang-item-active" if is_th else "btn-lang-item"}">', unsafe_allow_html=True)
+        if st.button("TH", key="hdr_th", use_container_width=True):
+            st.session_state["lang"] = "TH"
+            st.session_state["last_activity"] = time.time()
+            st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
 
-    # 2. กล่องแสดงโปรไฟล์ผู้ใช้ Admin Ball
+    # เส้นคั่น |
     with u2:
+        st.markdown("<div style='text-align:center; color:#cbd5e1; line-height:32px; font-weight:300;'>|</div>", unsafe_allow_html=True)
+
+    # 2. ปุ่ม EN
+    with u3:
+        st.markdown(f'<div class="{"btn-lang-item-active" if not is_th else "btn-lang-item"}">', unsafe_allow_html=True)
+        if st.button("EN", key="hdr_en", use_container_width=True):
+            st.session_state["lang"] = "ENG"
+            st.session_state["last_activity"] = time.time()
+            st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    # 3. กล่องโปรไฟล์ผู้ใช้งาน
+    with u4:
         st.markdown(
             f"""
-            <div class="user-profile-card">
-                <div class="user-name-text">{current_user['name']}</div>
-                <div class="user-role-text">{current_user['role']}</div>
+            <div class="user-card-flex">
+                <div class="user-card-title">{current_user['name']}</div>
+                <div class="user-card-sub">{current_user['role']}</div>
             </div>
             """,
             unsafe_allow_html=True,
         )
 
-    # 3. ปุ่ม Logout ไอคอน [->
-    with u3:
-        st.markdown('<div class="logout-square-btn">', unsafe_allow_html=True)
+    # 4. ปุ่ม Logout [->
+    with u5:
+        st.markdown('<div class="logout-square-flex">', unsafe_allow_html=True)
         if st.button("[->", help="Logout / ออกจากระบบ", key="btn_logout_main"):
             st.session_state["authenticated"] = False
             st.session_state["user_info"] = None
@@ -940,9 +964,3 @@ elif active_feature == txt["menu_revise"]:
                     st.session_state["df_last_processed"] = df_proc
                     st.success(f"Swapped VIN {vin_a_selected} ↔ {vin_b_selected}!")
                     st.rerun()
-'''
-
-with open("main.py", "w", encoding="utf-8") as f:
-    f.write(perfect_main)
-
-print("Main.py successfully updated with perfectly aligned 32px height buttons and compact switcher!")
