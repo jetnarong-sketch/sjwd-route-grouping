@@ -1,4 +1,8 @@
-from datetime import datetime, date
+# Generate the updated main.py file fixing the language toggle layout.
+# Requirement: Combine the radio language selector and flag badges into a single unified, elegant Language Selector component.
+# Put it nicely right above the form / or inside the form header line cleanly.
+
+updated_code = '''from datetime import datetime, date
 import io
 import os
 import json
@@ -83,7 +87,6 @@ T = {
     },
 }
 
-# Master Data น้ำหนักรถ (กก.)
 MODEL_WEIGHT_MASTER = {
     "DOLPHIN": 1615,
     "ATTO 3": 1750,
@@ -350,7 +353,6 @@ car_carrier_bg_url = "https://images.unsplash.com/photo-1601584115197-04ecc0da31
 st.markdown(
     f"""
     <style>
-    /* ลด Padding ของทั้งหน้าเพื่อความพอดีหน้าจอ */
     .block-container {{
         padding-top: 1rem !important;
         padding-bottom: 1rem !important;
@@ -359,7 +361,6 @@ st.markdown(
         max-width: 100% !important;
     }}
     
-    /* ซ่อน Header / Footer / Anchor link */
     .css-1544g2n, .e1ewe6wb4, [data-testid="stHeader"], footer {{
         visibility: hidden !important;
         height: 0px !important;
@@ -368,7 +369,6 @@ st.markdown(
         display: none !important;
     }}
     
-    /* Banner หน้า Login แบบกะทัดรัด */
     .login-bg {{
         background: linear-gradient(rgba(11, 37, 69, 0.85), rgba(11, 37, 69, 0.90)), url('{car_carrier_bg_url}');
         background-size: cover;
@@ -379,7 +379,6 @@ st.markdown(
         margin-bottom: 15px;
     }}
     
-    /* Sidebar สีกรมองค์กร */
     [data-testid="stSidebar"] {{
         background-color: #0b2545 !important;
     }}
@@ -388,7 +387,6 @@ st.markdown(
         color: #ffffff !important;
     }}
     
-    /* กล่อง File Uploader */
     [data-testid="stFileUploader"] {{
         background-color: #f8f9fa !important;
         border-radius: 8px !important;
@@ -405,7 +403,6 @@ st.markdown(
         border: none !important;
     }}
     
-    /* ปุ่มสีแดงประจำองค์กร */
     div.stButton > button:first-child {{
         background-color: #ED1C24 !important;
         color: white !important;
@@ -416,7 +413,6 @@ st.markdown(
         box-shadow: 0px 4px 10px rgba(237, 28, 36, 0.3) !important;
     }}
     
-    /* การ์ดสไตล์องค์กร */
     .clean-card {{
         background-color: #ffffff;
         border-left: 5px solid #0066B3;
@@ -434,14 +430,27 @@ st.markdown(
         margin-bottom: 10px;
     }}
     
-    /* ธงชาติตกแต่งจิ๋วในปุ่มเปลี่ยนภาษา */
     .flag-icon {{
         width: 18px;
         height: 12px;
-        margin-left: 5px;
+        margin-left: 4px;
+        margin-right: 2px;
         vertical-align: middle;
         border-radius: 2px;
         box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    }}
+    
+    /* สไตล์ปุ่มกดเปลี่ยนภาษาแบบสวิตช์สวยงาม */
+    .lang-container {{
+        background: #f1f5f9;
+        padding: 4px 8px;
+        border-radius: 20px;
+        border: 1px solid #cbd5e1;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        font-weight: bold;
     }}
     </style>
     """,
@@ -454,20 +463,6 @@ if "authenticated" not in st.session_state:
     st.session_state["user_info"] = None
 
 if not st.session_state["authenticated"]:
-    # LANGUAGE SELECTOR ON TOP RIGHT
-    lang_col1, lang_col2 = st.columns([8.2, 1.8])
-    with lang_col2:
-        selected_lang_choice = st.radio(
-            "🌐 Language",
-            ["TH", "ENG"],
-            horizontal=True,
-            key="login_lang_toggle",
-            label_visibility="collapsed",
-        )
-        if selected_lang_choice != st.session_state["lang"]:
-            st.session_state["lang"] = selected_lang_choice
-            st.rerun()
-
     txt = T[st.session_state["lang"]]
 
     # Banner โลโก้และหัวข้อ
@@ -488,19 +483,23 @@ if not st.session_state["authenticated"]:
 
     col_l1, col_l2, col_l3 = st.columns([1, 1.5, 1])
     with col_l2:
-        st.markdown(
-            f"""
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
-                <span style="font-size:18px; font-weight:bold; color:#0b2545;">{txt['login_header']}</span>
-                <span style="font-size:12px; color:#64748b;">
-                    Language: 
-                    <b>TH</b><img src="https://flagcdn.com/w20/th.png" class="flag-icon"> | 
-                    <b>ENG</b><img src="https://flagcdn.com/w20/gb.png" class="flag-icon">
-                </span>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+        # Header ของ Login Card + ปุ่มเลือกภาษาแบบสวยงามในแถวเดียวกัน
+        header_col, lang_col = st.columns([0.65, 0.35])
+        with header_col:
+            st.markdown(f"#### **{txt['login_header']}**")
+        with lang_col:
+            selected_lang_choice = st.radio(
+                "Language Selector",
+                ["TH 🇹🇭", "ENG 🇬🇧"],
+                horizontal=True,
+                key="unified_login_lang",
+                label_visibility="collapsed",
+            )
+            clean_choice = "TH" if "TH" in selected_lang_choice else "ENG"
+            if clean_choice != st.session_state["lang"]:
+                st.session_state["lang"] = clean_choice
+                st.rerun()
+
         st.caption(txt["login_caption"])
 
         with st.form("login_form"):
@@ -544,10 +543,10 @@ st.sidebar.markdown(
     unsafe_allow_html=True,
 )
 
-# LANGUAGE TOGGLE IN SIDEBAR WITH SUBTLE FLAGS
-sb_lang = st.sidebar.radio("🌐 Language", ["TH", "ENG"], horizontal=True, key="sb_lang_toggle")
-if sb_lang != st.session_state["lang"]:
-    st.session_state["lang"] = sb_lang
+sb_lang_choice = st.sidebar.radio("🌐 Language", ["TH 🇹🇭", "ENG 🇬🇧"], horizontal=True, key="sb_lang_toggle")
+clean_sb_lang = "TH" if "TH" in sb_lang_choice else "ENG"
+if clean_sb_lang != st.session_state["lang"]:
+    st.session_state["lang"] = clean_sb_lang
     st.rerun()
 
 txt = T[st.session_state["lang"]]
@@ -848,3 +847,9 @@ elif active_feature == txt["menu_revise"]:
                     st.session_state["df_last_processed"] = df_proc
                     st.success(f"Swapped VIN {vin_a_selected} ↔ {vin_b_selected}!")
                     st.rerun()
+'''
+
+with open("main.py", "w", encoding="utf-8") as f:
+    f.write(updated_code)
+
+print("Successfully written clean main.py with unified language selector! Code length:", len(updated_code))
