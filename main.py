@@ -1,7 +1,11 @@
-# Let's build the complete main.py code containing both updated Auto Grouping rules and Manual Actual Import option.
-# Let's test imports and verify syntax.
+# Rewrite main.py cleanly with:
+# 1. Sidebar menu option: "🚀 วางแผนจัดกลุ่ม" (Without "(Auto Grouping)")
+# 2. Sidebar options list ONLY has 6 items (removed "นำเข้าผลจัดกลุ่ม Manual" from sidebar list)
+# 3. Inside "🚀 วางแผนจัดกลุ่ม", two sub-tabs:
+#    - Tab 1: "🚀 จัดกลุ่ม (Auto grouping)"
+#    - Tab 2: "📥 จัดกลุ่ม Manual"
 
-updated_main_code = '''from datetime import datetime, date
+full_code = '''from datetime import datetime, date
 import io
 import os
 import json
@@ -44,8 +48,7 @@ T = {
         "role_label": "สิทธิ์ระบบ",
         "logout_btn": "Logout",
         "select_menu": "เลือกหัวข้อทำงาน:",
-        "menu_grouping": "🚀 วางแผนจัดกลุ่ม (Auto Grouping)",
-        "menu_import_actual": "📥 นำเข้าผลจัดกลุ่ม Manual (Actual Import)",
+        "menu_grouping": "🚀 วางแผนจัดกลุ่ม",
         "menu_master": "📂 ข้อมูลมาสเตอร์",
         "menu_cond": "📋 เงื่อนไขการจัดกลุ่ม",
         "menu_fleet": "🚛 ตั้งค่าโควตากองรถ",
@@ -72,20 +75,19 @@ T = {
         "role_label": "System Role",
         "logout_btn": "Logout",
         "select_menu": "Select Module:",
-        "menu_grouping": "🚀 Auto Grouping",
-        "menu_import_actual": "📥 Manual Actual Import",
+        "menu_grouping": "🚀 Transport Grouping",
         "menu_master": "📂 Master List",
         "menu_cond": "📋 Grouping Conditions",
         "menu_fleet": "🚛 Fleet Capacity Settings",
         "menu_history": "📜 Execution History",
         "menu_revise": "✏️ Revise & Swap VIN",
-        "main_sub": "🚀 Automated Grouping Workspace",
+        "main_sub": "🚀 Transport Grouping Workspace",
         "upload_fis_title": "📁 Upload FIS Ready to Grouping (.xlsx)",
         "upload_fis_desc": "Upload pending car shipment list to process auto grouping",
         "upload_fis_label": "📁 Select FIS Ready to Grouping (.xlsx)",
         "process_btn": "🚀 Process Auto Grouping",
         "download_btn": "📥 Download Result Grouping (.xlsx)",
-        "guide_text": "💡 Instruction: Please upload the Grouping order (FIS) file above to begin processing.",
+        "guide_text": "💡 Instruction: Please upload the Grouping order (FIS Ready to Grouping) file above to begin processing.",
     },
 }
 
@@ -101,7 +103,6 @@ MODEL_WEIGHT_MASTER = {
     "SEAL 5": 1600,
 }
 
-# Master Map for Dealers to Region
 DEALER_REGION_MAP = {
     "EV-D Ubon Co., Ltd.  (Ubon Ratchathani)": "Northeast",
     "Jinlong Motors Co., Ltd. (Chaengwattana)": "BKK",
@@ -169,7 +170,6 @@ def process_fis_grouping_adapted(file_bytes, grouping_date_obj, target_regions=[
     remark_col = "Remark"
     alloc_date_col = "Allocation Date"
 
-    # Fill Mapped Regions
     df["Mapped_Region"] = df[delivery_col].astype(str).str.strip().map(DEALER_REGION_MAP)
     df[region_col] = df[region_col].fillna(df["Mapped_Region"])
 
@@ -179,7 +179,6 @@ def process_fis_grouping_adapted(file_bytes, grouping_date_obj, target_regions=[
 
     df["Ready_Flag"] = df.apply(lambda r: is_car_ready_to_ship(r, hold_col, remark_col), axis=1)
     
-    # Priority sorting: Express ("จัดส่งด่วน") first, then Allocation Date
     df["Is_Express"] = df[remark_col].astype(str).str.contains("จัดส่งด่วน|ด่วน|express", case=False, na=False)
     if alloc_date_col in df.columns:
         df["_sort_date"] = pd.to_datetime(df[alloc_date_col], errors="coerce")
@@ -202,15 +201,13 @@ def process_fis_grouping_adapted(file_bytes, grouping_date_obj, target_regions=[
     prefix = f"SJWD{grouping_date_str}-"
     group_counter = 1
 
-    # --- PHASE 1: BKK Single-Dealer Groups (Point-to-Point 5-7 Cars) ---
+    # PHASE 1: BKK Single-Dealer Groups
     bkk_ready = ready_df[ready_df[region_col] == "BKK"].copy()
     bkk_dealer_counts = bkk_ready[delivery_col].value_counts()
 
-    # Prioritize dealers with 5-7 cars for direct single-dealer loads
     for dealer, count in bkk_dealer_counts.items():
         if count >= 5:
             dealer_indices = bkk_ready[bkk_ready[delivery_col] == dealer].index.tolist()
-            # Form single-dealer group
             load_size = min(count, 7)
             group_indices = dealer_indices[:load_size]
 
@@ -237,7 +234,7 @@ def process_fis_grouping_adapted(file_bytes, grouping_date_obj, target_regions=[
             group_counter += 1
             ready_df = ready_df.drop(index=group_indices)
 
-    # --- PHASE 2: BKK Multi-Dealer / Mix Groups (8 Load) ---
+    # PHASE 2: BKK Multi-Dealer Groups
     bkk_rem = ready_df[ready_df[region_col] == "BKK"].index.tolist()
     if len(bkk_rem) >= 6:
         group_size = min(len(bkk_rem), 8)
@@ -266,7 +263,7 @@ def process_fis_grouping_adapted(file_bytes, grouping_date_obj, target_regions=[
         group_counter += 1
         ready_df = ready_df.drop(index=group_indices)
 
-    # --- PHASE 3: Other Target Regions (Northeast, West 6-8 Load) ---
+    # PHASE 3: Other Target Regions
     for reg in ["Northeast", "West"]:
         reg_indices = ready_df[ready_df[region_col] == reg].index.tolist()
         while len(reg_indices) >= 6:
@@ -576,9 +573,9 @@ st.sidebar.markdown(
     unsafe_allow_html=True,
 )
 
+# EXACT 6 MENU OPTIONS IN SIDEBAR
 menu_options = [
     txt["menu_grouping"],
-    txt["menu_import_actual"],
     txt["menu_master"],
     txt["menu_cond"],
     txt["menu_fleet"],
@@ -634,137 +631,141 @@ with head_col2:
 st.divider()
 
 
-# 1. AUTO GROUPING WORKSPACE (ADAPTED TO MATCH MANUAL 100%)
+# 1. WORKSPACE: วางแผนจัดกลุ่ม (CONTAINS 2 SUB-TABS)
 if active_feature == txt["menu_grouping"]:
-    st.subheader(txt["main_sub"])
+    st.subheader("🚀 วางแผนจัดกลุ่ม (Transport Grouping)")
 
-    st.markdown(
-        f"""
-        <div class="clean-card-red">
-            <h4 style="color:#ED1C24; margin-top:0;">{txt['upload_fis_title']}</h4>
-            <p style="color:#64748b; font-size:13px;">{txt['upload_fis_desc']}</p>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-    uploaded_file = st.file_uploader(txt["upload_fis_label"], type=["xlsx", "xls"], key="main_fis")
+    # 2 Sub-Tabs inside "วางแผนจัดกลุ่ม"
+    tab_auto, tab_manual = st.tabs(["🚀 จัดกลุ่ม (Auto grouping)", "📥 จัดกลุ่ม Manual"])
 
-    if uploaded_file:
-        st.success("✅ ไฟล์พร้อมประมวลผลคำนวณจัดกลุ่มอัตโนมัติ")
-        
-        # Region selector allowing users to match manual preferences
-        selected_regions = st.multiselect(
-            "📍 เลือกภูมิภาคที่ต้องการจัดกลุ่มวันนี้ (Target Regions):",
-            ["BKK", "Northeast", "West", "North", "East", "Central", "South"],
-            default=["BKK", "Northeast", "West"]
+    # --- TAB 1: จัดกลุ่ม (Auto grouping) ---
+    with tab_auto:
+        st.markdown(
+            f"""
+            <div class="clean-card-red">
+                <h4 style="color:#ED1C24; margin-top:0;">{txt['upload_fis_title']}</h4>
+                <p style="color:#64748b; font-size:13px;">{txt['upload_fis_desc']}</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
         )
+        uploaded_file = st.file_uploader(txt["upload_fis_label"], type=["xlsx", "xls"], key="main_fis_auto")
 
-        if st.button(txt["process_btn"], type="primary", use_container_width=True):
-            file_bytes = io.BytesIO(uploaded_file.getvalue())
-
-            with st.spinner("กำลังคำนวณและประมวลผลจัดกลุ่มอัตโนมัติ..."):
-                out_buffer, df_summary, total_cars, df_processed = process_fis_grouping_adapted(
-                    file_bytes, datetime.now(), target_regions=selected_regions
-                )
-
-            st.divider()
-            st.subheader("📊 ผลลัพธ์สรุปการจัดกลุ่มอัตโนมัติ (Auto Grouping Result)")
-
-            m1, m2, m3 = st.columns(3)
-            m1.metric("จำนวนกลุ่ม/เที่ยวทั้งหมด", f"{len(df_summary)} เที่ยว")
-            grouped_cars_count = df_summary["Car Count"].sum() if not df_summary.empty else 0
-            m2.metric("จำนวนรถที่จัดกลุ่มได้", f"{grouped_cars_count} คัน")
-            m3.metric("คงเหลือเศษรอ Mix", f"{total_cars - grouped_cars_count} คัน")
-
-            if not df_summary.empty:
-                st.dataframe(df_summary[["Grouping ID", "Type", "Region", "Pick up Locations", "Delivery Locations", "Car Count", "Total Weight (kg)"]], use_container_width=True)
-
-                history = load_history()
-                date_key = datetime.now().strftime("%Y-%m-%d")
-                history[date_key] = {
-                    "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                    "mode": "Auto Grouping",
-                    "total_cars": total_cars,
-                    "grouped_cars": int(grouped_cars_count),
-                    "total_groups": len(df_summary),
-                    "summary": df_summary.to_dict(orient="records"),
-                }
-                save_history(history)
-
-            st.download_button(
-                label=txt["download_btn"],
-                data=out_buffer,
-                file_name=f"FIS_Grouped_{datetime.now().strftime('%Y%m%d')}.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        if uploaded_file:
+            st.success("✅ ไฟล์พร้อมประมวลผลคำนวณจัดกลุ่มอัตโนมัติ")
+            
+            selected_regions = st.multiselect(
+                "📍 เลือกภูมิภาคที่ต้องการจัดกลุ่มวันนี้ (Target Regions):",
+                ["BKK", "Northeast", "West", "North", "East", "Central", "South"],
+                default=["BKK", "Northeast", "West"],
+                key="auto_target_regions"
             )
 
-            st.session_state["df_last_processed"] = df_processed
-            st.session_state["df_last_summary"] = df_summary
-    else:
-        st.info(txt["guide_text"])
+            if st.button(txt["process_btn"], type="primary", use_container_width=True, key="btn_run_auto"):
+                file_bytes = io.BytesIO(uploaded_file.getvalue())
 
+                with st.spinner("กำลังคำนวณและประมวลผลจัดกลุ่มอัตโนมัติ..."):
+                    out_buffer, df_summary, total_cars, df_processed = process_fis_grouping_adapted(
+                        file_bytes, datetime.now(), target_regions=selected_regions
+                    )
 
-# 2. MANUAL ACTUAL IMPORT OPTION (NEW FEATURE FOR HISTORY & BENCHMARK)
-elif active_feature == txt["menu_import_actual"]:
-    st.subheader("📥 นำเข้าผลจัดกลุ่ม Manual (Actual Import)")
-    st.caption("อัปโหลดไฟล์ FIS ที่เจ้าหน้าที่จัดแบบ Manual วันนี้ เพื่อบันทึกเข้าประวัติ (History) และใช้เป็นเกณฑ์ (Benchmark) คำนวณวิเคราะห์ในอนาคต")
+                st.divider()
+                st.subheader("📊 ผลลัพธ์สรุปการจัดกลุ่มอัตโนมัติ (Auto Grouping Result)")
 
-    st.markdown(
-        """
-        <div class="clean-card">
-            <h4 style="color:#0066B3; margin-top:0;">📂 อัปโหลดไฟล์ FIS Actual / Manual Result (.xlsx)</h4>
-            <p style="color:#64748b; font-size:13px;">ระบบจะดึงข้อมูล Grouping number และจำนวนรถที่จัดกลุ่มจริงวันนี้มาบันทึกเก็บไว้ใน Database</p>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-    actual_file = st.file_uploader("เลือกไฟล์ FIS ที่จัดกลุ่ม Manual แล้ว (.xlsx)", type=["xlsx", "xls"], key="actual_import_file")
+                m1, m2, m3 = st.columns(3)
+                m1.metric("จำนวนกลุ่ม/เที่ยวทั้งหมด", f"{len(df_summary)} เที่ยว")
+                grouped_cars_count = df_summary["Car Count"].sum() if not df_summary.empty else 0
+                m2.metric("จำนวนรถที่จัดกลุ่มได้", f"{grouped_cars_count} คัน")
+                m3.metric("คงเหลือเศษรอ Mix", f"{total_cars - grouped_cars_count} คัน")
 
-    if actual_file:
-        df_act = pd.read_excel(actual_file)
-        
-        group_col = "Grouping number" if "Grouping number" in df_act.columns else None
-        if group_col and group_col in df_act.columns:
-            act_grouped = df_act[df_act[group_col].notna() & (df_act[group_col] != "เศษรอ Mix")].copy()
-            
-            total_act_cars = len(df_act)
-            grouped_act_cars = len(act_grouped)
-            
-            act_summary = act_grouped.groupby(group_col).agg(
-                Car_Count=("Vin", "count"),
-                Region=("Region", lambda x: ", ".join(map(str, x.unique()))),
-                Delivery_Locations=("Delivery Location", lambda x: ", ".join(map(str, x.unique()))),
-            ).reset_index()
-            act_summary.columns = ["Grouping ID", "Car Count", "Region", "Delivery Locations"]
+                if not df_summary.empty:
+                    st.dataframe(df_summary[["Grouping ID", "Type", "Region", "Pick up Locations", "Delivery Locations", "Car Count", "Total Weight (kg)"]], use_container_width=True)
 
-            st.success("✅ อ่านข้อมูลไฟล์ Manual ผลการจัดกลุ่มจริงสำเร็จ!")
+                    history = load_history()
+                    date_key = datetime.now().strftime("%Y-%m-%d")
+                    history[date_key] = {
+                        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        "mode": "Auto Grouping",
+                        "total_cars": total_cars,
+                        "grouped_cars": int(grouped_cars_count),
+                        "total_groups": len(df_summary),
+                        "summary": df_summary.to_dict(orient="records"),
+                    }
+                    save_history(history)
 
-            a1, a2, a3 = st.columns(3)
-            a1.metric("จำนวนกลุ่ม/เที่ยวจริง", f"{len(act_summary)} เที่ยว")
-            a2.metric("จำนวนรถจัดได้จริง", f"{grouped_act_cars} คัน")
-            a3.metric("เศษรอ Mix จริง", f"{total_act_cars - grouped_act_cars} คัน")
+                st.download_button(
+                    label=txt["download_btn"],
+                    data=out_buffer,
+                    file_name=f"FIS_Grouped_{datetime.now().strftime('%Y%m%d')}.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    key="dl_auto_btn"
+                )
 
-            st.dataframe(act_summary, use_container_width=True)
-
-            if st.button("💾 บันทึกข้อมูล Actual เข้าสู่ระบบ History Benchmark", type="primary", use_container_width=True):
-                history = load_history()
-                date_key = datetime.now().strftime("%Y-%m-%d_Actual")
-                history[date_key] = {
-                    "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                    "mode": "Manual Actual Import",
-                    "total_cars": total_act_cars,
-                    "grouped_cars": grouped_act_cars,
-                    "total_groups": len(act_summary),
-                    "summary": act_summary.to_dict(orient="records"),
-                }
-                save_history(history)
-                st.balloons()
-                st.success("🎉 บันทึกผลจัดกลุ่ม Manual เข้าสู่ฐานข้อมูล History สำเร็จเรียบร้อย!")
+                st.session_state["df_last_processed"] = df_processed
+                st.session_state["df_last_summary"] = df_summary
         else:
-            st.error("❌ ไม่พบคอลัมน์ 'Grouping number' ในไฟล์ที่อัปโหลด กรุณาตรวจสอบไฟล์อีกครั้ง")
+            st.info(txt["guide_text"])
+
+    # --- TAB 2: จัดกลุ่ม Manual (Actual Import) ---
+    with tab_manual:
+        st.caption("อัปโหลดไฟล์ FIS ที่เจ้าหน้าที่จัดกลุ่มแบบ Manual วันนี้ เพื่อนำข้อมูลจริงเข้าสู่ระบบ History และเป็นเกณฑ์เปรียบเทียบในอนาคต")
+
+        st.markdown(
+            """
+            <div class="clean-card">
+                <h4 style="color:#0066B3; margin-top:0;">📂 อัปโหลดไฟล์ FIS ที่จัดกลุ่ม Manual แล้ว (.xlsx)</h4>
+                <p style="color:#64748b; font-size:13px;">ระบบจะดึงข้อมูล Grouping number และจำนวนรถที่จัดกลุ่มจริงวันนี้มาบันทึกเก็บไว้ใน Database</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        actual_file = st.file_uploader("เลือกไฟล์ FIS ที่จัดกลุ่ม Manual แล้ว (.xlsx)", type=["xlsx", "xls"], key="manual_import_file")
+
+        if actual_file:
+            df_act = pd.read_excel(actual_file)
+            
+            group_col = "Grouping number" if "Grouping number" in df_act.columns else None
+            if group_col and group_col in df_act.columns:
+                act_grouped = df_act[df_act[group_col].notna() & (df_act[group_col] != "เศษรอ Mix")].copy()
+                
+                total_act_cars = len(df_act)
+                grouped_act_cars = len(act_grouped)
+                
+                act_summary = act_grouped.groupby(group_col).agg(
+                    Car_Count=("Vin", "count"),
+                    Region=("Region", lambda x: ", ".join(map(str, x.unique()))),
+                    Delivery_Locations=("Delivery Location", lambda x: ", ".join(map(str, x.unique()))),
+                ).reset_index()
+                act_summary.columns = ["Grouping ID", "Car Count", "Region", "Delivery Locations"]
+
+                st.success("✅ อ่านข้อมูลไฟล์ Manual ผลการจัดกลุ่มจริงสำเร็จ!")
+
+                a1, a2, a3 = st.columns(3)
+                a1.metric("จำนวนกลุ่ม/เที่ยวจริง", f"{len(act_summary)} เที่ยว")
+                a2.metric("จำนวนรถจัดได้จริง", f"{grouped_act_cars} คัน")
+                a3.metric("เศษรอ Mix จริง", f"{total_act_cars - grouped_act_cars} คัน")
+
+                st.dataframe(act_summary, use_container_width=True)
+
+                if st.button("💾 บันทึกข้อมูล Manual เข้าสู่ระบบ History Benchmark", type="primary", use_container_width=True, key="save_manual_actual_btn"):
+                    history = load_history()
+                    date_key = datetime.now().strftime("%Y-%m-%d_Manual")
+                    history[date_key] = {
+                        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        "mode": "Manual Actual Import",
+                        "total_cars": total_act_cars,
+                        "grouped_cars": grouped_act_cars,
+                        "total_groups": len(act_summary),
+                        "summary": act_summary.to_dict(orient="records"),
+                    }
+                    save_history(history)
+                    st.balloons()
+                    st.success("🎉 บันทึกผลจัดกลุ่ม Manual เข้าสู่ฐานข้อมูล History สำเร็จเรียบร้อย!")
+            else:
+                st.error("❌ ไม่พบคอลัมน์ 'Grouping number' ในไฟล์ที่อัปโหลด กรุณาตรวจสอบไฟล์อีกครั้ง")
 
 
-# 3. MASTER LIST MENU
+# 2. MASTER LIST MENU
 elif active_feature == txt["menu_master"]:
     st.subheader(f"📂 {txt['menu_master']}")
 
@@ -783,7 +784,7 @@ elif active_feature == txt["menu_master"]:
             st.dataframe(st.session_state["master_df_stored"], use_container_width=True)
 
 
-# 4. CONDITIONS MENU
+# 3. CONDITIONS MENU
 elif active_feature == txt["menu_cond"]:
     st.subheader(f"📋 {txt['menu_cond']}")
 
@@ -820,7 +821,7 @@ elif active_feature == txt["menu_cond"]:
         )
 
 
-# 5. FLEET CAPACITY SETTINGS
+# 4. FLEET CAPACITY SETTINGS
 elif active_feature == txt["menu_fleet"]:
     st.subheader(f"🚛 {txt['menu_fleet']}")
 
@@ -840,7 +841,7 @@ elif active_feature == txt["menu_fleet"]:
     st.success("💾 Settings Saved!")
 
 
-# 6. GROUPING HISTORY & BENCHMARK
+# 5. GROUPING HISTORY & BENCHMARK
 elif active_feature == txt["menu_history"]:
     st.subheader(f"📜 {txt['menu_history']}")
     history_data = load_history()
@@ -864,7 +865,7 @@ elif active_feature == txt["menu_history"]:
             st.dataframe(df_hist_summary, use_container_width=True)
 
 
-# 7. REVISE & SWAP VIN
+# 6. REVISE & SWAP VIN
 elif active_feature == txt["menu_revise"]:
     st.subheader(f"✏️ {txt['menu_revise']}")
 
@@ -931,6 +932,6 @@ elif active_feature == txt["menu_revise"]:
 '''
 
 with open("main.py", "w", encoding="utf-8") as f:
-    f.write(updated_main_code)
+    f.write(full_code)
 
-print("main.py successfully updated with new matching rules and Manual Actual Import option!")
+print("Directly replaced main.py with 100% updated clean code!")
