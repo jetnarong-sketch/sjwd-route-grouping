@@ -1,8 +1,4 @@
-# Generate updated main.py with:
-# 1. Clean Single Language in Sidebar Menu items based on active language (TH or ENG)
-# 2. Flag Image badges for TH/ENG language selector on both Login Page & Main Dashboard (avoiding browser emoji artifacts)
-
-updated_main = '''from datetime import datetime, date
+from datetime import datetime, date
 import io
 import os
 import json
@@ -491,19 +487,6 @@ st.markdown(
     .stSelectbox:hover, .stTextInput:hover {{
         border-color: #94a3b8 !important;
     }}
-
-    .flag-btn {{
-        background: white;
-        border: 1px solid #cbd5e1;
-        border-radius: 6px;
-        padding: 4px 8px;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 12px;
-        font-weight: bold;
-    }}
     </style>
     """,
     unsafe_allow_html=True,
@@ -905,9 +888,3 @@ elif active_feature == txt["menu_revise"]:
                     st.session_state["df_last_processed"] = df_proc
                     st.success(f"Swapped VIN {vin_a_selected} ↔ {vin_b_selected}!")
                     st.rerun()
-'''
-
-with open("main.py", "w", encoding="utf-8") as f:
-    f.write(updated_main)
-
-print("Updated main.py with single-language sidebar menu and flag buttons for language switching!")
