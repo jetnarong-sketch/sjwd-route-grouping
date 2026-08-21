@@ -299,12 +299,12 @@ def process_fis_grouping_with_capacity(
 # --- STREAMLIT CONFIG & CUSTOM LOGISTICS THEME ---
 st.set_page_config(
     page_title="SIAM JWD LOGISTICS - Car Carrier TMS",
-    page_icon="🚛",
+    page_icon="🚚",
     layout="wide",
 )
 
-# LOGIN BACKGROUND IMAGE & ENHANCED CORPORATE STYLES
-login_bg_url = "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1920&q=80"
+# REAL CAR CARRIER TRAILER TRUCK BACKGROUND
+car_carrier_bg_url = "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=1920&q=80"
 
 st.markdown(
     f"""
@@ -318,12 +318,12 @@ st.markdown(
         display: none !important;
     }}
     
-    /* สไตล์หน้า Login พร้อมภาพพื้นหลัง Car Carrier */
+    /* สไตล์ Banner หน้า Login รูปภาพรถเทรลเลอร์ขนส่งรถยนต์ */
     .login-bg {{
-        background: linear-gradient(rgba(11, 37, 69, 0.82), rgba(11, 37, 69, 0.88)), url('{login_bg_url}');
+        background: linear-gradient(rgba(11, 37, 69, 0.85), rgba(11, 37, 69, 0.90)), url('{car_carrier_bg_url}');
         background-size: cover;
         background-position: center;
-        padding: 40px 20px;
+        padding: 45px 20px;
         border-radius: 16px;
         color: white;
         margin-bottom: 25px;
@@ -333,7 +333,7 @@ st.markdown(
         background-color: #ffffff;
         padding: 30px;
         border-radius: 12px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.12);
         border: 1px solid #cbd5e1;
     }}
     
@@ -409,7 +409,7 @@ if not st.session_state["authenticated"]:
                 <span style="color:#ED1C24; font-size:52px; font-weight:900;">SIAM </span>
                 <span style="color:#ffffff; font-size:52px; font-weight:900;">JWD</span><br>
                 <span style="color:#cbd5e1; font-size:13px; letter-spacing:6px; font-weight:bold;">LOGISTICS</span>
-                <h2 style="color:#ffffff; margin-top:15px; font-weight:800;">🚛 Car Carrier Transport Optimization System</h2>
+                <h2 style="color:#ffffff; margin-top:15px; font-weight:800;">Car Carrier Transport Optimization System</h2>
                 <p style="color:#e2e8f0; font-size:15px; margin-bottom:0;">ระบบคำนวณและวางแผนจัดกลุ่มรถขนส่งสินค้าอัตโนมัติสำหรับฟลีตขนส่งรถยนต์</p>
             </div>
         </div>
