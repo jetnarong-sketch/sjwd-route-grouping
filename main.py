@@ -968,108 +968,101 @@ elif active_feature == txt["menu_history"]:
                 st.warning("⚠️ ยังไม่มีข้อมูลรายละเอียดคันรถในประวัติ ให้ลองประมวลผลจัดกลุ่มใหม่ก่อนครับ")
 
 
-# 6. REVISE & SWAP VIN (SEARCH GROUP NUMBER & DIRECT EDIT/CANCEL)
+# 6. REVISE & SWAP VIN (DIRECT SEARCH & FLEXIBLE EDIT)
 elif active_feature == txt["menu_revise"]:
-    st.subheader("✏️ แก้ไข ยกเลิกกลุ่ม และสลับคันรถ (Revise & Search Grouping Number)")
-    st.caption("พิมพ์ค้นหา Grouping Number (เช่น SJWD260821-006) เพื่อดึงข้อมูลรถในกลุ่มมาติ๊กเลือกยกเลิกคัน ถอด VIN หรือยกเลิกทั้งเที่ยวได้ทันที")
+    st.subheader("✏️ แก้ไขและยกเลิกกลุ่ม (Revise Grouping Number)")
 
     history_data = load_history()
     
-    # Direct Search Input Box
     st.markdown(
         """
         <div class="clean-card">
-            <h4 style="color:#0066B3; margin-top:0;">🔍 ค้นหา Grouping Number ที่ต้องการแก้ไข / ยกเลิก</h4>
-            <p style="color:#64748b; font-size:13px;">กรอกเลข Grouping Number เช่น SJWD260821-006 หรือเลือกจากประวัติที่มีอยู่</p>
+            <h3 style="color:#0066B3; margin:0;">🔍 ค้นหา Grouping Number ที่ต้องการแก้ไข / ยกเลิก</h3>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
-    # Collect all available Group IDs across session and history
-    all_known_groups = []
-    
-    # From session state
-    if "df_last_processed" in st.session_state:
-        df_s = st.session_state["df_last_processed"]
-        gcol_s = "Grouping number" if "Grouping number" in df_s.columns else "Calc_Group_No"
-        if gcol_s in df_s.columns:
-            g_s = df_s[df_s[gcol_s].notna() & (df_s[gcol_s].astype(str).str.strip() != "") & (df_s[gcol_s].astype(str).str.strip() != "เศษรอ Mix") & (df_s[gcol_s].astype(str).str.strip() != "nan")][gcol_s].astype(str).unique().tolist()
-            all_known_groups.extend(g_s)
+    if "search_group_id" not in st.session_state:
+        st.session_state["search_group_id"] = ""
 
-    # From history
+    c_search, c_clear = st.columns([0.85, 0.15])
+    with c_search:
+        search_input_val = st.text_input(
+            "🔎 กรอก Group number ที่ต้องการค้นหา:",
+            value=st.session_state["search_group_id"],
+            placeholder="กรอก Group number ที่ต้องการค้นหา",
+            label_visibility="collapsed"
+        )
+    with c_clear:
+        if st.button("❌ ล้างค่า", use_container_width=True):
+            st.session_state["search_group_id"] = ""
+            st.rerun()
+
+    st.session_state["search_group_id"] = search_input_val.strip()
+    target_group_id = st.session_state["search_group_id"]
+
+    # Quick Select Chips from History
+    recent_groups = []
     for hkey, hrec in history_data.items():
-        if "full_details" in hrec and hrec["full_details"]:
-            df_h = pd.DataFrame(hrec["full_details"])
-            gcol_h = "Grouping number" if "Grouping number" in df_h.columns else "Calc_Group_No"
-            if gcol_h in df_h.columns:
-                g_h = df_h[df_h[gcol_h].notna() & (df_h[gcol_h].astype(str).str.strip() != "") & (df_h[gcol_h].astype(str).str.strip() != "เศษรอ Mix") & (df_h[gcol_h].astype(str).str.strip() != "nan")][gcol_h].astype(str).unique().tolist()
-                all_known_groups.extend(g_h)
+        if "summary" in hrec and hrec["summary"]:
+            for item in hrec["summary"]:
+                gid = item.get("Grouping ID", item.get("Grouping number", ""))
+                if gid and gid not in recent_groups and gid != "เศษรอ Mix":
+                    recent_groups.append(str(gid))
 
-    all_known_groups = sorted(list(set(all_known_groups)))
-
-    c_search1, c_search2 = st.columns([0.6, 0.4])
-    with c_search1:
-        search_group_input = st.text_input("🔎 พิมพ์ Grouping Number ที่ต้องการค้นหา:", placeholder="เช่น SJWD260821-006")
-    with c_search2:
-        select_group_dropdown = st.selectbox("หรือเลือกจาก Grouping ID ในระบบ:", ["-- เลือก Grouping ID --"] + all_known_groups)
-
-    # Determine targeted Group ID
-    target_group_id = None
-    if search_group_input.strip():
-        target_group_id = search_group_input.strip()
-    elif select_group_dropdown != "-- เลือก Grouping ID --":
-        target_group_id = select_group_dropdown
+    if recent_groups:
+        st.markdown("**⚡ เลือกจากรายการจัดกลุ่มล่าสุด (Quick Select):**")
+        chip_cols = st.columns(min(len(recent_groups), 5))
+        for idx_chip, gcode in enumerate(recent_groups[:5]):
+            with chip_cols[idx_chip]:
+                if st.button(f"📌 {gcode}", key=f"chip_btn_{gcode}"):
+                    st.session_state["search_group_id"] = gcode
+                    st.rerun()
 
     if not target_group_id:
-        st.info("💡 พิมพ์เลข Grouping Number หรือเลือกจากรายการด้านบน เพื่อเริ่มแก้ไขหรือยกเลิกคิวรถในกลุ่ม")
+        st.info("💡 กรอก Group number ด้านบน เพื่อเริ่มแก้ไขหรือยกเลิกคิวรถในกลุ่ม")
     else:
         st.divider()
         st.markdown(f"### **📋 ผลการค้นหาสำหรับ Grouping ID: `{target_group_id}`**")
 
-        # Find matching dataframe in History or Session
+        clean_target = str(target_group_id).strip().lower().replace("atl", "").replace("sjwd", "")
+        
         matched_records = []
+
+        # Search in History Database
         for hkey, hrec in history_data.items():
             if "full_details" in hrec and hrec["full_details"]:
                 df_temp = pd.DataFrame(hrec["full_details"])
-                gcol_t = "Grouping number" if "Grouping number" in df_temp.columns else "Calc_Group_No"
+                for gcol_t in ["Grouping number", "Calc_Group_No", "Grouping ID"]:
+                    if gcol_t in df_temp.columns:
+                        g_series = df_temp[gcol_t].astype(str).str.strip().str.lower()
+                        mask = g_series.str.contains(clean_target, na=False) | (g_series == str(target_group_id).strip().lower())
+                        if mask.any():
+                            matched_records.append((hkey, hrec, df_temp, gcol_t, mask))
+                            break
+
+        # Search in Active Session
+        if not matched_records and "df_last_processed" in st.session_state:
+            df_temp = st.session_state["df_last_processed"]
+            for gcol_t in ["Grouping number", "Calc_Group_No", "Grouping ID"]:
                 if gcol_t in df_temp.columns:
-                    # Flexible partial search
-                    clean_target = str(target_group_id).strip().lower().replace("atl", "").replace("sjwd", "")
                     g_series = df_temp[gcol_t].astype(str).str.strip().str.lower()
                     mask = g_series.str.contains(clean_target, na=False) | (g_series == str(target_group_id).strip().lower())
                     if mask.any():
-                        matched_records.append((hkey, hrec, df_temp, gcol_t))
-
-        if not matched_records and "df_last_processed" in st.session_state:
-            df_temp = st.session_state["df_last_processed"]
-            gcol_t = "Grouping number" if "Grouping number" in df_temp.columns else "Calc_Group_No"
-            if gcol_t in df_temp.columns:
-                # Flexible partial search
-                clean_target = str(target_group_id).strip().lower().replace("atl", "").replace("sjwd", "")
-                g_series = df_temp[gcol_t].astype(str).str.strip().str.lower()
-                mask = g_series.str.contains(clean_target, na=False) | (g_series == str(target_group_id).strip().lower())
-                if mask.any():
-                    matched_records.append(("Active_Session", {}, df_temp, gcol_t))
+                        matched_records.append(("Active_Session", {}, df_temp, gcol_t, mask))
+                        break
 
         if not matched_records:
             st.error(f"❌ ไม่พบข้อมูลสำหรับ Grouping Number: `{target_group_id}` ในระบบ กรุณาตรวจสอบรหัสอีกครั้ง")
         else:
-            hkey, hrec, df_matched, gcol = matched_records[0]
-            clean_target = str(target_group_id).strip().lower().replace("atl", "").replace("sjwd", "")
-            g_series = df_matched[gcol].astype(str).str.strip().str.lower()
-            mask_match = g_series.str.contains(clean_target, na=False) | (g_series == str(target_group_id).strip().lower())
-            
+            hkey, hrec, df_matched, gcol, mask_match = matched_records[0]
             group_vins_df = df_matched[mask_match].copy()
 
             st.success(f"✅ พบรถในกลุ่มนี้ทั้งหมด {len(group_vins_df)} คัน")
 
-            # Interactive Table with Checkboxes for selecting specific cars
-            show_cols = [c for c in ["Vin", "MODEL NAME", "Model", "Location", "Delivery Location", "Region", "Allocation Date"] if c in group_vins_df.columns]
+            st.markdown("#### **1. รายการรถในกลุ่ม (ติ๊กเลือกคันที่ต้องการถอดออกหรือยกเลิก):**")
             
-            st.markdown("#### **1. รายการรถในกลุ่ม (ติ๊กเลือกคันที่ต้องการแก้ไข/ถอดออก):**")
-            
-            # Form with checkboxes for every car inside the group
             selected_vins_to_remove = []
             for idx_row, row_data in group_vins_df.iterrows():
                 vin_val = str(row_data.get("Vin", ""))
@@ -1082,14 +1075,12 @@ elif active_feature == txt["menu_revise"]:
             st.write("")
             col_act1, col_act2 = st.columns(2)
 
-            # Action 1: Cancel Entire Group
             with col_act1:
                 if st.button(f"🚨 ยกเลิกกลุ่ม {target_group_id} ทั้งหมด ({len(group_vins_df)} คัน)", type="primary", use_container_width=True, key="btn_cancel_entire_searched"):
                     df_matched.loc[mask_match, gcol] = "เศษรอ Mix"
                     if "Calc_Group_No" in df_matched.columns:
                         df_matched.loc[mask_match, "Calc_Group_No"] = ""
 
-                    # Save back to History Database
                     if hkey != "Active_Session" and hkey in history_data:
                         remaining_grouped = df_matched[df_matched[gcol].notna() & (df_matched[gcol].astype(str).str.strip() != "") & (df_matched[gcol].astype(str).str.strip() != "เศษรอ Mix") & (df_matched[gcol].astype(str).str.strip() != "nan")]
                         history_data[hkey]["grouped_cars"] = len(remaining_grouped)
@@ -1103,7 +1094,6 @@ elif active_feature == txt["menu_revise"]:
                     time.sleep(1)
                     st.rerun()
 
-            # Action 2: Remove Selected Cars
             with col_act2:
                 if st.button(f"❌ ถอดเฉพาะคันที่เลือก ({len(selected_vins_to_remove)} คัน)", use_container_width=True, key="btn_remove_selected_searched"):
                     if selected_vins_to_remove:
