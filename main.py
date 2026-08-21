@@ -6,6 +6,25 @@ import openpyxl
 import pandas as pd
 import streamlit as st
 
+# --- USER CREDENTIALS & ROLES DATABASE ---
+USER_DB = {
+    "admin": {
+        "password": "adminpassword123",
+        "name": "Admin Ball",
+        "role": "Admin",
+    },
+    "pm": {
+        "password": "pmpassword123",
+        "name": "Project Manager",
+        "role": "Project Manager",
+    },
+    "operator": {
+        "password": "operatorpassword123",
+        "name": "Operator Team",
+        "role": "Operator",
+    },
+}
+
 # Master Data น้ำหนักรถ (กก.)
 MODEL_WEIGHT_MASTER = {
     "DOLPHIN": 1615,
@@ -142,7 +161,6 @@ def process_fis_grouping_with_capacity(
     df["Calc_Group_Date"] = ""
     summary_list = []
 
-    # 1. Slide on D9 BKK
     if fleet_capacity.get("slide_on", True):
         slide_on_mask = (
             ready_df[model_col]
@@ -179,7 +197,6 @@ def process_fis_grouping_with_capacity(
     else:
         ready_df_trailer = ready_df.copy()
 
-    # 2. Capacity Tracking
     trailer_7_quota = fleet_capacity.get("trailer_7", 999)
     trailer_8_quota = fleet_capacity.get("trailer_8", 999)
 
@@ -292,15 +309,10 @@ st.markdown(
     [data-testid="stSidebar"] {
         background-color: #0b2545 !important;
     }
-    [data-testid="stSidebar"] h1, 
-    [data-testid="stSidebar"] h2, 
-    [data-testid="stSidebar"] h3, 
-    [data-testid="stSidebar"] p, 
-    [data-testid="stSidebar"] span, 
-    [data-testid="stSidebar"] label {
+    [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3, 
+    [data-testid="stSidebar"] p, [data-testid="stSidebar"] span, [data-testid="stSidebar"] label {
         color: #ffffff !important;
     }
-    
     [data-testid="stFileUploader"] {
         background-color: #f8f9fa !important;
         border-radius: 10px !important;
@@ -316,7 +328,6 @@ st.markdown(
         border-radius: 6px !important;
         border: none !important;
     }
-    
     div.stButton > button:first-child {
         background-color: #ED1C24 !important;
         color: white !important;
@@ -326,7 +337,6 @@ st.markdown(
         padding: 10px 24px !important;
         box-shadow: 0px 4px 10px rgba(237, 28, 36, 0.3) !important;
     }
-    
     .clean-card {
         background-color: #ffffff;
         border-left: 5px solid #0066B3;
@@ -348,33 +358,86 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# --- SIDEBAR BRANDING & FUNCTIONAL MENU ---
+# --- LOGIN SYSTEM ---
+if "authenticated" not in st.session_state:
+    st.session_state["authenticated"] = False
+    st.session_state["user_info"] = None
+
+if not st.session_state["authenticated"]:
+    st.markdown(
+        """
+        <div style="text-align:center; padding: 40px 0 20px 0;">
+            <span style="color:#ED1C24; font-size:48px; font-weight:900;">SIAM </span>
+            <span style="color:#0066B3; font-size:48px; font-weight:900;">JWD</span><br>
+            <span style="color:#64748b; font-size:14px; letter-spacing:5px; font-weight:bold;">LOGISTICS</span>
+            <h3 style="color:#1e293b; margin-top:15px;">เข้าสู่ระบบวางแผนจัดกลุ่มรถส่งสินค้า (TMS)</h3>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    
+    col_l1, col_l2, col_l3 = st.columns([1, 1.2, 1])
+    with col_l2:
+        with st.form("login_form"):
+            username_input = st.text_input("👤 Username (ชื่อผู้ใช้งาน)")
+            password_input = st.text_input("🔑 Password (รหัสผ่าน)", type="password")
+            submit_login = st.form_submit_button("🔓 เข้าสู่ระบบ (Sign In)", use_container_width=True)
+
+            if submit_login:
+                user = USER_DB.get(username_input.strip().lower())
+                if user and user["password"] == password_input:
+                    st.session_state["authenticated"] = True
+                    st.session_state["user_info"] = {
+                        "username": username_input,
+                        "name": user["name"],
+                        "role": user["role"],
+                    }
+                    st.success("เข้าสู่ระบบสำเร็จ!")
+                    st.rerun()
+                else:
+                    st.error("❌ Username หรือ Password ไม่ถูกต้อง!")
+    st.stop()
+
+# --- SIDEBAR BRANDING & AUTH USER INFO ---
 st.sidebar.markdown(
     """
     <div style="text-align:center; padding: 10px 0px 20px 0px;">
-        <span style="color:#ED1C24; font-size:26px; font-weight:900; font-family:sans-serif;">SIAM </span>
-        <span style="color:#ffffff; font-size:26px; font-weight:900; font-family:sans-serif;">JWD</span><br>
+        <span style="color:#ED1C24; font-size:26px; font-weight:900;">SIAM </span>
+        <span style="color:#ffffff; font-size:26px; font-weight:900;">JWD</span><br>
         <span style="color:#8da9c4; font-size:12px; letter-spacing:4px; font-weight:bold;">LOGISTICS</span>
     </div>
     """,
     unsafe_allow_html=True,
 )
 
-st.sidebar.title("⚙️ Control Panel")
-st.sidebar.caption("กดเลือกหัวข้อที่ Sidebar เพื่อแสดงผลลัพธ์บน Main Panel ขวามือ")
+current_user = st.session_state["user_info"]
+st.sidebar.markdown(f"👤 **ผู้ใช้งาน:** {current_user['name']}")
 
-active_feature = st.sidebar.radio(
-    "เลือกหัวข้อทำงาน:",
-    [
-        "🚀 วางแผนจัดกลุ่ม (Auto Grouping)",
-        "📂 Master list",
-        "📋 Conditions (เงื่อนไขการจัดกลุ่ม)",
-        "🚛 Fleet Capacity Settings",
-        "📜 ประวัติการจัดกลุ่มย้อนหลัง",
-        "✏️ Revise & Swap VIN",
-    ],
-    index=0,
-)
+role_icons = {
+    "Admin": "👑 Admin",
+    "Project Manager": "👔 Project Manager",
+    "Operator": "👷 Operator (ปฏิบัติการ)",
+}
+st.sidebar.markdown(f"🛡️ **สิทธิ์ระบบ:** `{role_icons.get(current_user['role'], current_user['role'])}`")
+
+if st.sidebar.button("🔒 ออกจากระบบ (Logout)", use_container_width=True):
+    st.session_state["authenticated"] = False
+    st.session_state["user_info"] = None
+    st.rerun()
+
+st.sidebar.divider()
+
+# ทุกบทบาท (Admin, PM, Operator) สามารถเข้าใช้งานได้ทุกเมนูหลัก
+menu_options = [
+    "🚀 วางแผนจัดกลุ่ม (Auto Grouping)",
+    "📂 Master list",
+    "📋 Conditions (เงื่อนไขการจัดกลุ่ม)",
+    "🚛 Fleet Capacity Settings",
+    "📜 ประวัติการจัดกลุ่มย้อนหลัง",
+    "✏️ Revise & Swap VIN",
+]
+
+active_feature = st.sidebar.radio("เลือกหัวข้อทำงาน:", menu_options, index=0)
 
 st.sidebar.divider()
 st.sidebar.caption("SIAM JWD LOGISTICS CO., LTD.")
@@ -384,9 +447,9 @@ st.sidebar.caption("SIAM JWD LOGISTICS CO., LTD.")
 st.markdown(
     """
     <div style="padding-bottom: 10px;">
-        <span style="color:#ED1C24; font-size:46px; font-weight:900; font-family:sans-serif;">SIAM </span>
-        <span style="color:#0066B3; font-size:46px; font-weight:900; font-family:sans-serif;">JWD </span>
-        <span style="color:#1d3557; font-size:32px; font-weight:700; font-family:sans-serif;">LOGISTICS</span>
+        <span style="color:#ED1C24; font-size:46px; font-weight:900;">SIAM </span>
+        <span style="color:#0066B3; font-size:46px; font-weight:900;">JWD </span>
+        <span style="color:#1d3557; font-size:32px; font-weight:700;">LOGISTICS</span>
     </div>
     """,
     unsafe_allow_html=True,
@@ -397,9 +460,7 @@ st.caption("ระบบคำนวณและวางแผนจัดก�
 st.divider()
 
 
-# --- DISPLAY CONTENT ON MAIN PANEL RIGHT SIDE BASED ON SIDEBAR CLICK ---
-
-# 1. AUTO GROUPING WORKSPACE ON MAIN PANEL
+# 1. AUTO GROUPING WORKSPACE (ทุกบทบาททำได้)
 if active_feature == "🚀 วางแผนจัดกลุ่ม (Auto Grouping)":
     st.subheader("🚀 วางแผนและประมวลผลจัดกลุ่มอัตโนมัติ (Main Workspace)")
     st.caption("อัปโหลดไฟล์ Grouping order (FIS) เพื่อประมวลผลจัดกลุ่มอัตโนมัติ")
@@ -418,7 +479,6 @@ if active_feature == "🚀 วางแผนจัดกลุ่ม (Auto Grou
     )
 
     st.write("")
-
     master_df_to_use = st.session_state.get("master_df_stored", None)
 
     if uploaded_file:
@@ -451,7 +511,7 @@ if active_feature == "🚀 วางแผนจัดกลุ่ม (Auto Grou
 
                 if missing_locs:
                     st.error("❌ ไม่สามารถประมวลผลได้ เนื่องจากพบ Delivery Location ที่ไม่มีในไฟล์ Master!")
-                    st.warning("กรุณาเพิ่มข้อมูล Delivery Location ดังต่อไปนี้ลงในไฟล์ Master list (Dealer (Region).xlsx) ก่อนประมวลผลใหม่:")
+                    st.warning("กรุณาเพิ่มข้อมูล Delivery Location ดังต่อไปนี้ลงในไฟล์ Master list ก่อนประมวลผลใหม่:")
                     for m_loc in missing_locs:
                         st.write(f"- 📍 **{m_loc}**")
                 else:
@@ -492,29 +552,32 @@ if active_feature == "🚀 วางแผนจัดกลุ่ม (Auto Grou
         st.info("💡 **คำแนะนำ:** กรุณาเลือกไฟล์ Grouping order (FIS Ready to Grouping) ด้านบนเพื่อกดปุ่มประมวลผล")
 
 
-# 2. MASTER LIST SEPARATE MENU ON MAIN PANEL
+# 2. MASTER LIST MENU (Admin/PM อัปโหลดแก้ไขได้, Operator ดูได้อย่างเดียว)
 elif active_feature == "📂 Master list":
     st.subheader("📂 การจัดการข้อมูล Master list (Dealer & Region Mapping)")
-    st.caption("ตรวจสอบและอัปโหลดข้อมูลแมปสถานที่จัดส่งสินค้า (Delivery Location) คู่กับ Region")
-
-    master_up = st.file_uploader("📂 อัปโหลดไฟล์ Master Dealer (Region).xlsx หลักของระบบ:", type=["xlsx", "xls"], key="menu_master_file")
     
-    if master_up:
-        df_master_view = pd.read_excel(master_up)
-        st.session_state["master_df_stored"] = df_master_view
-        st.success(f"อัปโหลดและบันทึก Master list เข้าสู่ระบบสำเร็จ! พบรายการสถานที่ส่งทั้งหมด {len(df_master_view)} รายการ")
-        st.dataframe(df_master_view, use_container_width=True)
-    elif "master_df_stored" in st.session_state:
-        st.info("📌 ข้อมูล Master list ปัจจุบันในระบบ:")
-        st.dataframe(st.session_state["master_df_stored"], use_container_width=True)
+    if current_user["role"] in ["Admin", "Project Manager"]:
+        master_up = st.file_uploader("📂 อัปโหลดไฟล์ Master Dealer (Region).xlsx หลักของระบบ:", type=["xlsx", "xls"], key="menu_master_file")
+        if master_up:
+            df_master_view = pd.read_excel(master_up)
+            st.session_state["master_df_stored"] = df_master_view
+            st.success(f"บันทึก Master list ใหม่เรียบร้อยแล้ว! พบทั้งหมด {len(df_master_view)} รายการ")
+            st.dataframe(df_master_view, use_container_width=True)
+        elif "master_df_stored" in st.session_state:
+            st.info("📌 ข้อมูล Master list ปัจจุบันในระบบ:")
+            st.dataframe(st.session_state["master_df_stored"], use_container_width=True)
     else:
-        st.info("📌 คุณสามารถอัปโหลดไฟล์ Master Dealer (Region).xlsx เพื่อใช้เป็นฐานข้อมูลหลักของระบบที่นี่")
+        st.info("🔒 **มุมมองเรียกดูข้อมูล (Read-Only):** สิทธิ์ Operator สามารถเรียกดูตาราง Master list ที่ใช้อยู่ในปัจจุบันได้เท่านั้น")
+        if "master_df_stored" in st.session_state:
+            st.dataframe(st.session_state["master_df_stored"], use_container_width=True)
+        else:
+            st.warning("ยังไม่มีข้อมูล Master list ในระบบ กรุณาติดต่อ Admin หรือ Project Manager เพื่อนำเข้าไฟล์")
 
 
-# 3. CONDITIONS SEPARATE MENU ON MAIN PANEL
+# 3. CONDITIONS MENU (ดูได้อย่างเดียวสำหรับทุกสิทธิ์ เพื่อใช้อ้างอิงกฎ)
 elif active_feature == "📋 Conditions (เงื่อนไขการจัดกลุ่ม)":
     st.subheader("📋 เงื่อนไขการจัดกลุ่มจัดส่งอัตโนมัติ (Grouping Conditions)")
-    st.caption("ระบบจะนำเงื่อนไขทั้ง 3 ส่วนนี้ไปประมวลผลในการจัดกลุ่มรถทุกครั้ง")
+    st.caption("📌 รายละเอียดเงื่อนไขและกฎเกณฑ์การประมวลผลจัดกลุ่มจัดส่งของระบบ (Read-Only)")
 
     col_f1, col_f2, col_f3 = st.columns(3)
     with col_f1:
@@ -549,7 +612,7 @@ elif active_feature == "📋 Conditions (เงื่อนไขการจั
         )
 
 
-# 4. FLEET CAPACITY SETTINGS ON MAIN PANEL
+# 4. FLEET CAPACITY SETTINGS (ทุกบทบาททำได้)
 elif active_feature == "🚛 Fleet Capacity Settings":
     st.subheader("🚛 ตั้งค่า Fleet Capacity (กำหนดโควตากองรถ)")
     st.caption("กำหนดจำกัดจำนวนเทรลเลอร์และเงื่อนไขประเภทรถขนส่งสำหรับนำไปคำนวณในระบบ")
@@ -570,7 +633,7 @@ elif active_feature == "🚛 Fleet Capacity Settings":
     st.success("💾 บันทึกการตั้งค่าโควตากองรถเรียบร้อยแล้ว!")
 
 
-# 5. GROUPING HISTORY ON MAIN PANEL
+# 5. GROUPING HISTORY (ทุกบทบาททำได้)
 elif active_feature == "📜 ประวัติการจัดกลุ่มย้อนหลัง":
     st.subheader("📜 เรียกดูประวัติการจัดกลุ่มย้อนหลัง")
     history_data = load_history()
@@ -594,7 +657,7 @@ elif active_feature == "📜 ประวัติการจัดกลุ่
             st.dataframe(df_hist_summary, use_container_width=True)
 
 
-# 6. REVISE & SWAP VIN ON MAIN PANEL
+# 6. REVISE & SWAP VIN (ทุกบทบาททำได้)
 elif active_feature == "✏️ Revise & Swap VIN":
     st.subheader("✏️ แก้ไข / ยกเลิก / สลับคันรถใน Grouping (Revise & Swap)")
 
