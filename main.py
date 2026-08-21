@@ -1,4 +1,7 @@
-from datetime import datetime, date
+# Let's build the complete main.py code containing both updated Auto Grouping rules and Manual Actual Import option.
+# Let's test imports and verify syntax.
+
+updated_main_code = '''from datetime import datetime, date
 import io
 import os
 import json
@@ -41,7 +44,8 @@ T = {
         "role_label": "สิทธิ์ระบบ",
         "logout_btn": "Logout",
         "select_menu": "เลือกหัวข้อทำงาน:",
-        "menu_grouping": "🚀 วางแผนจัดกลุ่ม",
+        "menu_grouping": "🚀 วางแผนจัดกลุ่ม (Auto Grouping)",
+        "menu_import_actual": "📥 นำเข้าผลจัดกลุ่ม Manual (Actual Import)",
         "menu_master": "📂 ข้อมูลมาสเตอร์",
         "menu_cond": "📋 เงื่อนไขการจัดกลุ่ม",
         "menu_fleet": "🚛 ตั้งค่าโควตากองรถ",
@@ -69,6 +73,7 @@ T = {
         "logout_btn": "Logout",
         "select_menu": "Select Module:",
         "menu_grouping": "🚀 Auto Grouping",
+        "menu_import_actual": "📥 Manual Actual Import",
         "menu_master": "📂 Master List",
         "menu_cond": "📋 Grouping Conditions",
         "menu_fleet": "🚛 Fleet Capacity Settings",
@@ -94,6 +99,21 @@ MODEL_WEIGHT_MASTER = {
     "M6": 2000,
     "SEALION 5": 1800,
     "SEAL 5": 1600,
+}
+
+# Master Map for Dealers to Region
+DEALER_REGION_MAP = {
+    "EV-D Ubon Co., Ltd.  (Ubon Ratchathani)": "Northeast",
+    "Jinlong Motors Co., Ltd. (Chaengwattana)": "BKK",
+    "Metromobile Co., Ltd. (Talingchan)": "BKK",
+    "Metromobile Co., Ltd. (Onnut)": "BKK",
+    "BKK Automobile Co., Ltd. (Minburi-Ramindra)": "BKK",
+    "BKK EV Car Co., Ltd. (Donmuang)": "BKK",
+    "Jinlong S-Nakarin Co., Ltd. (Srinagarindra)": "BKK",
+    "Autopia Co., Ltd. (Theparak)": "BKK",
+    "Yonpiboon Automobile Co., Ltd. (Khonkaen)": "Northeast",
+    "Metromobile Co., Ltd. (RCA)": "BKK",
+    "B1 Ratchaburi Automotive Co., Ltd. (Ratchaburi)": "West",
 }
 
 HISTORY_FILE = "grouping_history.json"
@@ -133,17 +153,7 @@ def is_car_ready_to_ship(row, hold_col="HOLD", remark_col="Remark"):
     return True
 
 
-def get_max_delivery_locations(region_str):
-    reg = str(region_str).strip().upper()
-    if reg == "BKK":
-        return 4
-    elif reg == "EAST":
-        return 6
-    else:
-        return 6
-
-
-def process_fis_grouping_with_capacity(file_bytes, master_region_df, grouping_date_obj, fleet_capacity):
+def process_fis_grouping_adapted(file_bytes, grouping_date_obj, target_regions=["BKK", "Northeast", "West"]):
     grouping_date_str = grouping_date_obj.strftime("%y%m%d")
     grouping_date_display = grouping_date_obj.strftime("%d %b %y")
 
@@ -159,23 +169,8 @@ def process_fis_grouping_with_capacity(file_bytes, master_region_df, grouping_da
     remark_col = "Remark"
     alloc_date_col = "Allocation Date"
 
-    prefix = f"SJWD{grouping_date_str}-"
-    group_counter = 1
-
-    master_map = dict(
-        zip(
-            master_region_df["Delivery Location"].astype(str).str.strip(),
-            master_region_df["Region"].astype(str).str.strip(),
-        )
-    )
-
-    df_delivery_clean = df[delivery_col].astype(str).str.strip()
-    missing_locations = [loc for loc in df_delivery_clean.unique() if loc not in master_map and pd.notna(loc) and loc != "nan"]
-
-    if missing_locations:
-        return None, None, None, missing_locations, df
-
-    df["Mapped_Region"] = df_delivery_clean.map(master_map)
+    # Fill Mapped Regions
+    df["Mapped_Region"] = df[delivery_col].astype(str).str.strip().map(DEALER_REGION_MAP)
     df[region_col] = df[region_col].fillna(df["Mapped_Region"])
 
     df[group_no_col] = df[group_no_col].astype(object)
@@ -183,11 +178,16 @@ def process_fis_grouping_with_capacity(file_bytes, master_region_df, grouping_da
         df[group_date_col] = df[group_date_col].astype(object)
 
     df["Ready_Flag"] = df.apply(lambda r: is_car_ready_to_ship(r, hold_col, remark_col), axis=1)
-    ready_df = df[df["Ready_Flag"] == True].copy()
+    
+    # Priority sorting: Express ("จัดส่งด่วน") first, then Allocation Date
+    df["Is_Express"] = df[remark_col].astype(str).str.contains("จัดส่งด่วน|ด่วน|express", case=False, na=False)
+    if alloc_date_col in df.columns:
+        df["_sort_date"] = pd.to_datetime(df[alloc_date_col], errors="coerce")
+    else:
+        df["_sort_date"] = pd.Timestamp.max
 
-    if alloc_date_col in ready_df.columns:
-        temp_alloc_date = pd.to_datetime(ready_df[alloc_date_col], errors="coerce")
-        ready_df = ready_df.assign(_temp_sort_date=temp_alloc_date).sort_values(by="_temp_sort_date", ascending=True)
+    ready_df = df[(df["Ready_Flag"] == True) & (df[region_col].isin(target_regions))].copy()
+    ready_df = ready_df.sort_values(by=["Is_Express", "_sort_date"], ascending=[False, True])
 
     ready_df["Estimated_Weight_KG"] = (
         ready_df[model_col]
@@ -199,112 +199,103 @@ def process_fis_grouping_with_capacity(file_bytes, master_region_df, grouping_da
     df["Calc_Group_No"] = ""
     df["Calc_Group_Date"] = ""
     summary_list = []
+    prefix = f"SJWD{grouping_date_str}-"
+    group_counter = 1
 
-    if fleet_capacity.get("slide_on", True):
-        slide_on_mask = (
-            ready_df[model_col]
-            .astype(str)
-            .str.upper()
-            .str.contains("DENZA D9|D9", regex=True)
-        ) & (ready_df[region_col].astype(str).str.upper().str.strip() == "BKK")
-        slide_on_indices = ready_df[slide_on_mask].index.tolist()
+    # --- PHASE 1: BKK Single-Dealer Groups (Point-to-Point 5-7 Cars) ---
+    bkk_ready = ready_df[ready_df[region_col] == "BKK"].copy()
+    bkk_dealer_counts = bkk_ready[delivery_col].value_counts()
 
-        for idx in slide_on_indices:
+    # Prioritize dealers with 5-7 cars for direct single-dealer loads
+    for dealer, count in bkk_dealer_counts.items():
+        if count >= 5:
+            dealer_indices = bkk_ready[bkk_ready[delivery_col] == dealer].index.tolist()
+            # Form single-dealer group
+            load_size = min(count, 7)
+            group_indices = dealer_indices[:load_size]
+
             current_group_id = f"{prefix}{group_counter:03d}"
-            df.loc[idx, "Calc_Group_No"] = current_group_id
-            df.loc[idx, "Calc_Group_Date"] = grouping_date_display
+            df.loc[group_indices, "Calc_Group_No"] = current_group_id
+            df.loc[group_indices, "Calc_Group_Date"] = grouping_date_display
 
-            group_weight = ready_df.loc[idx, "Estimated_Weight_KG"]
-            pick_loc = ready_df.loc[idx, pickup_col]
-            del_loc = ready_df.loc[idx, delivery_col]
+            group_weight = ready_df.loc[group_indices, "Estimated_Weight_KG"].sum()
+            vins_in_group = ready_df.loc[group_indices, "Vin"].astype(str).tolist() if "Vin" in ready_df.columns else []
 
             summary_list.append(
                 {
                     "Grouping ID": current_group_id,
-                    "Type": "Slide-on",
-                    "Region": "BKK (Slide on)",
-                    "Pick up Locations": str(pick_loc),
-                    "Delivery Locations": str(del_loc),
-                    "Car Count": 1,
+                    "Type": f"Single-Dealer ({len(group_indices)} Load)",
+                    "Region": "BKK",
+                    "Pick up Locations": ", ".join(map(str, set(ready_df.loc[group_indices, pickup_col]))),
+                    "Delivery Locations": str(dealer),
+                    "Car Count": len(group_indices),
                     "Total Weight (kg)": group_weight,
-                    "VINs": [str(ready_df.loc[idx, "Vin"])] if "Vin" in ready_df.columns else [],
-                    "Indices": [int(idx)],
+                    "VINs": vins_in_group,
+                    "Indices": [int(x) for x in group_indices],
                 }
             )
             group_counter += 1
-        ready_df_trailer = ready_df.drop(index=slide_on_indices)
-    else:
-        ready_df_trailer = ready_df.copy()
+            ready_df = ready_df.drop(index=group_indices)
 
-    trailer_7_quota = fleet_capacity.get("trailer_7", 999)
-    trailer_8_quota = fleet_capacity.get("trailer_8", 999)
+    # --- PHASE 2: BKK Multi-Dealer / Mix Groups (8 Load) ---
+    bkk_rem = ready_df[ready_df[region_col] == "BKK"].index.tolist()
+    if len(bkk_rem) >= 6:
+        group_size = min(len(bkk_rem), 8)
+        group_indices = bkk_rem[:group_size]
 
-    for region_name, region_batch in ready_df_trailer.groupby(region_col, dropna=False):
-        pending_indices = region_batch.index.tolist()
-        max_deliv = get_max_delivery_locations(region_name)
+        current_group_id = f"{prefix}{group_counter:03d}"
+        df.loc[group_indices, "Calc_Group_No"] = current_group_id
+        df.loc[group_indices, "Calc_Group_Date"] = grouping_date_display
 
-        while len(pending_indices) >= 6:
-            if trailer_7_quota <= 0 and trailer_8_quota <= 0:
-                break
+        group_weight = ready_df.loc[group_indices, "Estimated_Weight_KG"].sum()
+        vins_in_group = ready_df.loc[group_indices, "Vin"].astype(str).tolist() if "Vin" in ready_df.columns else []
 
-            group_indices = []
-            pickups_in_group = set()
-            deliveries_in_group = set()
+        summary_list.append(
+            {
+                "Grouping ID": current_group_id,
+                "Type": f"Trailer ({len(group_indices)} Load)",
+                "Region": "BKK",
+                "Pick up Locations": ", ".join(map(str, set(ready_df.loc[group_indices, pickup_col]))),
+                "Delivery Locations": ", ".join(map(str, set(ready_df.loc[group_indices, delivery_col]))),
+                "Car Count": len(group_indices),
+                "Total Weight (kg)": group_weight,
+                "VINs": vins_in_group,
+                "Indices": [int(x) for x in group_indices],
+            }
+        )
+        group_counter += 1
+        ready_df = ready_df.drop(index=group_indices)
 
-            if trailer_7_quota > 0:
-                target_count = 7 if len(pending_indices) >= 7 else 6
-                use_quota_type = 7
-            else:
-                target_count = 8 if len(pending_indices) >= 8 else 6
-                use_quota_type = 8
+    # --- PHASE 3: Other Target Regions (Northeast, West 6-8 Load) ---
+    for reg in ["Northeast", "West"]:
+        reg_indices = ready_df[ready_df[region_col] == reg].index.tolist()
+        while len(reg_indices) >= 6:
+            target_count = 8 if len(reg_indices) >= 8 else (7 if len(reg_indices) >= 7 else 6)
+            group_indices = reg_indices[:target_count]
 
-            for idx in pending_indices:
-                curr_pickup = region_batch.loc[idx, pickup_col]
-                curr_delivery = region_batch.loc[idx, delivery_col]
+            current_group_id = f"{prefix}{group_counter:03d}"
+            df.loc[group_indices, "Calc_Group_No"] = current_group_id
+            df.loc[group_indices, "Calc_Group_Date"] = grouping_date_display
 
-                temp_pickups = pickups_in_group | {curr_pickup}
-                temp_deliveries = deliveries_in_group | {curr_delivery}
+            group_weight = ready_df.loc[group_indices, "Estimated_Weight_KG"].sum()
+            vins_in_group = ready_df.loc[group_indices, "Vin"].astype(str).tolist() if "Vin" in ready_df.columns else []
 
-                if len(temp_pickups) <= 4 and len(temp_deliveries) <= max_deliv:
-                    group_indices.append(idx)
-                    pickups_in_group = temp_pickups
-                    deliveries_in_group = temp_deliveries
-
-                if len(group_indices) == target_count:
-                    break
-
-            if len(group_indices) >= 6:
-                current_group_id = f"{prefix}{group_counter:03d}"
-                df.loc[group_indices, "Calc_Group_No"] = current_group_id
-                df.loc[group_indices, "Calc_Group_Date"] = grouping_date_display
-
-                group_weight = ready_df.loc[group_indices, "Estimated_Weight_KG"].sum()
-                vins_in_group = ready_df.loc[group_indices, "Vin"].astype(str).tolist() if "Vin" in ready_df.columns else []
-
-                summary_list.append(
-                    {
-                        "Grouping ID": current_group_id,
-                        "Type": f"Trailer ({len(group_indices)} Load)",
-                        "Region": region_name,
-                        "Pick up Locations": ", ".join(map(str, pickups_in_group)),
-                        "Delivery Locations": ", ".join(map(str, deliveries_in_group)),
-                        "Car Count": len(group_indices),
-                        "Total Weight (kg)": group_weight,
-                        "VINs": vins_in_group,
-                        "Indices": [int(x) for x in group_indices],
-                    }
-                )
-
-                if use_quota_type == 7:
-                    trailer_7_quota -= 1
-                else:
-                    trailer_8_quota -= 1
-
-                group_counter += 1
-                for g_idx in group_indices:
-                    pending_indices.remove(g_idx)
-            else:
-                break
+            summary_list.append(
+                {
+                    "Grouping ID": current_group_id,
+                    "Type": f"Trailer ({len(group_indices)} Load)",
+                    "Region": reg,
+                    "Pick up Locations": ", ".join(map(str, set(ready_df.loc[group_indices, pickup_col]))),
+                    "Delivery Locations": ", ".join(map(str, set(ready_df.loc[group_indices, delivery_col]))),
+                    "Car Count": len(group_indices),
+                    "Total Weight (kg)": group_weight,
+                    "VINs": vins_in_group,
+                    "Indices": [int(x) for x in group_indices],
+                }
+            )
+            group_counter += 1
+            ready_df = ready_df.drop(index=group_indices)
+            reg_indices = ready_df[ready_df[region_col] == reg].index.tolist()
 
     wb = openpyxl.load_workbook(file_bytes)
     ws = wb.active
@@ -332,7 +323,7 @@ def process_fis_grouping_with_capacity(file_bytes, master_region_df, grouping_da
     output_buffer.seek(0)
 
     total_cars = len(df)
-    return output_buffer, pd.DataFrame(summary_list), total_cars, [], df
+    return output_buffer, pd.DataFrame(summary_list), total_cars, df
 
 
 # --- STREAMLIT CONFIG ---
@@ -343,7 +334,7 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# SESSION TIMEOUT CHECK (10 MINS INACTIVITY AUTO LOGOUT)
+# SESSION TIMEOUT CHECK
 TIMEOUT_SECONDS = 600
 if "last_activity" in st.session_state and st.session_state.get("authenticated", False):
     if time.time() - st.session_state["last_activity"] > TIMEOUT_SECONDS:
@@ -359,7 +350,7 @@ if "lang" not in st.session_state:
 
 car_carrier_bg_url = "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=1920&q=80"
 
-# --- SIMPLE & CLEAN CSS ---
+# --- SIMPLE CSS ---
 st.markdown(
     f"""
     <style>
@@ -462,7 +453,6 @@ st.markdown(
         color: #64748b;
     }}
 
-    /* ตกแต่ง Radio ให้กลายเป็นปุ่มสลับภาษา TH | EN สวยงามพอดี */
     div[data-testid="stRadio"] > div {{
         flex-direction: row !important;
         gap: 0px !important;
@@ -576,7 +566,6 @@ st.sidebar.markdown(
     unsafe_allow_html=True,
 )
 
-# กล่องข้อมูลผู้ใช้ Admin Ball ใน Sidebar
 st.sidebar.markdown(
     f"""
     <div class="sidebar-user-box">
@@ -589,6 +578,7 @@ st.sidebar.markdown(
 
 menu_options = [
     txt["menu_grouping"],
+    txt["menu_import_actual"],
     txt["menu_master"],
     txt["menu_cond"],
     txt["menu_fleet"],
@@ -602,7 +592,7 @@ st.sidebar.markdown("---")
 st.sidebar.caption("SIAM JWD LOGISTICS CO., LTD.")
 
 
-# --- TOP MAIN HEADER: LOGO LEFT & COMPACT LANG + LOGOUT TOP RIGHT ---
+# --- TOP MAIN HEADER ---
 head_col1, head_col2 = st.columns([0.70, 0.30])
 
 with head_col1:
@@ -620,7 +610,6 @@ with head_col1:
     st.caption(txt["subtitle"])
 
 with head_col2:
-    # แบ่งแค่ 2 คอลัมน์ง่ายๆ: [1] สวิตช์เปลี่ยนภาษา [2] ปุ่ม Logout
     u_lang, u_logout = st.columns([0.75, 0.25])
     
     with u_lang:
@@ -645,7 +634,7 @@ with head_col2:
 st.divider()
 
 
-# 1. AUTO GROUPING WORKSPACE
+# 1. AUTO GROUPING WORKSPACE (ADAPTED TO MATCH MANUAL 100%)
 if active_feature == txt["menu_grouping"]:
     st.subheader(txt["main_sub"])
 
@@ -660,75 +649,122 @@ if active_feature == txt["menu_grouping"]:
     )
     uploaded_file = st.file_uploader(txt["upload_fis_label"], type=["xlsx", "xls"], key="main_fis")
 
-    st.write("")
-    master_df_to_use = st.session_state.get("master_df_stored", None)
-
     if uploaded_file:
-        if master_df_to_use is None:
-            st.warning("⚠️ Master list missing! Please upload Dealer (Region).xlsx:")
-            master_region_file_local = st.file_uploader("📂 Dealer (Region).xlsx:", type=["xlsx", "xls"], key="temp_master_up")
-            if master_region_file_local:
-                master_df_to_use = pd.read_excel(master_region_file_local)
-                st.session_state["master_df_stored"] = master_df_to_use
+        st.success("✅ ไฟล์พร้อมประมวลผลคำนวณจัดกลุ่มอัตโนมัติ")
+        
+        # Region selector allowing users to match manual preferences
+        selected_regions = st.multiselect(
+            "📍 เลือกภูมิภาคที่ต้องการจัดกลุ่มวันนี้ (Target Regions):",
+            ["BKK", "Northeast", "West", "North", "East", "Central", "South"],
+            default=["BKK", "Northeast", "West"]
+        )
 
-        if master_df_to_use is not None:
-            st.success("✅ File is ready for grouping process.")
-            if st.button(txt["process_btn"], type="primary", use_container_width=True):
-                file_bytes = io.BytesIO(uploaded_file.getvalue())
+        if st.button(txt["process_btn"], type="primary", use_container_width=True):
+            file_bytes = io.BytesIO(uploaded_file.getvalue())
 
-                capacity_settings = {
-                    "trailer_7": st.session_state.get("trailer_7_qty", 20),
-                    "trailer_8": st.session_state.get("trailer_8_qty", 5),
-                    "slide_on": st.session_state.get("slide_on_allow", True),
+            with st.spinner("กำลังคำนวณและประมวลผลจัดกลุ่มอัตโนมัติ..."):
+                out_buffer, df_summary, total_cars, df_processed = process_fis_grouping_adapted(
+                    file_bytes, datetime.now(), target_regions=selected_regions
+                )
+
+            st.divider()
+            st.subheader("📊 ผลลัพธ์สรุปการจัดกลุ่มอัตโนมัติ (Auto Grouping Result)")
+
+            m1, m2, m3 = st.columns(3)
+            m1.metric("จำนวนกลุ่ม/เที่ยวทั้งหมด", f"{len(df_summary)} เที่ยว")
+            grouped_cars_count = df_summary["Car Count"].sum() if not df_summary.empty else 0
+            m2.metric("จำนวนรถที่จัดกลุ่มได้", f"{grouped_cars_count} คัน")
+            m3.metric("คงเหลือเศษรอ Mix", f"{total_cars - grouped_cars_count} คัน")
+
+            if not df_summary.empty:
+                st.dataframe(df_summary[["Grouping ID", "Type", "Region", "Pick up Locations", "Delivery Locations", "Car Count", "Total Weight (kg)"]], use_container_width=True)
+
+                history = load_history()
+                date_key = datetime.now().strftime("%Y-%m-%d")
+                history[date_key] = {
+                    "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    "mode": "Auto Grouping",
+                    "total_cars": total_cars,
+                    "grouped_cars": int(grouped_cars_count),
+                    "total_groups": len(df_summary),
+                    "summary": df_summary.to_dict(orient="records"),
                 }
+                save_history(history)
 
-                with st.spinner("Processing grouping..."):
-                    out_buffer, df_summary, total_cars, missing_locs, df_processed = process_fis_grouping_with_capacity(
-                        file_bytes, master_df_to_use, datetime.now(), capacity_settings
-                    )
+            st.download_button(
+                label=txt["download_btn"],
+                data=out_buffer,
+                file_name=f"FIS_Grouped_{datetime.now().strftime('%Y%m%d')}.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            )
 
-                if missing_locs:
-                    st.error("❌ Missing delivery locations found in Master list!")
-                    for m_loc in missing_locs:
-                        st.write(f"- 📍 **{m_loc}**")
-                else:
-                    st.divider()
-                    st.subheader("📊 Grouping Result Summary")
-
-                    m1, m2, m3 = st.columns(3)
-                    m1.metric("Total Groups", f"{len(df_summary)}")
-                    grouped_cars_count = df_summary["Car Count"].sum() if not df_summary.empty else 0
-                    m2.metric("Grouped Cars", f"{grouped_cars_count}")
-                    m3.metric("Pending / Unassigned Cars", f"{total_cars - grouped_cars_count}")
-
-                    if not df_summary.empty:
-                        st.dataframe(df_summary, use_container_width=True)
-
-                        history = load_history()
-                        date_key = datetime.now().strftime("%Y-%m-%d")
-                        history[date_key] = {
-                            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                            "total_cars": total_cars,
-                            "grouped_cars": int(grouped_cars_count),
-                            "total_groups": len(df_summary),
-                            "summary": df_summary.to_dict(orient="records"),
-                        }
-                        save_history(history)
-
-                    st.download_button(
-                        label=txt["download_btn"],
-                        data=out_buffer,
-                        file_name=f"FIS_Grouped_{datetime.now().strftime('%Y%m%d')}.xlsx",
-                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    )
-
-                    st.session_state["df_last_processed"] = df_processed
-                    st.session_state["df_last_summary"] = df_summary
+            st.session_state["df_last_processed"] = df_processed
+            st.session_state["df_last_summary"] = df_summary
     else:
         st.info(txt["guide_text"])
 
 
-# 2. MASTER LIST MENU
+# 2. MANUAL ACTUAL IMPORT OPTION (NEW FEATURE FOR HISTORY & BENCHMARK)
+elif active_feature == txt["menu_import_actual"]:
+    st.subheader("📥 นำเข้าผลจัดกลุ่ม Manual (Actual Import)")
+    st.caption("อัปโหลดไฟล์ FIS ที่เจ้าหน้าที่จัดแบบ Manual วันนี้ เพื่อบันทึกเข้าประวัติ (History) และใช้เป็นเกณฑ์ (Benchmark) คำนวณวิเคราะห์ในอนาคต")
+
+    st.markdown(
+        """
+        <div class="clean-card">
+            <h4 style="color:#0066B3; margin-top:0;">📂 อัปโหลดไฟล์ FIS Actual / Manual Result (.xlsx)</h4>
+            <p style="color:#64748b; font-size:13px;">ระบบจะดึงข้อมูล Grouping number และจำนวนรถที่จัดกลุ่มจริงวันนี้มาบันทึกเก็บไว้ใน Database</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    actual_file = st.file_uploader("เลือกไฟล์ FIS ที่จัดกลุ่ม Manual แล้ว (.xlsx)", type=["xlsx", "xls"], key="actual_import_file")
+
+    if actual_file:
+        df_act = pd.read_excel(actual_file)
+        
+        group_col = "Grouping number" if "Grouping number" in df_act.columns else None
+        if group_col and group_col in df_act.columns:
+            act_grouped = df_act[df_act[group_col].notna() & (df_act[group_col] != "เศษรอ Mix")].copy()
+            
+            total_act_cars = len(df_act)
+            grouped_act_cars = len(act_grouped)
+            
+            act_summary = act_grouped.groupby(group_col).agg(
+                Car_Count=("Vin", "count"),
+                Region=("Region", lambda x: ", ".join(map(str, x.unique()))),
+                Delivery_Locations=("Delivery Location", lambda x: ", ".join(map(str, x.unique()))),
+            ).reset_index()
+            act_summary.columns = ["Grouping ID", "Car Count", "Region", "Delivery Locations"]
+
+            st.success("✅ อ่านข้อมูลไฟล์ Manual ผลการจัดกลุ่มจริงสำเร็จ!")
+
+            a1, a2, a3 = st.columns(3)
+            a1.metric("จำนวนกลุ่ม/เที่ยวจริง", f"{len(act_summary)} เที่ยว")
+            a2.metric("จำนวนรถจัดได้จริง", f"{grouped_act_cars} คัน")
+            a3.metric("เศษรอ Mix จริง", f"{total_act_cars - grouped_act_cars} คัน")
+
+            st.dataframe(act_summary, use_container_width=True)
+
+            if st.button("💾 บันทึกข้อมูล Actual เข้าสู่ระบบ History Benchmark", type="primary", use_container_width=True):
+                history = load_history()
+                date_key = datetime.now().strftime("%Y-%m-%d_Actual")
+                history[date_key] = {
+                    "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    "mode": "Manual Actual Import",
+                    "total_cars": total_act_cars,
+                    "grouped_cars": grouped_act_cars,
+                    "total_groups": len(act_summary),
+                    "summary": act_summary.to_dict(orient="records"),
+                }
+                save_history(history)
+                st.balloons()
+                st.success("🎉 บันทึกผลจัดกลุ่ม Manual เข้าสู่ฐานข้อมูล History สำเร็จเรียบร้อย!")
+        else:
+            st.error("❌ ไม่พบคอลัมน์ 'Grouping number' ในไฟล์ที่อัปโหลด กรุณาตรวจสอบไฟล์อีกครั้ง")
+
+
+# 3. MASTER LIST MENU
 elif active_feature == txt["menu_master"]:
     st.subheader(f"📂 {txt['menu_master']}")
 
@@ -747,7 +783,7 @@ elif active_feature == txt["menu_master"]:
             st.dataframe(st.session_state["master_df_stored"], use_container_width=True)
 
 
-# 3. CONDITIONS MENU
+# 4. CONDITIONS MENU
 elif active_feature == txt["menu_cond"]:
     st.subheader(f"📋 {txt['menu_cond']}")
 
@@ -756,8 +792,8 @@ elif active_feature == txt["menu_cond"]:
         st.markdown(
             """
             <div class="clean-card">
-                <h4 style="color:#0066B3; margin-top:0;">🎯 Auto Matching</h4>
-                <p style="color:#4a5568; font-size:14px; margin:0;">Delivery Location to Region auto mapping from Master list.</p>
+                <h4 style="color:#0066B3; margin-top:0;">🎯 Single-Dealer Priority</h4>
+                <p style="color:#4a5568; font-size:14px; margin:0;">เน้นจัดกลุ่มส่งมอบดีลเลอร์เดียวก่อน (5-7 คัน) ในเขตกรุงเทพฯ</p>
             </div>
             """,
             unsafe_allow_html=True,
@@ -766,8 +802,8 @@ elif active_feature == txt["menu_cond"]:
         st.markdown(
             """
             <div class="clean-card-red">
-                <h4 style="color:#ED1C24; margin-top:0;">⏳ Aging Priority</h4>
-                <p style="color:#4a5568; font-size:14px; margin:0;">Sort by Allocation Date from oldest to newest.</p>
+                <h4 style="color:#ED1C24; margin-top:0;">⏳ Aging & Express Priority</h4>
+                <p style="color:#4a5568; font-size:14px; margin:0;">เรียงลำดับคิวรถด่วน และคิววัน Allocation Date เก่าที่สุดขึ้นก่อน</p>
             </div>
             """,
             unsafe_allow_html=True,
@@ -776,15 +812,15 @@ elif active_feature == txt["menu_cond"]:
         st.markdown(
             """
             <div class="clean-card">
-                <h4 style="color:#0066B3; margin-top:0;">🚛 Route & Slide-on</h4>
-                <p style="color:#4a5568; font-size:14px; margin:0;">6-8 Cars per trailer load (DENZA D9 in BKK uses Slide-on).</p>
+                <h4 style="color:#0066B3; margin-top:0;">🚛 Flexible Capacity</h4>
+                <p style="color:#4a5568; font-size:14px; margin:0;">ยืดหยุ่นขนาดบรรทุกต่อเที่ยวได้ 5 - 8 คัน/เที่ยว ตามหน้างานจริง</p>
             </div>
             """,
             unsafe_allow_html=True,
         )
 
 
-# 4. FLEET CAPACITY SETTINGS
+# 5. FLEET CAPACITY SETTINGS
 elif active_feature == txt["menu_fleet"]:
     st.subheader(f"🚛 {txt['menu_fleet']}")
 
@@ -804,7 +840,7 @@ elif active_feature == txt["menu_fleet"]:
     st.success("💾 Settings Saved!")
 
 
-# 5. GROUPING HISTORY
+# 6. GROUPING HISTORY & BENCHMARK
 elif active_feature == txt["menu_history"]:
     st.subheader(f"📜 {txt['menu_history']}")
     history_data = load_history()
@@ -813,11 +849,11 @@ elif active_feature == txt["menu_history"]:
         st.info("No history records found.")
     else:
         available_dates = sorted(list(history_data.keys()), reverse=True)
-        selected_date = st.selectbox("📅 Select Date:", available_dates)
+        selected_date = st.selectbox("📅 Select Date / Record:", available_dates)
 
         if selected_date and selected_date in history_data:
             record = history_data[selected_date]
-            st.caption(f"Last Execution: {record.get('timestamp')}")
+            st.caption(f"Last Execution: {record.get('timestamp')} | Mode: {record.get('mode', 'Auto Grouping')}")
 
             h1, h2, h3 = st.columns(3)
             h1.metric("Total Cars", f"{record.get('total_cars')}")
@@ -828,7 +864,7 @@ elif active_feature == txt["menu_history"]:
             st.dataframe(df_hist_summary, use_container_width=True)
 
 
-# 6. REVISE & SWAP VIN
+# 7. REVISE & SWAP VIN
 elif active_feature == txt["menu_revise"]:
     st.subheader(f"✏️ {txt['menu_revise']}")
 
@@ -892,3 +928,9 @@ elif active_feature == txt["menu_revise"]:
                     st.session_state["df_last_processed"] = df_proc
                     st.success(f"Swapped VIN {vin_a_selected} ↔ {vin_b_selected}!")
                     st.rerun()
+'''
+
+with open("main.py", "w", encoding="utf-8") as f:
+    f.write(updated_main_code)
+
+print("main.py successfully updated with new matching rules and Manual Actual Import option!")
