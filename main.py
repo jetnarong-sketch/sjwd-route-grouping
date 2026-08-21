@@ -48,7 +48,7 @@ T = {
         "upload_fis_title": "📁 อัปโหลดไฟล์ FIS Ready to Grouping (.xlsx)",
         "upload_fis_desc": "อัปโหลดไฟล์รายการคิวรถที่ต้องการนำมาจัดกลุ่มส่งมอบ",
         "upload_fis_label": "📁 เลือกไฟล์ FIS Ready to Grouping (.xlsx)",
-        "process_btn": "🚀 เริ่มคำวณจัดกลุ่มอัตโนมัติ (Process Grouping)",
+        "process_btn": "🚀 เริ่มคำนวณจัดกลุ่มอัตโนมัติ (Process Grouping)",
         "download_btn": "📥 ดาวน์โหลดผลลัพธ์จัดกลุ่ม (.xlsx)",
         "guide_text": "💡 คำแนะนำ: กรุณาเลือกไฟล์ Grouping order (FIS Ready to Grouping) ด้านบนเพื่อกดปุ่มประมวลผล",
     },
@@ -107,11 +107,11 @@ DEALER_REGION_MAP = {
 HISTORY_FILE = "grouping_history.json"
 
 def normalize_key(text):
+    """ทำความสะอาดข้อความ ลบขีด ช่องว่าง ปรับพิมพ์ใหญ่ทั้งหมด"""
     if pd.isna(text) or text is None:
         return ""
     text_str = str(text).strip().upper()
-    cleaned = re.sub(r'[^A-Z0-9]', '', text_str)
-    return cleaned
+    return re.sub(r'[^A-Z0-9]', '', text_str)
 
 def load_history():
     if os.path.exists(HISTORY_FILE):
@@ -601,13 +601,13 @@ elif active_feature == txt["menu_grouping"]:
                     st.balloons()
                     st.success("🎉 บันทึกสำเร็จ!")
 
-# --- 6. REVISE & SEARCH MODULE (DUAL-SOURCE FALLBACK MATCHING) ---
+# --- 6. REVISE & SEARCH MODULE (AUTOSUGGEST SEARCH) ---
 elif active_feature == txt["menu_revise"]:
     st.subheader("✏️ แก้ไขและยกเลิกกลุ่ม (Revise Grouping Number)")
 
     history_data = load_history()
 
-    # ดึงรายการ Grouping ID ทั้งหมดที่มีจากทั้ง summary และ full_details
+    # ดึงรายการ Grouping ID ทั้งหมดในระบบ
     all_groups_pool = set()
     for hkey, hrec in history_data.items():
         if "summary" in hrec and hrec["summary"]:
@@ -635,22 +635,24 @@ elif active_feature == txt["menu_revise"]:
         unsafe_allow_html=True,
     )
 
-    if "search_group_id" not in st.session_state:
-        st.session_state["search_group_id"] = ""
-
-    # Dropdown Auto-Complete + Text Input
-    col_input, col_clear = st.columns([0.80, 0.20])
-    with col_input:
-        selected_option = st.selectbox("🔎 พิมพ์หรือเลือก Group number:", options=[""] + sorted_groups, index=0, placeholder="กรอก Group number ที่ต้องการค้นหา...", label_visibility="collapsed")
+    col_search, col_clear = st.columns([0.85, 0.15])
+    with col_search:
+        # st.selectbox พร้อมพิมพ์เสนอตัวเลือกอัตโนมัติ (Searchable Dropdown)
+        selected_option = st.selectbox(
+            "🔎 ค้นหา Grouping Number:",
+            options=[""] + sorted_groups,
+            index=0,
+            placeholder="กรอก Group number ที่ต้องการค้นหา...",
+            label_visibility="collapsed"
+        )
     with col_clear:
         if st.button("❌ ล้างค่า", use_container_width=True):
-            st.session_state["search_group_id"] = ""
             st.rerun()
 
-    target_group_id = selected_option.strip() if selected_option else st.session_state["search_group_id"].strip()
+    target_group_id = selected_option.strip() if selected_option else ""
 
     if not target_group_id:
-        st.info("💡 กรอก หรือ เลือก Group number ด้านบน เพื่อเริ่มแก้ไขหรือยกเลิกคิวรถในกลุ่ม")
+        st.info("💡 พิมพ์หรือเลือก Group number ด้านบน เพื่อเริ่มแก้ไขหรือยกเลิกคิวรถในกลุ่ม")
     else:
         st.divider()
         st.markdown(f"### **📋 ผลการค้นหาสำหรับ Grouping ID: `{target_group_id}`**")
@@ -670,7 +672,7 @@ elif active_feature == txt["menu_revise"]:
                             matched_records.append((hkey, hrec, df_temp, gcol_t, mask))
                             break
 
-        # 2. Fallback: ถ้ายังไม่พบ ให้ค้นหาจาก summary
+        # 2. ค้นหาจาก summary
         if not matched_records:
             for hkey, hrec in history_data.items():
                 if "summary" in hrec and hrec["summary"]:
@@ -684,7 +686,7 @@ elif active_feature == txt["menu_revise"]:
                                 break
 
         if not matched_records:
-            st.error(f"❌ ไม่พบข้อมูลสำหรับ Grouping Number: `{target_group_id}` ในระบบ กรุณาตรวจสอบอีกครั้ง")
+            st.error(f"❌ ไม่พบข้อมูลสำหรับ Grouping Number: `{target_group_id}` ในระบบ")
         else:
             hkey, hrec, df_matched, gcol, mask_match = matched_records[0]
             group_vins_df = df_matched[mask_match].copy()
@@ -715,7 +717,7 @@ elif active_feature == txt["menu_revise"]:
                         save_history(history_data)
 
                     st.balloons()
-                    st.success(f"🎉 ยกเลิกกลุ่ม {target_group_id} เรียบร้อยแล้ว! ตัวเลขในระบบอัปเดตทันที")
+                    st.success(f"🎉 ยกเลิกกลุ่ม {target_group_id} เรียบร้อยแล้ว! ตัวเลขอัปเดตทันที")
                     time.sleep(1)
                     st.rerun()
 
