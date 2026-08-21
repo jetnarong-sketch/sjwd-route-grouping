@@ -303,46 +303,68 @@ st.set_page_config(
     layout="wide",
 )
 
+# LOGIN BACKGROUND IMAGE & ENHANCED CORPORATE STYLES
+login_bg_url = "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1920&q=80"
+
 st.markdown(
-    """
+    f"""
     <style>
-    /* ซ่อน Anchor Links และ Header/Footer ส่วนเกิน */
-    .css-1544g2n, .e1ewe6wb4, [data-testid="stHeader"], footer {
+    /* ซ่อน Anchor Links และ Header/Footer */
+    .css-1544g2n, .e1ewe6wb4, [data-testid="stHeader"], footer {{
         visibility: hidden !important;
         height: 0px !important;
-    }
-    a.anchor-link {
+    }}
+    a.anchor-link {{
         display: none !important;
-    }
+    }}
     
-    /* แถบข้าง Sidebar สีน้ำเงินเข้มองค์กร */
-    [data-testid="stSidebar"] {
+    /* สไตล์หน้า Login พร้อมภาพพื้นหลัง Car Carrier */
+    .login-bg {{
+        background: linear-gradient(rgba(11, 37, 69, 0.82), rgba(11, 37, 69, 0.88)), url('{login_bg_url}');
+        background-size: cover;
+        background-position: center;
+        padding: 40px 20px;
+        border-radius: 16px;
+        color: white;
+        margin-bottom: 25px;
+    }}
+    
+    .login-card {{
+        background-color: #ffffff;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        border: 1px solid #cbd5e1;
+    }}
+    
+    /* Sidebar สีกรมองค์กร */
+    [data-testid="stSidebar"] {{
         background-color: #0b2545 !important;
-    }
+    }}
     [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3, 
-    [data-testid="stSidebar"] p, [data-testid="stSidebar"] span, [data-testid="stSidebar"] label {
+    [data-testid="stSidebar"] p, [data-testid="stSidebar"] span, [data-testid="stSidebar"] label {{
         color: #ffffff !important;
-    }
+    }}
     
-    /* กล่อง File Uploader อ่านง่าย */
-    [data-testid="stFileUploader"] {
+    /* กล่อง File Uploader */
+    [data-testid="stFileUploader"] {{
         background-color: #f8f9fa !important;
         border-radius: 10px !important;
         padding: 10px !important;
         border: 1px solid #cbd5e1 !important;
-    }
-    [data-testid="stFileUploader"] * {
+    }}
+    [data-testid="stFileUploader"] * {{
         color: #1a202c !important;
-    }
-    [data-testid="stFileUploader"] button {
+    }}
+    [data-testid="stFileUploader"] button {{
         background-color: #0066B3 !important;
         color: #ffffff !important;
         border-radius: 6px !important;
         border: none !important;
-    }
+    }}
     
     /* ปุ่มสีแดงประจำองค์กร */
-    div.stButton > button:first-child {
+    div.stButton > button:first-child {{
         background-color: #ED1C24 !important;
         color: white !important;
         font-weight: bold !important;
@@ -350,34 +372,25 @@ st.markdown(
         border: none !important;
         padding: 10px 24px !important;
         box-shadow: 0px 4px 10px rgba(237, 28, 36, 0.3) !important;
-    }
+    }}
     
     /* การ์ดสไตล์องค์กร */
-    .clean-card {
+    .clean-card {{
         background-color: #ffffff;
         border-left: 5px solid #0066B3;
         border-radius: 8px;
         padding: 18px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.06);
         margin-bottom: 15px;
-    }
-    .clean-card-red {
+    }}
+    .clean-card-red {{
         background-color: #ffffff;
         border-left: 5px solid #ED1C24;
         border-radius: 8px;
         padding: 18px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.06);
         margin-bottom: 15px;
-    }
-    
-    /* การ์ดต้อนรับ Login */
-    .login-box {
-        background: #ffffff;
-        padding: 30px;
-        border-radius: 12px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-        border: 1px solid #e2e8f0;
-    }
+    }}
     </style>
     """,
     unsafe_allow_html=True,
@@ -389,15 +402,16 @@ if "authenticated" not in st.session_state:
     st.session_state["user_info"] = None
 
 if not st.session_state["authenticated"]:
-    st.write("")
     st.markdown(
         """
-        <div style="text-align:center; padding: 10px 0 10px 0;">
-            <span style="color:#ED1C24; font-size:52px; font-weight:900; font-family:sans-serif;">SIAM </span>
-            <span style="color:#0066B3; font-size:52px; font-weight:900; font-family:sans-serif;">JWD</span><br>
-            <span style="color:#64748b; font-size:13px; letter-spacing:6px; font-weight:bold;">LOGISTICS</span>
-            <h2 style="color:#0b2545; margin-top:15px; font-weight:800;">🚛 Car Carrier Transport Optimization System</h2>
-            <p style="color:#64748b; font-size:15px;">ระบบวางแผนจัดกลุ่มรถขนส่งสินค้าอัตโนมัติสำหรับฟลีตขนส่งรถยนต์</p>
+        <div class="login-bg">
+            <div style="text-align:center;">
+                <span style="color:#ED1C24; font-size:52px; font-weight:900;">SIAM </span>
+                <span style="color:#ffffff; font-size:52px; font-weight:900;">JWD</span><br>
+                <span style="color:#cbd5e1; font-size:13px; letter-spacing:6px; font-weight:bold;">LOGISTICS</span>
+                <h2 style="color:#ffffff; margin-top:15px; font-weight:800;">🚛 Car Carrier Transport Optimization System</h2>
+                <p style="color:#e2e8f0; font-size:15px; margin-bottom:0;">ระบบคำนวณและวางแผนจัดกลุ่มรถขนส่งสินค้าอัตโนมัติสำหรับฟลีตขนส่งรถยนต์</p>
+            </div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -405,7 +419,7 @@ if not st.session_state["authenticated"]:
     
     col_l1, col_l2, col_l3 = st.columns([0.8, 1.4, 0.8])
     with col_l2:
-        st.markdown('<div class="login-box">', unsafe_allow_html=True)
+        st.markdown('<div class="login-card">', unsafe_allow_html=True)
         st.markdown("##### **🔓 เข้าสู่ระบบ (System Login)**")
         st.caption("กรุณากรอก Username และ Password เพื่อเข้าใช้งานระบบตามสิทธิ์")
         
@@ -431,8 +445,8 @@ if not st.session_state["authenticated"]:
         st.markdown("---")
         st.markdown(
             """
-            <div style="font-size:12px; color:#64748b; text-align:center;">
-                🚛 <b>Car Carrier Fleet Capabilities:</b> Support 6-8 Load Trailer Quota, DENZA D9 BKK Slide-on, Region Mapping & Aging Priority Rules
+            <div style="font-size:13px; color:#64748b; text-align:center; font-weight:bold;">
+                SIAM JWD LOGISTICS CO., LTD.
             </div>
             """,
             unsafe_allow_html=True,
