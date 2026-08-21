@@ -1,7 +1,8 @@
-# Update main.py to move the language switch widget to the TOP RIGHT corner of the page (above the banner), compact size.
-# Replace emoji flags with tiny HTML img badges if needed, or simple clean options "TH" / "ENG" with small inline flags via CSS/HTML to avoid text artifacts.
+# Generate updated main.py where Top Header contains:
+# Left side: SIAM JWD LOGISTICS Header
+# Right side: Language Switcher + User Info Card (Name, Role, Logout button) matching image 2 layout perfectly.
 
-updated_code = '''from datetime import datetime, date
+updated_main = '''from datetime import datetime, date
 import io
 import os
 import json
@@ -41,7 +42,7 @@ T = {
         "login_err": "❌ Username หรือ Password ไม่ถูกต้อง!",
         "user_label": "ผู้ใช้งาน",
         "role_label": "สิทธิ์ระบบ",
-        "logout_btn": "🔒 ออกจากระบบ (Logout)",
+        "logout_btn": "Logout",
         "select_menu": "เลือกหัวข้อทำงาน:",
         "menu_grouping": "🚀 วางแผนจัดกลุ่ม (Auto Grouping)",
         "menu_master": "📂 Master list",
@@ -68,7 +69,7 @@ T = {
         "login_err": "❌ Invalid Username or Password!",
         "user_label": "User",
         "role_label": "System Role",
-        "logout_btn": "🔒 Logout",
+        "logout_btn": "Logout",
         "select_menu": "Select Module:",
         "menu_grouping": "🚀 Auto Grouping Workspace",
         "menu_master": "📂 Master List Management",
@@ -355,8 +356,8 @@ st.markdown(
     .block-container {{
         padding-top: 0.5rem !important;
         padding-bottom: 1rem !important;
-        padding-left: 2rem !important;
-        padding-right: 2rem !important;
+        padding-left: 1.5rem !important;
+        padding-right: 1.5rem !important;
         max-width: 100% !important;
     }}
     
@@ -429,19 +430,33 @@ st.markdown(
         margin-bottom: 10px;
     }}
     
-    /* สไตล์สำหรับกล่องเลือกภาษาขนาดจิ๋วมุมขวาบนสุด */
-    .compact-lang-box {{
+    /* สไตล์การ์ดผู้ใช้งานมุมขวาบนตรงตามตัวอย่างระบบ SIAM JWD */
+    .user-profile-box {{
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        padding: 6px 12px;
         display: flex;
-        justify-content: flex-end;
         align-items: center;
-        margin-bottom: 4px;
+        justify-content: space-between;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.04);
     }}
-    .flag-badge {{
-        width: 16px;
-        height: 11px;
-        margin-left: 3px;
-        vertical-align: middle;
-        border-radius: 2px;
+    
+    .user-name-text {{
+        font-weight: 800;
+        font-size: 13px;
+        color: #0b2545;
+        line-height: 1.1;
+    }}
+    
+    .user-role-text {{
+        font-size: 11px;
+        color: #64748b;
+    }}
+    
+    .lang-btn-box [data-testid="stMarkdownContainer"] p {{
+        font-size: 12px;
+        font-weight: bold;
     }}
     </style>
     """,
@@ -454,14 +469,14 @@ if "authenticated" not in st.session_state:
     st.session_state["user_info"] = None
 
 if not st.session_state["authenticated"]:
-    # 1. COMPACT LANGUAGE SWITCHER AT TOP RIGHT ABOVE BANNER
-    top_col1, top_col2 = st.columns([0.82, 0.18])
+    # TOP RIGHT LANGUAGE SELECTOR FOR LOGIN PAGE
+    top_col1, top_col2 = st.columns([0.80, 0.20])
     with top_col2:
         selected_lang_choice = st.radio(
             "Lang",
-            ["TH", "ENG"],
+            ["TH 🇹🇭", "ENG 🇬🇧"],
             horizontal=True,
-            key="top_right_compact_lang",
+            key="top_right_login_lang",
             label_visibility="collapsed",
         )
         clean_choice = "TH" if "TH" in selected_lang_choice else "ENG"
@@ -521,42 +536,20 @@ if not st.session_state["authenticated"]:
         )
     st.stop()
 
-# --- SIDEBAR BRANDING & AUTH USER INFO ---
+# --- SIDEBAR BRANDING & MENU ---
 st.sidebar.markdown(
     """
-    <div style="text-align:center; padding: 5px 0px 5px 0px;">
-        <span style="color:#ED1C24; font-size:24px; font-weight:900;">SIAM </span>
-        <span style="color:#ffffff; font-size:24px; font-weight:900;">JWD</span><br>
+    <div style="text-align:center; padding: 10px 0px 15px 0px;">
+        <span style="color:#ED1C24; font-size:26px; font-weight:900;">SIAM </span>
+        <span style="color:#ffffff; font-size:26px; font-weight:900;">JWD</span><br>
         <span style="color:#8da9c4; font-size:11px; letter-spacing:4px; font-weight:bold;">LOGISTICS</span>
     </div>
     """,
     unsafe_allow_html=True,
 )
 
-sb_lang_choice = st.sidebar.radio("🌐 Language", ["TH", "ENG"], horizontal=True, key="sb_lang_toggle")
-clean_sb_lang = "TH" if "TH" in sb_lang_choice else "ENG"
-if clean_sb_lang != st.session_state["lang"]:
-    st.session_state["lang"] = clean_sb_lang
-    st.rerun()
-
 txt = T[st.session_state["lang"]]
-
 current_user = st.session_state["user_info"]
-st.sidebar.markdown(f"👤 **{txt['user_label']}:** {current_user['name']}")
-
-role_icons = {
-    "Admin": "👑 Admin",
-    "Project Manager": "👔 Project Manager",
-    "Operator": "👷 Operator",
-}
-st.sidebar.markdown(f"🛡️ **{txt['role_label']}:** `{role_icons.get(current_user['role'], current_user['role'])}`")
-
-if st.sidebar.button(txt["logout_btn"], use_container_width=True):
-    st.session_state["authenticated"] = False
-    st.session_state["user_info"] = None
-    st.rerun()
-
-st.sidebar.divider()
 
 menu_options = [
     txt["menu_grouping"],
@@ -573,20 +566,60 @@ st.sidebar.divider()
 st.sidebar.caption("SIAM JWD LOGISTICS CO., LTD.")
 
 
-# --- MAIN PANEL HEADER ---
-st.markdown(
-    """
-    <div style="padding-bottom: 5px;">
-        <span style="color:#ED1C24; font-size:38px; font-weight:900;">SIAM </span>
-        <span style="color:#0066B3; font-size:38px; font-weight:900;">JWD </span>
-        <span style="color:#1d3557; font-size:26px; font-weight:700;">LOGISTICS</span>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
+# --- TOP MAIN HEADER: LOGO LEFT & USER + LANG TOP RIGHT ---
+head_col1, head_col2 = st.columns([0.60, 0.40])
 
-st.markdown(f"### **{txt['title']}**")
-st.caption(txt["subtitle"])
+with head_col1:
+    st.markdown(
+        """
+        <div style="padding-top: 5px;">
+            <span style="color:#ED1C24; font-size:36px; font-weight:900;">SIAM </span>
+            <span style="color:#0066B3; font-size:36px; font-weight:900;">JWD </span>
+            <span style="color:#1d3557; font-size:24px; font-weight:700;">LOGISTICS</span>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    st.markdown(f"#### **{txt['title']}**")
+    st.caption(txt["subtitle"])
+
+with head_col2:
+    # Top Right Controls: Language Selector + User Profile Card & Logout Button
+    u_col1, u_col2, u_col3 = st.columns([0.42, 0.43, 0.15])
+    
+    with u_col1:
+        top_lang = st.radio(
+            "LangToggle",
+            ["TH 🇹🇭", "ENG 🇬🇧"],
+            horizontal=True,
+            key="top_main_lang_toggle",
+            label_visibility="collapsed",
+        )
+        clean_top_lang = "TH" if "TH" in top_lang else "ENG"
+        if clean_top_lang != st.session_state["lang"]:
+            st.session_state["lang"] = clean_top_lang
+            st.rerun()
+
+    with u_col2:
+        role_label = current_user["role"]
+        st.markdown(
+            f"""
+            <div class="user-profile-box">
+                <div>
+                    <div class="user-name-text">{current_user['name']}</div>
+                    <div class="user-role-text">{role_label}</div>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    with u_col3:
+        if st.button("🚪", help="Logout / ออกจากระบบ", use_container_width=True):
+            st.session_state["authenticated"] = False
+            st.session_state["user_info"] = None
+            st.rerun()
+
 st.divider()
 
 
@@ -840,6 +873,6 @@ elif active_feature == txt["menu_revise"]:
 '''
 
 with open("main.py", "w", encoding="utf-8") as f:
-    f.write(updated_code)
+    f.write(updated_main)
 
-print("Updated main.py with top-right language switch successfully!")
+print("Successfully generated main.py matching image 2 UI layout!")
