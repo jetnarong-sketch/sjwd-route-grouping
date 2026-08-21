@@ -1,4 +1,6 @@
-# Update main.py to fix sidebar collapse toggle button, hover styles, and sidebar styling matching image 2.
+# Generate updated main.py with:
+# 1. Clean Single Language in Sidebar Menu items based on active language (TH or ENG)
+# 2. Flag Image badges for TH/ENG language selector on both Login Page & Main Dashboard (avoiding browser emoji artifacts)
 
 updated_main = '''from datetime import datetime, date
 import io
@@ -27,7 +29,7 @@ USER_DB = {
     },
 }
 
-# --- TRANSLATION DICTIONARY (TH / ENG) ---
+# --- TRANSLATION DICTIONARY (SINGLE LANGUAGE PER VERSION) ---
 T = {
     "TH": {
         "title": "Car Carrier Transport Optimization System",
@@ -42,18 +44,18 @@ T = {
         "role_label": "สิทธิ์ระบบ",
         "logout_btn": "Logout",
         "select_menu": "เลือกหัวข้อทำงาน:",
-        "menu_grouping": "🚀 วางแผนจัดกลุ่ม (Auto Grouping)",
-        "menu_master": "📂 Master list",
-        "menu_cond": "📋 Conditions (เงื่อนไขการจัดกลุ่ม)",
-        "menu_fleet": "🚛 Fleet Capacity Settings",
-        "menu_history": "📜 ประวัติการจัดกลุ่มย้อนหลัง",
-        "menu_revise": "✏️ Revise & Swap VIN",
+        "menu_grouping": "🚀 วางแผนจัดกลุ่ม",
+        "menu_master": "📂 ข้อมูลมาสเตอร์",
+        "menu_cond": "📋 เงื่อนไขการจัดกลุ่ม",
+        "menu_fleet": "🚛 ตั้งค่าโควตากองรถ",
+        "menu_history": "📜 ประวัติจัดกลุ่มย้อนหลัง",
+        "menu_revise": "✏️ แก้ไขและสลับคันรถ",
         "main_sub": "🚀 วางแผนและประมวลผลจัดกลุ่มอัตโนมัติ (Main Workspace)",
-        "upload_fis_title": "📁 Upload FIS Ready to Grouping (.xlsx)",
+        "upload_fis_title": "📁 อัปโหลดไฟล์ FIS Ready to Grouping (.xlsx)",
         "upload_fis_desc": "อัปโหลดไฟล์รายการคิวรถที่ต้องการนำมาจัดกลุ่มส่งมอบ",
         "upload_fis_label": "📁 เลือกไฟล์ FIS Ready to Grouping (.xlsx)",
         "process_btn": "🚀 เริ่มคำนวณจัดกลุ่มอัตโนมัติ (Process Grouping)",
-        "download_btn": "📥 Download Result grouping (.xlsx)",
+        "download_btn": "📥 ดาวน์โหลดผลลัพธ์จัดกลุ่ม (.xlsx)",
         "guide_text": "💡 คำแนะนำ: กรุณาเลือกไฟล์ Grouping order (FIS Ready to Grouping) ด้านบนเพื่อกดปุ่มประมวลผล",
     },
     "ENG": {
@@ -69,8 +71,8 @@ T = {
         "role_label": "System Role",
         "logout_btn": "Logout",
         "select_menu": "Select Module:",
-        "menu_grouping": "🚀 Auto Grouping Workspace",
-        "menu_master": "📂 Master List Management",
+        "menu_grouping": "🚀 Auto Grouping",
+        "menu_master": "📂 Master List",
         "menu_cond": "📋 Grouping Conditions",
         "menu_fleet": "🚛 Fleet Capacity Settings",
         "menu_history": "📜 Execution History",
@@ -352,16 +354,14 @@ car_carrier_bg_url = "https://images.unsplash.com/photo-1601584115197-04ecc0da31
 st.markdown(
     f"""
     <style>
-    /* ปรับขนาดระยะขอบหน้าจอให้อยู่ในสัดส่วนกำลังพอดี */
     .block-container {{
-        padding-top: 1rem !important;
+        padding-top: 0.5rem !important;
         padding-bottom: 1rem !important;
         padding-left: 1.5rem !important;
         padding-right: 1.5rem !important;
         max-width: 100% !important;
     }}
     
-    /* ซ่อนเฉพาะ Header ซ้ำซ้อน แต่เปิดให้ปุ่มลูกศร Sidebar (Sidebar Toggle) แสดงผลและกดได้ปกติ */
     [data-testid="stHeader"] {{
         background: transparent !important;
     }}
@@ -373,19 +373,16 @@ st.markdown(
         display: none !important;
     }}
     
-    /* ตกแต่ง Sidebar โทนสีขาวสว่างกระชับเหมือนภาพตัวอย่างที่ 2 */
     [data-testid="stSidebar"] {{
         background-color: #f8fafc !important;
         border-right: 1px solid #e2e8f0 !important;
-        width: 260px !important;
+        width: 250px !important;
     }}
     
-    /* บังคับสไตล์ข้อความใน Sidebar ให้ชัดเจน */
     [data-testid="stSidebar"] * {{
         color: #1e293b !important;
     }}
     
-    /* สไตล์ปุ่มตัวเลือกใน Sidebar พร้อม Hover สีเทาอ่อน (Light Gray Hover) */
     [data-testid="stSidebar"] label {{
         padding: 8px 12px !important;
         border-radius: 8px !important;
@@ -401,14 +398,12 @@ st.markdown(
         color: #0b2545 !important;
     }}
     
-    /* Highlight รายการที่เลือกใน Sidebar */
     [data-testid="stSidebar"] [aria-checked="true"] {{
         background-color: #e0f2fe !important;
         color: #0066B3 !important;
         font-weight: 700 !important;
     }}
     
-    /* ตกแต่งปุ่มเปิด-ปิด Sidebar (Expand/Collapse Arrow) ให้เห็นชัดเจนเสมอ */
     [data-testid="stSidebarCollapseButton"] button, [data-testid="collapsedControl"] button {{
         color: #0b2545 !important;
         background-color: #f1f5f9 !important;
@@ -419,7 +414,6 @@ st.markdown(
         background-color: #e2e8f0 !important;
     }}
     
-    /* สไตล์ Banner หน้า Login */
     .login-bg {{
         background: linear-gradient(rgba(11, 37, 69, 0.85), rgba(11, 37, 69, 0.90)), url('{car_carrier_bg_url}');
         background-size: cover;
@@ -430,7 +424,6 @@ st.markdown(
         margin-bottom: 15px;
     }}
     
-    /* กล่อง File Uploader */
     [data-testid="stFileUploader"] {{
         background-color: #ffffff !important;
         border-radius: 8px !important;
@@ -447,7 +440,6 @@ st.markdown(
         border: none !important;
     }}
     
-    /* ปุ่มสีแดงประจำองค์กร */
     div.stButton > button:first-child {{
         background-color: #ED1C24 !important;
         color: white !important;
@@ -458,7 +450,6 @@ st.markdown(
         box-shadow: 0px 4px 10px rgba(237, 28, 36, 0.3) !important;
     }}
     
-    /* การ์ดสไตล์องค์กร */
     .clean-card {{
         background-color: #ffffff;
         border-left: 5px solid #0066B3;
@@ -476,7 +467,6 @@ st.markdown(
         margin-bottom: 10px;
     }}
     
-    /* การ์ดผู้ใช้งานมุมขวาบน */
     .user-profile-box {{
         background: #ffffff;
         border: 1px solid #cbd5e1;
@@ -498,14 +488,38 @@ st.markdown(
         color: #64748b;
     }}
     
-    /* เอฟเฟกต์ Hover สีเทาสำหรับปุ่มและฟีเจอร์อื่นๆ */
     .stSelectbox:hover, .stTextInput:hover {{
         border-color: #94a3b8 !important;
+    }}
+
+    .flag-btn {{
+        background: white;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        padding: 4px 8px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        font-weight: bold;
     }}
     </style>
     """,
     unsafe_allow_html=True,
 )
+
+# HELPER FUNCTION FOR FLAG SWITCHING BUTTONS
+def render_flag_switch(key_suffix=""):
+    c_th, c_eng = st.columns(2)
+    with c_th:
+        if st.button("🇹🇭 TH", key=f"btn_th_{key_suffix}", use_container_width=True):
+            st.session_state["lang"] = "TH"
+            st.rerun()
+    with c_eng:
+        if st.button("🇬🇧 EN", key=f"btn_eng_{key_suffix}", use_container_width=True):
+            st.session_state["lang"] = "ENG"
+            st.rerun()
 
 # --- LOGIN SYSTEM ---
 if "authenticated" not in st.session_state:
@@ -513,24 +527,12 @@ if "authenticated" not in st.session_state:
     st.session_state["user_info"] = None
 
 if not st.session_state["authenticated"]:
-    # TOP RIGHT LANGUAGE SELECTOR FOR LOGIN PAGE
-    top_col1, top_col2 = st.columns([0.80, 0.20])
+    top_col1, top_col2 = st.columns([0.82, 0.18])
     with top_col2:
-        selected_lang_choice = st.radio(
-            "Lang",
-            ["TH 🇹🇭", "ENG 🇬🇧"],
-            horizontal=True,
-            key="top_right_login_lang",
-            label_visibility="collapsed",
-        )
-        clean_choice = "TH" if "TH" in selected_lang_choice else "ENG"
-        if clean_choice != st.session_state["lang"]:
-            st.session_state["lang"] = clean_choice
-            st.rerun()
+        render_flag_switch("login")
 
     txt = T[st.session_state["lang"]]
 
-    # Banner โลโก้และหัวข้อ
     st.markdown(
         f"""
         <div class="login-bg">
@@ -631,17 +633,7 @@ with head_col2:
     u_col1, u_col2, u_col3 = st.columns([0.42, 0.43, 0.15])
     
     with u_col1:
-        top_lang = st.radio(
-            "LangToggle",
-            ["TH 🇹🇭", "ENG 🇬🇧"],
-            horizontal=True,
-            key="top_main_lang_toggle",
-            label_visibility="collapsed",
-        )
-        clean_top_lang = "TH" if "TH" in top_lang else "ENG"
-        if clean_top_lang != st.session_state["lang"]:
-            st.session_state["lang"] = clean_top_lang
-            st.rerun()
+        render_flag_switch("main_header")
 
     with u_col2:
         role_label = current_user["role"]
@@ -918,4 +910,4 @@ elif active_feature == txt["menu_revise"]:
 with open("main.py", "w", encoding="utf-8") as f:
     f.write(updated_main)
 
-print("Successfully updated main.py with sidebar toggle button fix and light hover style!")
+print("Updated main.py with single-language sidebar menu and flag buttons for language switching!")
