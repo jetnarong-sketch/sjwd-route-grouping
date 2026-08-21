@@ -478,8 +478,8 @@ st.markdown(
         color: #64748b;
     }}
     
-    /* บังคับเฉพาะปุ่มเปลี่ยนภาษาให้เป็นกรอบสีขาว โทนสีสะอาดตา */
-    .flag-btn-clean button {{
+    /* สไตล์ปุ่มเปลี่ยนภาษาด้วย HTML */
+    .flag-btn-clean div.stButton > button {{
         background-color: #ffffff !important;
         color: #1e293b !important;
         border: 1px solid #cbd5e1 !important;
@@ -489,15 +489,18 @@ st.markdown(
         font-weight: 700 !important;
         box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
         height: 38px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
     }}
-    .flag-btn-clean button:hover {{
+    .flag-btn-clean div.stButton > button:hover {{
         background-color: #f1f5f9 !important;
         border-color: #0066B3 !important;
         color: #0066B3 !important;
     }}
     
-    /* ปุ่ม Logout แบบไอคอนสัญลักษณ์ [-> สีขาว สะอาดตา */
-    .logout-icon-btn button {{
+    /* ปุ่ม Logout ไอคอนสัญลักษณ์ [-> สีขาว */
+    .logout-icon-btn div.stButton > button {{
         background-color: #ffffff !important;
         color: #0b2545 !important;
         border: 1px solid #cbd5e1 !important;
@@ -507,8 +510,11 @@ st.markdown(
         font-weight: bold !important;
         box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
         height: 38px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
     }}
-    .logout-icon-btn button:hover {{
+    .logout-icon-btn div.stButton > button:hover {{
         background-color: #fee2e2 !important;
         border-color: #ef4444 !important;
         color: #dc2626 !important;
@@ -517,23 +523,22 @@ st.markdown(
     .flag-img {{
         width: 18px;
         height: 12px;
-        margin-left: 4px;
+        margin-left: 5px;
         vertical-align: middle;
         border-radius: 2px;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.2);
     }}
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-# HELPER FUNCTION FOR CLEAN WHITE FLAG SWITCHING BUTTONS WITH REAL IMAGE FLAGS
+# HELPER FUNCTION FOR FLAG SWITCHING BUTTONS USING HTML IMAGES (PREVENTS EMOJI TEXT BUG)
 def render_clean_flag_switch(key_suffix=""):
     c_th, c_eng = st.columns([1, 1])
     
     with c_th:
         st.markdown('<div class="flag-btn-clean">', unsafe_allow_html=True)
-        if st.button("TH 🇹🇭", key=f"btn_th_{key_suffix}", use_container_width=True):
+        if st.button("TH", key=f"btn_th_{key_suffix}", use_container_width=True):
             st.session_state["lang"] = "TH"
             st.session_state["last_activity"] = time.time()
             st.rerun()
@@ -541,7 +546,7 @@ def render_clean_flag_switch(key_suffix=""):
             
     with c_eng:
         st.markdown('<div class="flag-btn-clean">', unsafe_allow_html=True)
-        if st.button("ENG 🇬🇧", key=f"btn_eng_{key_suffix}", use_container_width=True):
+        if st.button("ENG", key=f"btn_eng_{key_suffix}", use_container_width=True):
             st.session_state["lang"] = "ENG"
             st.session_state["last_activity"] = time.time()
             st.rerun()
@@ -678,7 +683,7 @@ with head_col2:
 
     with u_col3:
         st.markdown('<div class="logout-icon-btn">', unsafe_allow_html=True)
-        if st.button("↪", help="Logout / ออกจากระบบ", use_container_width=True):
+        if st.button("🚪", help="Logout / ออกจากระบบ", use_container_width=True):
             st.session_state["authenticated"] = False
             st.session_state["user_info"] = None
             st.rerun()
