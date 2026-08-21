@@ -7,7 +7,7 @@ import openpyxl
 import pandas as pd
 import streamlit as st
 
-# --- USER CREDENTIALS & ROLES DATABASE (เดิม) ---
+# --- USER CREDENTIALS & ROLES DATABASE ---
 USER_DB = {
     "admin": {
         "password": "adminpassword123",
@@ -26,7 +26,7 @@ USER_DB = {
     },
 }
 
-# --- TRANSLATION DICTIONARY (เดิม) ---
+# --- TRANSLATION DICTIONARY ---
 T = {
     "TH": {
         "title": "Car Carrier Transport Optimization System",
@@ -359,7 +359,7 @@ if "lang" not in st.session_state:
 
 car_carrier_bg_url = "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=1920&q=80"
 
-# --- ADAPTED STYLING FOR PERFECT BALANCE & CLEAN FLEXBOX ---
+# --- CUSTOM CLEAN CSS FOR EXACT BALANCE ---
 st.markdown(
     f"""
     <style>
@@ -443,7 +443,27 @@ st.markdown(
         margin-bottom: 10px;
     }}
 
-    /* CSS ADAPTATION: จัดระดับความสูงปุ่มมุมขวาบนให้ขนานอยู่บรรทัดเดียวกัน 100% */
+    /* CSS สำหรับย้ายกล่องโปรไฟล์ไปไว้ใน Sidebar */
+    .sidebar-user-box {{
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        padding: 8px 12px;
+        margin-bottom: 12px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }}
+    .sidebar-user-name {{
+        font-weight: 800;
+        font-size: 13px;
+        color: #0b2545;
+        line-height: 1.2;
+    }}
+    .sidebar-user-role {{
+        font-size: 11px;
+        color: #64748b;
+    }}
+
+    /* CSS สำหรับสวิตช์เลือกภาษา TH | EN มุมขวาบน ขนานเป๊ะระดับพิกเซล */
     .hdr-lang-btn div.stButton > button {{
         background-color: #ffffff !important;
         color: #64748b !important;
@@ -467,19 +487,6 @@ st.markdown(
         font-weight: 800 !important;
         margin: 0px !important;
         box-shadow: 0 1px 2px rgba(0,0,0,0.03) !important;
-    }}
-
-    .user-info-adapted {{
-        background: #ffffff;
-        border: 1px solid #cbd5e1;
-        border-radius: 6px;
-        height: 34px;
-        padding: 2px 10px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-        white-space: nowrap;
     }}
 
     .logout-btn-adapted div.stButton > button {{
@@ -590,7 +597,10 @@ if not st.session_state["authenticated"]:
         )
     st.stop()
 
-# --- SIDEBAR BRANDING & MENU ---
+# --- SIDEBAR BRANDING, USER BOX & MENU ---
+txt = T[st.session_state["lang"]]
+current_user = st.session_state["user_info"]
+
 st.sidebar.markdown(
     """
     <div style="padding: 10px 0px 10px 0px; border-bottom: 1px solid #e2e8f0; margin-bottom: 10px;">
@@ -602,8 +612,16 @@ st.sidebar.markdown(
     unsafe_allow_html=True,
 )
 
-txt = T[st.session_state["lang"]]
-current_user = st.session_state["user_info"]
+# 1. ย้ายกล่องผู้ใช้งาน Admin Ball / Admin มาไว้ตรงนี้ (Sidebar แถบซ้ายมือ)
+st.sidebar.markdown(
+    f"""
+    <div class="sidebar-user-box">
+        <div class="sidebar-user-name">👤 {current_user['name']}</div>
+        <div class="sidebar-user-role">🔑 {current_user['role']}</div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 
 menu_options = [
     txt["menu_grouping"],
@@ -620,8 +638,8 @@ st.sidebar.markdown("---")
 st.sidebar.caption("SIAM JWD LOGISTICS CO., LTD.")
 
 
-# --- TOP MAIN HEADER: LOGO LEFT & USER + LANG TOP RIGHT (EXACT BALANCED ALIGNMENT) ---
-head_col1, head_col2 = st.columns([0.48, 0.52])
+# --- TOP MAIN HEADER: LOGO LEFT & COMPACT LANG + LOGOUT TOP RIGHT ---
+head_col1, head_col2 = st.columns([0.65, 0.35])
 
 with head_col1:
     st.markdown(
@@ -639,12 +657,12 @@ with head_col1:
 
 with head_col2:
     is_th = st.session_state["lang"] == "TH"
-    st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='height: 5px;'></div>", unsafe_allow_html=True)
     
-    # แบ่งอัตราส่วนคอลัมน์กว้างพอดี ป้องกันข้อความชื่อตัดหลุดลงมาบรรทัดใหม่
-    u1, u2, u3, u4, u5 = st.columns([0.18, 0.04, 0.18, 0.48, 0.12])
+    # 2. ปรับระยะส่วน TH | EN และปุ่ม Logout ให้กระชับ ชิดมุมขวามือ สมดุลขนานเท่ากันเป๊ะ
+    u1, u2, u3, u4 = st.columns([0.40, 0.08, 0.40, 0.12])
     
-    # 1. ปุ่ม TH
+    # ปุ่ม TH
     with u1:
         st.markdown(f'<div class="{"hdr-lang-btn-act" if is_th else "hdr-lang-btn"}">', unsafe_allow_html=True)
         if st.button("TH", key="hdr_th", use_container_width=True):
@@ -657,7 +675,7 @@ with head_col2:
     with u2:
         st.markdown("<div style='text-align:center; color:#cbd5e1; line-height:34px; font-weight:300;'>|</div>", unsafe_allow_html=True)
 
-    # 2. ปุ่ม EN
+    # ปุ่ม EN
     with u3:
         st.markdown(f'<div class="{"hdr-lang-btn-act" if not is_th else "hdr-lang-btn"}">', unsafe_allow_html=True)
         if st.button("EN", key="hdr_en", use_container_width=True):
@@ -666,20 +684,8 @@ with head_col2:
             st.rerun()
         st.markdown('</div>', unsafe_allow_html=True)
 
-    # 3. กล่องโปรไฟล์ผู้ใช้งานเดิม
+    # ปุ่ม Logout [->
     with u4:
-        st.markdown(
-            f"""
-            <div class="user-info-adapted">
-                <div style="font-weight: 800; font-size: 12px; color: #0b2545; line-height: 1.1;">{current_user['name']}</div>
-                <div style="font-size: 10px; color: #64748b; line-height: 1.1;">{current_user['role']}</div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-    # 4. ปุ่ม Logout [->
-    with u5:
         st.markdown('<div class="logout-btn-adapted">', unsafe_allow_html=True)
         if st.button("[->", help="Logout / ออกจากระบบ", key="btn_logout_main"):
             st.session_state["authenticated"] = False
