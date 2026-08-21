@@ -1,6 +1,4 @@
-# Test updated main.py with Dashboard, History Search, and detailed Unready/Yard breakdown
-
-dashboard_main_code = '''from datetime import datetime, date
+from datetime import datetime, date
 import io
 import os
 import json
@@ -128,16 +126,16 @@ def save_history(history_data):
 
 
 def is_car_ready_to_ship(row, hold_col="HOLD", remark_col="Remark"):
-    if pd.notna(row[hold_col]):
+    if pd.notna(row.get(hold_col, None)):
         hold_val = str(row[hold_col]).strip()
-        if hold_val != "":
+        if hold_val != "" and hold_val.lower() != "nan":
             return False, f"HOLD: {hold_val}"
 
-    if pd.notna(row[remark_col]):
+    if pd.notna(row.get(remark_col, None)):
         remark_val = str(row[remark_col]).strip().lower()
         unready_keywords = ["hold", "รอ", "ภายหลัง", "ยังไม่ถึงกำหนด", "รอนัด", "ชะลอ"]
         for kw in unready_keywords:
-            if kw in remark_val:
+            if kw in remark_val and remark_val != "nan":
                 return False, f"Remark: {str(row[remark_col]).strip()}"
 
     return True, "Ready"
@@ -564,7 +562,6 @@ st.sidebar.markdown(
     unsafe_allow_html=True,
 )
 
-# 7 SIDEBAR MENU OPTIONS INCLUDING EXECUTIVE DASHBOARD
 menu_options = [
     txt["menu_dashboard"],
     txt["menu_grouping"],
@@ -623,76 +620,88 @@ with head_col2:
 st.divider()
 
 
-# 0. EXECUTIVE DASHBOARD SUMMARY (NEW FEATURE)
+# 0. EXECUTIVE DASHBOARD SUMMARY (READS DIRECTLY FROM HISTORY DATABASE - NO UPLOAD REQUIRED)
 if active_feature == txt["menu_dashboard"]:
     st.subheader("📊 แดชบอร์ดสรุปภาพรวมแผนจัดกลุ่มรถขนส่ง (Executive Fleet Dashboard)")
-    st.caption("อัปโหลดไฟล์ FIS เพื่อวิเคราะห์สรุปยอดรถจัดกลุ่ม, รถคงเหลือแยกตามยาร์ด (Yard Breakdown) และหมวดหมู่สาเหตุรถติดHold (Unready Reasons)")
+    st.caption("ดึงข้อมูลอัตโนมัติจากประวัติการจัดกลุ่ม (History Database) สรุปยอดรถจัดกลุ่ม, ยอดคงเหลือแยกตามยาร์ด (Yard Breakdown) และสาเหตุรถติด Hold")
 
-    dash_file = st.file_uploader("📁 อัปโหลดไฟล์ FIS เพื่อดูแดชบอร์ดสรุปวิเคราะห์ (.xlsx):", type=["xlsx", "xls"], key="dash_file_up")
+    history_data = load_history()
 
-    if dash_file:
-        df_dash = pd.read_excel(dash_file)
-        pickup_col = "Location" if "Location" in df_dash.columns else "Pick up Location"
-        hold_col = "HOLD" if "HOLD" in df_dash.columns else None
-        remark_col = "Remark" if "Remark" in df_dash.columns else None
-
-        # Process Ready vs Unready
-        df_dash["Ready_Tuple"] = df_dash.apply(lambda r: is_car_ready_to_ship(r), axis=1)
-        df_dash["Ready_Flag"] = df_dash["Ready_Tuple"].apply(lambda x: x[0])
-        df_dash["Unready_Reason"] = df_dash["Ready_Tuple"].apply(lambda x: x[1])
-
-        # Calculate Grouping status
-        group_col = "Grouping number" if "Grouping number" in df_dash.columns else None
-        if group_col:
-            df_dash["Is_Grouped"] = df_dash[group_col].notna() & (df_dash[group_col] != "เศษรอ Mix")
-        else:
-            df_dash["Is_Grouped"] = False
-
-        total_cars = len(df_dash)
-        grouped_cars = df_dash["Is_Grouped"].sum()
-        ungrouped_cars = total_cars - grouped_cars
-        ready_cars = df_dash["Ready_Flag"].sum()
-        unready_cars = total_cars - ready_cars
-
-        st.divider()
-        st.markdown("### **1. สรุปภาพรวมสถานะจัดกลุ่ม (Overall Grouping Summary)**")
-        d1, d2, d3, d4 = st.columns(4)
-        d1.metric("จำนวนรถทั้งหมดในไฟล์", f"{total_cars} คัน")
-        d2.metric("จัดกลุ่มสำเร็จแล้ว (Grouped)", f"{grouped_cars} คัน", delta=f"{grouped_cars/total_cars*100:.1f}%")
-        d3.metric("คงเหลือยังไม่ได้จัดกลุ่ม (Ungrouped)", f"{ungrouped_cars} คัน", delta=f"-{ungrouped_cars/total_cars*100:.1f}%", delta_color="inverse")
-        d4.metric("รถติดเงื่อนไข Hold/Unready", f"{unready_cars} คัน")
-
-        st.divider()
-        col_db1, col_db2 = st.columns(2)
-
-        # Breakdown by Yard (Location)
-        with col_db1:
-            st.markdown("### **2. รายงานยอดรถคงเหลือแยกตามยาร์ด (Yard Breakdown)**")
-            if pickup_col in df_dash.columns:
-                yard_summary = df_dash.groupby(pickup_col).agg(
-                    Total_Cars=("Vin", "count"),
-                    Grouped=("Is_Grouped", "sum"),
-                    Remaining_Ungrouped=("Is_Grouped", lambda x: (~x).sum()),
-                    Ready_Count=("Ready_Flag", "sum"),
-                    Hold_Count=("Ready_Flag", lambda x: (~x).sum()),
-                ).reset_index()
-                yard_summary.columns = ["ยาร์ด/ลานจอด (Yard Location)", "รถทั้งหมด", "จัดกลุ่มแล้ว", "คงเหลือยังไม่ได้จัด", "พร้อมส่ง", "ติด Hold"]
-                st.dataframe(yard_summary, use_container_width=True)
-            else:
-                st.info("ไม่พบคอลัมน์ Location สำหรับแยกยาร์ด")
-
-        # Breakdown by Unready Reason
-        with col_db2:
-            st.markdown("### **3. จำแนกหมวดหมู่รถยังไม่ได้กรุ๊ป / ติด Hold**")
-            unready_df = df_dash[df_dash["Ready_Flag"] == False]
-            if not unready_df.empty:
-                unready_summary = unready_df["Unready_Reason"].value_counts().reset_index()
-                unready_summary.columns = ["สาเหตุ/หมวดหมู่ที่ยังไม่ได้กรุ๊ป", "จำนวน (คัน)"]
-                st.dataframe(unready_summary, use_container_width=True)
-            else:
-                st.success("🎉 ไม่มีรายการรถติด Hold ในไฟล์นี้")
+    if not history_data:
+        st.info("💡 ยังไม่มีข้อมูลการจัดกลุ่มในระบบ กรุณาเข้าเมนู 'วางแผนจัดกลุ่ม' เพื่อประมวลผล Auto Grouping หรือ อัปโหลดผลจัดกลุ่ม Manual ก่อนครับ")
     else:
-        st.info("💡 กรุณาอัปโหลดไฟล์ FIS ด้านบนเพื่อแสดงแดชบอร์ดสรุปภาพรวม")
+        # Selector for record date
+        available_records = sorted(list(history_data.keys()), reverse=True)
+        selected_record_key = st.selectbox("📅 เลือกประวัติรอบการจัดกลุ่มที่ต้องการดูรายงาน:", available_records)
+
+        if selected_record_key and selected_record_key in history_data:
+            rec = history_data[selected_record_key]
+            st.caption(f"⏱️ ข้อมูลประวัติเมื่อ: **{rec.get('timestamp')}** | โหมดการทำงาน: **{rec.get('mode', 'Auto Grouping')}**")
+
+            # Check full details dataframe
+            if "full_details" in rec and rec["full_details"]:
+                df_dash = pd.DataFrame(rec["full_details"])
+                
+                pickup_col = "Location" if "Location" in df_dash.columns else "Pick up Location"
+                group_col = "Grouping number" if "Grouping number" in df_dash.columns else "Calc_Group_No"
+
+                # Standardize ready vs unready checks
+                df_dash["Ready_Tuple"] = df_dash.apply(lambda r: is_car_ready_to_ship(r), axis=1)
+                df_dash["Ready_Flag"] = df_dash["Ready_Tuple"].apply(lambda x: x[0])
+                df_dash["Unready_Reason"] = df_dash["Ready_Tuple"].apply(lambda x: x[1])
+
+                if group_col in df_dash.columns:
+                    df_dash["Is_Grouped"] = df_dash[group_col].notna() & (df_dash[group_col].astype(str).str.strip() != "") & (df_dash[group_col].astype(str).str.strip() != "เศษรอ Mix") & (df_dash[group_col].astype(str).str.strip() != "nan")
+                else:
+                    df_dash["Is_Grouped"] = False
+
+                total_cars = len(df_dash)
+                grouped_cars = df_dash["Is_Grouped"].sum()
+                ungrouped_cars = total_cars - grouped_cars
+                ready_cars = df_dash["Ready_Flag"].sum()
+                unready_cars = total_cars - ready_cars
+
+                st.divider()
+                st.markdown("### **1. สรุปภาพรวมสถานะจัดกลุ่ม (Overall Grouping Summary)**")
+                d1, d2, d3, d4 = st.columns(4)
+                d1.metric("จำนวนรถทั้งหมดในไฟล์", f"{total_cars} คัน")
+                d2.metric("จัดกลุ่มสำเร็จแล้ว (Grouped)", f"{grouped_cars} คัน", delta=f"{grouped_cars/total_cars*100:.1f}%")
+                d3.metric("คงเหลือยังไม่ได้จัดกลุ่ม (Ungrouped)", f"{ungrouped_cars} คัน", delta=f"-{ungrouped_cars/total_cars*100:.1f}%", delta_color="inverse")
+                d4.metric("รถติดเงื่อนไข Hold/Unready", f"{unready_cars} คัน")
+
+                st.divider()
+                col_db1, col_db2 = st.columns(2)
+
+                # Breakdown by Yard (Location)
+                with col_db1:
+                    st.markdown("### **2. รายงานยอดรถคงเหลือแยกตามยาร์ด (Yard Breakdown)**")
+                    if pickup_col in df_dash.columns:
+                        yard_summary = df_dash.groupby(pickup_col).agg(
+                            Total_Cars=("Vin", "count"),
+                            Grouped=("Is_Grouped", "sum"),
+                            Remaining_Ungrouped=("Is_Grouped", lambda x: (~x).sum()),
+                            Ready_Count=("Ready_Flag", "sum"),
+                            Hold_Count=("Ready_Flag", lambda x: (~x).sum()),
+                        ).reset_index()
+                        yard_summary.columns = ["ยาร์ด/ลานจอด (Yard Location)", "รถทั้งหมด", "จัดกลุ่มแล้ว", "คงเหลือยังไม่ได้จัด", "พร้อมส่ง", "ติด Hold"]
+                        st.dataframe(yard_summary, use_container_width=True)
+                    else:
+                        st.info("ไม่พบคอลัมน์ Location สำหรับแยกยาร์ด")
+
+                # Breakdown by Unready Reason
+                with col_db2:
+                    st.markdown("### **3. จำแนกหมวดหมู่รถยังไม่ได้กรุ๊ป / ติด Hold**")
+                    unready_df = df_dash[df_dash["Ready_Flag"] == False]
+                    if not unready_df.empty:
+                        unready_summary = unready_df["Unready_Reason"].value_counts().reset_index()
+                        unready_summary.columns = ["สาเหตุ/หมวดหมู่ที่ยังไม่ได้กรุ๊ป", "จำนวน (คัน)"]
+                        st.dataframe(unready_summary, use_container_width=True)
+                    else:
+                        st.success("🎉 ไม่มีรายการรถติด Hold ในประวัตินี้")
+            else:
+                # If record only has summary dataframe
+                df_hist_sum = pd.DataFrame(rec.get("summary", []))
+                st.dataframe(df_hist_sum, use_container_width=True)
 
 
 # 1. WORKSPACE: วางแผนจัดกลุ่ม (CONTAINS 2 SUB-TABS)
@@ -755,7 +764,7 @@ elif active_feature == txt["menu_grouping"]:
                         "grouped_cars": int(grouped_cars_count),
                         "total_groups": len(df_summary),
                         "summary": df_summary.to_dict(orient="records"),
-                        "full_details": df_processed.fillna("").to_dict(orient="records"),
+                        "full_details": df_processed.fillna("").astype(str).to_dict(orient="records"),
                     }
                     save_history(history)
 
@@ -792,7 +801,7 @@ elif active_feature == txt["menu_grouping"]:
             
             group_col = "Grouping number" if "Grouping number" in df_act.columns else None
             if group_col and group_col in df_act.columns:
-                act_grouped = df_act[df_act[group_col].notna() & (df_act[group_col] != "เศษรอ Mix")].copy()
+                act_grouped = df_act[df_act[group_col].notna() & (df_act[group_col].astype(str).str.strip() != "เศษรอ Mix")].copy()
                 
                 total_act_cars = len(df_act)
                 grouped_act_cars = len(act_grouped)
@@ -816,6 +825,11 @@ elif active_feature == txt["menu_grouping"]:
                 if st.button("💾 บันทึกข้อมูล Manual เข้าสู่ระบบ History Benchmark", type="primary", use_container_width=True, key="save_manual_actual_btn"):
                     history = load_history()
                     date_key = datetime.now().strftime("%Y-%m-%d_%H%M%S_Manual")
+                    
+                    df_act_clean = df_act.copy()
+                    for col in df_act_clean.columns:
+                        df_act_clean[col] = df_act_clean[col].astype(str)
+
                     history[date_key] = {
                         "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                         "mode": "Manual Actual Import",
@@ -823,11 +837,11 @@ elif active_feature == txt["menu_grouping"]:
                         "grouped_cars": grouped_act_cars,
                         "total_groups": len(act_summary),
                         "summary": act_summary.to_dict(orient="records"),
-                        "full_details": df_act.fillna("").to_dict(orient="records"),
+                        "full_details": df_act_clean.fillna("").to_dict(orient="records"),
                     }
                     save_history(history)
                     st.balloons()
-                    st.success("🎉 บันทึกผลจัดกลุ่ม Manual เข้าสู่ฐานข้อมูล History สำเร็จเรียบร้อย!")
+                    st.success("🎉 บันทึกผลจัดกลุ่ม Manual เข้าสู่ฐานข้อมูล History สำเร็จเรียบร้อย! สามารถสลับไปหน้า 'แดชบอร์ดสรุปภาพรวม' เพื่อดูรายงานวิเคราะห์ได้ทันที")
             else:
                 st.error("❌ ไม่พบคอลัมน์ 'Grouping number' ในไฟล์ที่อัปโหลด กรุณาตรวจสอบไฟล์อีกครั้ง")
 
@@ -1029,9 +1043,3 @@ elif active_feature == txt["menu_revise"]:
                     st.session_state["df_last_processed"] = df_proc
                     st.success(f"Swapped VIN {vin_a_selected} ↔ {vin_b_selected}!")
                     st.rerun()
-'''
-
-with open("main.py", "w", encoding="utf-8") as f:
-    f.write(dashboard_main_code)
-
-print("Successfully written Dashboard & Advanced History Search features to main.py!")
