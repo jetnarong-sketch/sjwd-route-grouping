@@ -296,9 +296,9 @@ def process_fis_grouping_with_capacity(
     return output_buffer, pd.DataFrame(summary_list), total_cars, [], df
 
 
-# --- STREAMLIT CONFIG & CORPORATE THEME ---
+# --- STREAMLIT CONFIG & CUSTOM LOGISTICS THEME ---
 st.set_page_config(
-    page_title="SIAM JWD LOGISTICS - Auto Grouping System",
+    page_title="SIAM JWD LOGISTICS - Car Carrier TMS",
     page_icon="🚛",
     layout="wide",
 )
@@ -306,6 +306,16 @@ st.set_page_config(
 st.markdown(
     """
     <style>
+    /* ซ่อน Anchor Links และ Header/Footer ส่วนเกิน */
+    .css-1544g2n, .e1ewe6wb4, [data-testid="stHeader"], footer {
+        visibility: hidden !important;
+        height: 0px !important;
+    }
+    a.anchor-link {
+        display: none !important;
+    }
+    
+    /* แถบข้าง Sidebar สีน้ำเงินเข้มองค์กร */
     [data-testid="stSidebar"] {
         background-color: #0b2545 !important;
     }
@@ -313,6 +323,8 @@ st.markdown(
     [data-testid="stSidebar"] p, [data-testid="stSidebar"] span, [data-testid="stSidebar"] label {
         color: #ffffff !important;
     }
+    
+    /* กล่อง File Uploader อ่านง่าย */
     [data-testid="stFileUploader"] {
         background-color: #f8f9fa !important;
         border-radius: 10px !important;
@@ -328,6 +340,8 @@ st.markdown(
         border-radius: 6px !important;
         border: none !important;
     }
+    
+    /* ปุ่มสีแดงประจำองค์กร */
     div.stButton > button:first-child {
         background-color: #ED1C24 !important;
         color: white !important;
@@ -337,6 +351,8 @@ st.markdown(
         padding: 10px 24px !important;
         box-shadow: 0px 4px 10px rgba(237, 28, 36, 0.3) !important;
     }
+    
+    /* การ์ดสไตล์องค์กร */
     .clean-card {
         background-color: #ffffff;
         border-left: 5px solid #0066B3;
@@ -353,6 +369,15 @@ st.markdown(
         box-shadow: 0 2px 8px rgba(0,0,0,0.06);
         margin-bottom: 15px;
     }
+    
+    /* การ์ดต้อนรับ Login */
+    .login-box {
+        background: #ffffff;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        border: 1px solid #e2e8f0;
+    }
     </style>
     """,
     unsafe_allow_html=True,
@@ -364,24 +389,30 @@ if "authenticated" not in st.session_state:
     st.session_state["user_info"] = None
 
 if not st.session_state["authenticated"]:
+    st.write("")
     st.markdown(
         """
-        <div style="text-align:center; padding: 40px 0 20px 0;">
-            <span style="color:#ED1C24; font-size:48px; font-weight:900;">SIAM </span>
-            <span style="color:#0066B3; font-size:48px; font-weight:900;">JWD</span><br>
-            <span style="color:#64748b; font-size:14px; letter-spacing:5px; font-weight:bold;">LOGISTICS</span>
-            <h3 style="color:#1e293b; margin-top:15px;">เข้าสู่ระบบวางแผนจัดกลุ่มรถส่งสินค้า (TMS)</h3>
+        <div style="text-align:center; padding: 10px 0 10px 0;">
+            <span style="color:#ED1C24; font-size:52px; font-weight:900; font-family:sans-serif;">SIAM </span>
+            <span style="color:#0066B3; font-size:52px; font-weight:900; font-family:sans-serif;">JWD</span><br>
+            <span style="color:#64748b; font-size:13px; letter-spacing:6px; font-weight:bold;">LOGISTICS</span>
+            <h2 style="color:#0b2545; margin-top:15px; font-weight:800;">🚛 Car Carrier Transport Optimization System</h2>
+            <p style="color:#64748b; font-size:15px;">ระบบวางแผนจัดกลุ่มรถขนส่งสินค้าอัตโนมัติสำหรับฟลีตขนส่งรถยนต์</p>
         </div>
         """,
         unsafe_allow_html=True,
     )
     
-    col_l1, col_l2, col_l3 = st.columns([1, 1.2, 1])
+    col_l1, col_l2, col_l3 = st.columns([0.8, 1.4, 0.8])
     with col_l2:
+        st.markdown('<div class="login-box">', unsafe_allow_html=True)
+        st.markdown("##### **🔓 เข้าสู่ระบบ (System Login)**")
+        st.caption("กรุณากรอก Username และ Password เพื่อเข้าใช้งานระบบตามสิทธิ์")
+        
         with st.form("login_form"):
             username_input = st.text_input("👤 Username (ชื่อผู้ใช้งาน)")
             password_input = st.text_input("🔑 Password (รหัสผ่าน)", type="password")
-            submit_login = st.form_submit_button("🔓 เข้าสู่ระบบ (Sign In)", use_container_width=True)
+            submit_login = st.form_submit_button("🔑 เข้าสู่ระบบ (Sign In)", use_container_width=True)
 
             if submit_login:
                 user = USER_DB.get(username_input.strip().lower())
@@ -396,6 +427,17 @@ if not st.session_state["authenticated"]:
                     st.rerun()
                 else:
                     st.error("❌ Username หรือ Password ไม่ถูกต้อง!")
+        
+        st.markdown("---")
+        st.markdown(
+            """
+            <div style="font-size:12px; color:#64748b; text-align:center;">
+                🚛 <b>Car Carrier Fleet Capabilities:</b> Support 6-8 Load Trailer Quota, DENZA D9 BKK Slide-on, Region Mapping & Aging Priority Rules
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
 
 # --- SIDEBAR BRANDING & AUTH USER INFO ---
@@ -427,7 +469,6 @@ if st.sidebar.button("🔒 ออกจากระบบ (Logout)", use_contain
 
 st.sidebar.divider()
 
-# ทุกบทบาท (Admin, PM, Operator) สามารถเข้าใช้งานได้ทุกเมนูหลัก
 menu_options = [
     "🚀 วางแผนจัดกลุ่ม (Auto Grouping)",
     "📂 Master list",
@@ -460,7 +501,7 @@ st.caption("ระบบคำนวณและวางแผนจัดก�
 st.divider()
 
 
-# 1. AUTO GROUPING WORKSPACE (ทุกบทบาททำได้)
+# 1. AUTO GROUPING WORKSPACE
 if active_feature == "🚀 วางแผนจัดกลุ่ม (Auto Grouping)":
     st.subheader("🚀 วางแผนและประมวลผลจัดกลุ่มอัตโนมัติ (Main Workspace)")
     st.caption("อัปโหลดไฟล์ Grouping order (FIS) เพื่อประมวลผลจัดกลุ่มอัตโนมัติ")
@@ -552,7 +593,7 @@ if active_feature == "🚀 วางแผนจัดกลุ่ม (Auto Grou
         st.info("💡 **คำแนะนำ:** กรุณาเลือกไฟล์ Grouping order (FIS Ready to Grouping) ด้านบนเพื่อกดปุ่มประมวลผล")
 
 
-# 2. MASTER LIST MENU (Admin/PM อัปโหลดแก้ไขได้, Operator ดูได้อย่างเดียว)
+# 2. MASTER LIST MENU
 elif active_feature == "📂 Master list":
     st.subheader("📂 การจัดการข้อมูล Master list (Dealer & Region Mapping)")
     
@@ -574,7 +615,7 @@ elif active_feature == "📂 Master list":
             st.warning("ยังไม่มีข้อมูล Master list ในระบบ กรุณาติดต่อ Admin หรือ Project Manager เพื่อนำเข้าไฟล์")
 
 
-# 3. CONDITIONS MENU (ดูได้อย่างเดียวสำหรับทุกสิทธิ์ เพื่อใช้อ้างอิงกฎ)
+# 3. CONDITIONS MENU
 elif active_feature == "📋 Conditions (เงื่อนไขการจัดกลุ่ม)":
     st.subheader("📋 เงื่อนไขการจัดกลุ่มจัดส่งอัตโนมัติ (Grouping Conditions)")
     st.caption("📌 รายละเอียดเงื่อนไขและกฎเกณฑ์การประมวลผลจัดกลุ่มจัดส่งของระบบ (Read-Only)")
@@ -612,7 +653,7 @@ elif active_feature == "📋 Conditions (เงื่อนไขการจั
         )
 
 
-# 4. FLEET CAPACITY SETTINGS (ทุกบทบาททำได้)
+# 4. FLEET CAPACITY SETTINGS
 elif active_feature == "🚛 Fleet Capacity Settings":
     st.subheader("🚛 ตั้งค่า Fleet Capacity (กำหนดโควตากองรถ)")
     st.caption("กำหนดจำกัดจำนวนเทรลเลอร์และเงื่อนไขประเภทรถขนส่งสำหรับนำไปคำนวณในระบบ")
@@ -633,7 +674,7 @@ elif active_feature == "🚛 Fleet Capacity Settings":
     st.success("💾 บันทึกการตั้งค่าโควตากองรถเรียบร้อยแล้ว!")
 
 
-# 5. GROUPING HISTORY (ทุกบทบาททำได้)
+# 5. GROUPING HISTORY
 elif active_feature == "📜 ประวัติการจัดกลุ่มย้อนหลัง":
     st.subheader("📜 เรียกดูประวัติการจัดกลุ่มย้อนหลัง")
     history_data = load_history()
@@ -657,7 +698,7 @@ elif active_feature == "📜 ประวัติการจัดกลุ่
             st.dataframe(df_hist_summary, use_container_width=True)
 
 
-# 6. REVISE & SWAP VIN (ทุกบทบาททำได้)
+# 6. REVISE & SWAP VIN
 elif active_feature == "✏️ Revise & Swap VIN":
     st.subheader("✏️ แก้ไข / ยกเลิก / สลับคันรถใน Grouping (Revise & Swap)")
 
