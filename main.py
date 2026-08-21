@@ -363,7 +363,7 @@ st.markdown(
     f"""
     <style>
     .block-container {{
-        padding-top: 1.5rem !important;
+        padding-top: 1rem !important;
         padding-bottom: 1rem !important;
         padding-left: 1.5rem !important;
         padding-right: 1.5rem !important;
@@ -456,6 +456,7 @@ st.markdown(
         margin-bottom: 10px;
     }}
     
+    /* กล่องข้อมูลผู้ใช้งาน */
     .user-profile-box {{
         background: #ffffff;
         border: 1px solid #cbd5e1;
@@ -478,28 +479,40 @@ st.markdown(
         color: #64748b;
     }}
     
-    /* สไตล์ปุ่มเปลี่ยนภาษาด้วย HTML */
-    .flag-btn-clean div.stButton > button {{
-        background-color: #ffffff !important;
-        color: #1e293b !important;
-        border: 1px solid #cbd5e1 !important;
-        border-radius: 8px !important;
-        padding: 2px 6px !important;
-        font-size: 12px !important;
-        font-weight: 700 !important;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
-        height: 38px !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-    }}
-    .flag-btn-clean div.stButton > button:hover {{
-        background-color: #f1f5f9 !important;
-        border-color: #0066B3 !important;
-        color: #0066B3 !important;
+    /* สไตล์สวิตช์แปลภาษาดีไซน์มินิมอล (文A TH | EN) */
+    .lang-capsule-box {{
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        padding: 2px 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
     }}
     
-    /* ปุ่ม Logout ไอคอนสัญลักษณ์ [-> สีขาว */
+    .lang-btn-sub div.stButton > button {{
+        background-color: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        height: 32px !important;
+        padding: 0px 4px !important;
+        font-size: 13px !important;
+        font-weight: 600 !important;
+    }}
+    
+    .lang-btn-active div.stButton > button {{
+        background-color: transparent !important;
+        color: #0066B3 !important;
+        border: none !important;
+        box-shadow: none !important;
+        height: 32px !important;
+        padding: 0px 4px !important;
+        font-size: 13px !important;
+        font-weight: 800 !important;
+    }}
+    
+    /* ปุ่ม Logout สัญลักษณ์ [-> */
     .logout-icon-btn div.stButton > button {{
         background-color: #ffffff !important;
         color: #0b2545 !important;
@@ -507,7 +520,7 @@ st.markdown(
         border-radius: 8px !important;
         padding: 0px !important;
         font-size: 16px !important;
-        font-weight: bold !important;
+        font-weight: 800 !important;
         box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
         height: 38px !important;
         display: flex !important;
@@ -519,34 +532,36 @@ st.markdown(
         border-color: #ef4444 !important;
         color: #dc2626 !important;
     }}
-    
-    .flag-img {{
-        width: 18px;
-        height: 12px;
-        margin-left: 5px;
-        vertical-align: middle;
-        border-radius: 2px;
-    }}
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-# HELPER FUNCTION FOR FLAG SWITCHING BUTTONS USING HTML IMAGES (PREVENTS EMOJI TEXT BUG)
-def render_clean_flag_switch(key_suffix=""):
-    c_th, c_eng = st.columns([1, 1])
+# HELPER FUNCTION FOR CAPSULE LANGUAGE SWITCHER (文A TH | EN)
+def render_capsule_lang_switch(key_suffix=""):
+    is_th = st.session_state["lang"] == "TH"
+    
+    c_icon, c_th, c_sep, c_en = st.columns([0.25, 0.35, 0.05, 0.35])
+    
+    with c_icon:
+        st.markdown('<span style="font-size:15px; font-weight:bold; color:#1e293b;">文<sub>A</sub></span>', unsafe_allow_html=True)
     
     with c_th:
-        st.markdown('<div class="flag-btn-clean">', unsafe_allow_html=True)
+        css_class = "lang-btn-active" if is_th else "lang-btn-sub"
+        st.markdown(f'<div class="{css_class}">', unsafe_allow_html=True)
         if st.button("TH", key=f"btn_th_{key_suffix}", use_container_width=True):
             st.session_state["lang"] = "TH"
             st.session_state["last_activity"] = time.time()
             st.rerun()
         st.markdown('</div>', unsafe_allow_html=True)
-            
-    with c_eng:
-        st.markdown('<div class="flag-btn-clean">', unsafe_allow_html=True)
-        if st.button("ENG", key=f"btn_eng_{key_suffix}", use_container_width=True):
+        
+    with c_sep:
+        st.markdown('<span style="color:#cbd5e1; font-weight:300;">|</span>', unsafe_allow_html=True)
+        
+    with c_en:
+        css_class = "lang-btn-active" if not is_th else "lang-btn-sub"
+        st.markdown(f'<div class="{css_class}">', unsafe_allow_html=True)
+        if st.button("EN", key=f"btn_en_{key_suffix}", use_container_width=True):
             st.session_state["lang"] = "ENG"
             st.session_state["last_activity"] = time.time()
             st.rerun()
@@ -558,9 +573,11 @@ if "authenticated" not in st.session_state:
     st.session_state["user_info"] = None
 
 if not st.session_state["authenticated"]:
-    top_col1, top_col2 = st.columns([0.80, 0.20])
+    top_col1, top_col2 = st.columns([0.82, 0.18])
     with top_col2:
-        render_clean_flag_switch("login")
+        st.markdown('<div class="lang-capsule-box">', unsafe_allow_html=True)
+        render_capsule_lang_switch("login")
+        st.markdown('</div>', unsafe_allow_html=True)
 
     txt = T[st.session_state["lang"]]
 
@@ -645,7 +662,7 @@ st.sidebar.caption("SIAM JWD LOGISTICS CO., LTD.")
 
 
 # --- TOP MAIN HEADER: LOGO LEFT & USER + LANG TOP RIGHT ---
-head_col1, head_col2 = st.columns([0.55, 0.45])
+head_col1, head_col2 = st.columns([0.60, 0.40])
 
 with head_col1:
     st.markdown(
@@ -662,10 +679,12 @@ with head_col1:
     st.caption(txt["subtitle"])
 
 with head_col2:
-    u_col1, u_col2, u_col3 = st.columns([0.45, 0.43, 0.12])
+    u_col1, u_col2, u_col3 = st.columns([0.40, 0.48, 0.12])
     
     with u_col1:
-        render_clean_flag_switch("main_header")
+        st.markdown('<div class="lang-capsule-box">', unsafe_allow_html=True)
+        render_capsule_lang_switch("main_header")
+        st.markdown('</div>', unsafe_allow_html=True)
 
     with u_col2:
         role_label = current_user["role"]
@@ -683,7 +702,7 @@ with head_col2:
 
     with u_col3:
         st.markdown('<div class="logout-icon-btn">', unsafe_allow_html=True)
-        if st.button("🚪", help="Logout / ออกจากระบบ", use_container_width=True):
+        if st.button("[->", help="Logout / ออกจากระบบ", use_container_width=True):
             st.session_state["authenticated"] = False
             st.session_state["user_info"] = None
             st.rerun()
