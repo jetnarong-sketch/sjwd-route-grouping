@@ -25,7 +25,7 @@ USER_DB = {
     },
 }
 
-# --- TRANSLATION DICTIONARY (SINGLE LANGUAGE PER VERSION) ---
+# --- TRANSLATION DICTIONARY ---
 T = {
     "TH": {
         "title": "Car Carrier Transport Optimization System",
@@ -484,23 +484,53 @@ st.markdown(
         color: #64748b;
     }}
     
-    .stSelectbox:hover, .stTextInput:hover {{
+    /* ปุ่มสลับภาษาขนาดจิ๋วกะทัดรัด */
+    .mini-flag-btn {{
+        background-color: #ffffff !important;
+        color: #1e293b !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 6px !important;
+        padding: 3px 8px !important;
+        font-size: 12px !important;
+        font-weight: bold !important;
+        box-shadow: none !important;
+        height: 32px !important;
+        margin: 0px !important;
+    }}
+    .mini-flag-btn:hover {{
+        background-color: #f1f5f9 !important;
         border-color: #94a3b8 !important;
+    }}
+    .mini-flag-btn-active {{
+        background-color: #e0f2fe !important;
+        color: #0066B3 !important;
+        border: 1px solid #0066B3 !important;
+        border-radius: 6px !important;
+        padding: 3px 8px !important;
+        font-size: 12px !important;
+        font-weight: bold !important;
+        box-shadow: none !important;
+        height: 32px !important;
     }}
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-# HELPER FUNCTION FOR FLAG SWITCHING BUTTONS
+# HELPER FUNCTION FOR COMPACT FLAG SWITCHING BUTTONS
 def render_flag_switch(key_suffix=""):
-    c_th, c_eng = st.columns(2)
+    c_th, c_eng = st.columns([1, 1])
+    is_th = st.session_state["lang"] == "TH"
+    
     with c_th:
-        if st.button("🇹🇭 TH", key=f"btn_th_{key_suffix}", use_container_width=True):
+        th_label = "TH | 🇹🇭"
+        if st.button(th_label, key=f"btn_th_{key_suffix}", use_container_width=True):
             st.session_state["lang"] = "TH"
             st.rerun()
+            
     with c_eng:
-        if st.button("🇬🇧 EN", key=f"btn_eng_{key_suffix}", use_container_width=True):
+        eng_label = "ENG | 🇬🇧"
+        if st.button(eng_label, key=f"btn_eng_{key_suffix}", use_container_width=True):
             st.session_state["lang"] = "ENG"
             st.rerun()
 
@@ -510,7 +540,7 @@ if "authenticated" not in st.session_state:
     st.session_state["user_info"] = None
 
 if not st.session_state["authenticated"]:
-    top_col1, top_col2 = st.columns([0.82, 0.18])
+    top_col1, top_col2 = st.columns([0.84, 0.16])
     with top_col2:
         render_flag_switch("login")
 
