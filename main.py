@@ -359,12 +359,12 @@ if "lang" not in st.session_state:
 
 car_carrier_bg_url = "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=1920&q=80"
 
-# --- CUSTOM CLEAN CSS FOR EXACT BALANCE ---
+# --- CUSTOM CSS: BIND ALL CONTROLS IN PURE FLEX CONTAINER ---
 st.markdown(
     f"""
     <style>
     .block-container {{
-        padding-top: 1rem !important;
+        padding-top: 0.8rem !important;
         padding-bottom: 1rem !important;
         padding-left: 1.5rem !important;
         padding-right: 1.5rem !important;
@@ -443,7 +443,7 @@ st.markdown(
         margin-bottom: 10px;
     }}
 
-    /* CSS สำหรับย้ายกล่องโปรไฟล์ไปไว้ใน Sidebar */
+    /* CSS สำหรับกล่องข้อมูลผู้ใช้ใน Sidebar */
     .sidebar-user-box {{
         background: #ffffff;
         border: 1px solid #cbd5e1;
@@ -463,50 +463,62 @@ st.markdown(
         color: #64748b;
     }}
 
-    /* CSS สำหรับสวิตช์เลือกภาษา TH | EN มุมขวาบน ขนานเป๊ะระดับพิกเซล */
-    .hdr-lang-btn div.stButton > button {{
-        background-color: #ffffff !important;
+    /* CSS สวิตช์ภาษาแคปซูลชิ้นเดียว ป้องกันตัวหนังสือตกบรรทัด 100% */
+    .lang-capsule-bar {{
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        height: 36px;
+        display: inline-flex;
+        align-items: center;
+        padding: 2px 4px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }}
+
+    .btn-capsule div.stButton > button {{
+        background-color: transparent !important;
         color: #64748b !important;
-        border: 1px solid #cbd5e1 !important;
+        border: none !important;
         border-radius: 6px !important;
-        height: 34px !important;
-        padding: 0px 8px !important;
+        height: 30px !important;
+        padding: 0px 10px !important;
         font-size: 12px !important;
         font-weight: 700 !important;
         margin: 0px !important;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.03) !important;
+        box-shadow: none !important;
     }}
-    .hdr-lang-btn-act div.stButton > button {{
+    .btn-capsule-active div.stButton > button {{
         background-color: #f1f5f9 !important;
         color: #0066B3 !important;
         border: 1px solid #0066B3 !important;
         border-radius: 6px !important;
-        height: 34px !important;
-        padding: 0px 8px !important;
+        height: 30px !important;
+        padding: 0px 10px !important;
         font-size: 12px !important;
         font-weight: 800 !important;
         margin: 0px !important;
         box-shadow: 0 1px 2px rgba(0,0,0,0.03) !important;
     }}
 
-    .logout-btn-adapted div.stButton > button {{
+    .logout-btn-exact div.stButton > button {{
         background-color: #ffffff !important;
         color: #0b2545 !important;
         border: 1px solid #cbd5e1 !important;
-        border-radius: 6px !important;
-        height: 34px !important;
-        width: 36px !important;
-        min-width: 36px !important;
+        border-radius: 8px !important;
+        height: 36px !important;
+        width: 38px !important;
+        min-width: 38px !important;
         padding: 0px !important;
-        font-size: 15px !important;
+        font-size: 14px !important;
         font-weight: 800 !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
         margin: 0px !important;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.03) !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.03) !important;
+        white-space: nowrap !important;
     }}
-    .logout-btn-adapted div.stButton > button:hover {{
+    .logout-btn-exact div.stButton > button:hover {{
         background-color: #fee2e2 !important;
         border-color: #ef4444 !important;
         color: #dc2626 !important;
@@ -527,23 +539,25 @@ if not st.session_state["authenticated"]:
     l_col1, l_col2 = st.columns([0.80, 0.20])
     with l_col2:
         is_th = st.session_state["lang"] == "TH"
+        st.markdown('<div class="lang-capsule-bar">', unsafe_allow_html=True)
         c_th, c_sep, c_en = st.columns([0.45, 0.10, 0.45])
         with c_th:
-            st.markdown(f'<div class="{"hdr-lang-btn-act" if is_th else "hdr-lang-btn"}">', unsafe_allow_html=True)
+            st.markdown(f'<div class="{"btn-capsule-active" if is_th else "btn-capsule"}">', unsafe_allow_html=True)
             if st.button("TH", key="lg_th", use_container_width=True):
                 st.session_state["lang"] = "TH"
                 st.session_state["last_activity"] = time.time()
                 st.rerun()
             st.markdown('</div>', unsafe_allow_html=True)
         with c_sep:
-            st.markdown("<div style='text-align:center; color:#cbd5e1; line-height:34px; font-weight:300;'>|</div>", unsafe_allow_html=True)
+            st.markdown("<div style='text-align:center; color:#cbd5e1; line-height:30px;'>|</div>", unsafe_allow_html=True)
         with c_en:
-            st.markdown(f'<div class="{"hdr-lang-btn-act" if not is_th else "hdr-lang-btn"}">', unsafe_allow_html=True)
+            st.markdown(f'<div class="{"btn-capsule-active" if not is_th else "btn-capsule"}">', unsafe_allow_html=True)
             if st.button("EN", key="lg_en", use_container_width=True):
                 st.session_state["lang"] = "ENG"
                 st.session_state["last_activity"] = time.time()
                 st.rerun()
             st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
     txt = T[st.session_state["lang"]]
 
@@ -612,7 +626,7 @@ st.sidebar.markdown(
     unsafe_allow_html=True,
 )
 
-# 1. ย้ายกล่องผู้ใช้งาน Admin Ball / Admin มาไว้ตรงนี้ (Sidebar แถบซ้ายมือ)
+# กล่องข้อมูลผู้ใช้ Admin Ball ใน Sidebar ฝั่งซ้าย
 st.sidebar.markdown(
     f"""
     <div class="sidebar-user-box">
@@ -639,7 +653,7 @@ st.sidebar.caption("SIAM JWD LOGISTICS CO., LTD.")
 
 
 # --- TOP MAIN HEADER: LOGO LEFT & COMPACT LANG + LOGOUT TOP RIGHT ---
-head_col1, head_col2 = st.columns([0.65, 0.35])
+head_col1, head_col2 = st.columns([0.70, 0.30])
 
 with head_col1:
     st.markdown(
@@ -659,34 +673,32 @@ with head_col2:
     is_th = st.session_state["lang"] == "TH"
     st.markdown("<div style='height: 5px;'></div>", unsafe_allow_html=True)
     
-    # 2. ปรับระยะส่วน TH | EN และปุ่ม Logout ให้กระชับ ชิดมุมขวามือ สมดุลขนานเท่ากันเป๊ะ
-    u1, u2, u3, u4 = st.columns([0.40, 0.08, 0.40, 0.12])
+    # รวมองค์ประกอบภาษา + ปุ่ม Logout ไว้ในสัดส่วนความกว้างที่ปลอดภัย ไม่ตัดตกบรรทัด
+    u_lang, u_logout = st.columns([0.80, 0.20])
     
-    # ปุ่ม TH
-    with u1:
-        st.markdown(f'<div class="{"hdr-lang-btn-act" if is_th else "hdr-lang-btn"}">', unsafe_allow_html=True)
-        if st.button("TH", key="hdr_th", use_container_width=True):
-            st.session_state["lang"] = "TH"
-            st.session_state["last_activity"] = time.time()
-            st.rerun()
+    with u_lang:
+        st.markdown('<div class="lang-capsule-bar">', unsafe_allow_html=True)
+        c_th, c_sep, c_en = st.columns([0.45, 0.10, 0.45])
+        with c_th:
+            st.markdown(f'<div class="{"btn-capsule-active" if is_th else "btn-capsule"}">', unsafe_allow_html=True)
+            if st.button("TH", key="hdr_th", use_container_width=True):
+                st.session_state["lang"] = "TH"
+                st.session_state["last_activity"] = time.time()
+                st.rerun()
+            st.markdown('</div>', unsafe_allow_html=True)
+        with c_sep:
+            st.markdown("<div style='text-align:center; color:#cbd5e1; line-height:30px;'>|</div>", unsafe_allow_html=True)
+        with c_en:
+            st.markdown(f'<div class="{"btn-capsule-active" if not is_th else "btn-capsule"}">', unsafe_allow_html=True)
+            if st.button("EN", key="hdr_en", use_container_width=True):
+                st.session_state["lang"] = "ENG"
+                st.session_state["last_activity"] = time.time()
+                st.rerun()
+            st.markdown('</div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
-    # เส้นคั่น |
-    with u2:
-        st.markdown("<div style='text-align:center; color:#cbd5e1; line-height:34px; font-weight:300;'>|</div>", unsafe_allow_html=True)
-
-    # ปุ่ม EN
-    with u3:
-        st.markdown(f'<div class="{"hdr-lang-btn-act" if not is_th else "hdr-lang-btn"}">', unsafe_allow_html=True)
-        if st.button("EN", key="hdr_en", use_container_width=True):
-            st.session_state["lang"] = "ENG"
-            st.session_state["last_activity"] = time.time()
-            st.rerun()
-        st.markdown('</div>', unsafe_allow_html=True)
-
-    # ปุ่ม Logout [->
-    with u4:
-        st.markdown('<div class="logout-btn-adapted">', unsafe_allow_html=True)
+    with u_logout:
+        st.markdown('<div class="logout-btn-exact">', unsafe_allow_html=True)
         if st.button("[->", help="Logout / ออกจากระบบ", key="btn_logout_main"):
             st.session_state["authenticated"] = False
             st.session_state["user_info"] = None
