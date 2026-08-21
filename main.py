@@ -29,58 +29,58 @@ USER_DB = {
 # --- TRANSLATION DICTIONARY ---
 T = {
     "TH": {
-        "title": "Car Carrier Transport Optimization System",
-        "subtitle": "ระบบคำนวณและวางแผนจัดกลุ่มรถขนส่งสินค้าอัตโนมัติสำหรับฟลีตขนส่งรถยนต์",
-        "login_header": "🔓 เข้าสู่ระบบ (System Login)",
-        "login_caption": "กรุณากรอก Username และ Password เพื่อเข้าใช้งานระบบตามสิทธิ์",
-        "username": "👤 Username (ชื่อผู้ใช้งาน)",
-        "password": "🔑 Password (รหัสผ่าน)",
-        "login_btn": "🔑 เข้าสู่ระบบ (Sign In)",
-        "login_err": "❌ Username หรือ Password ไม่ถูกต้อง!",
+        "title": "ระบบจัดการการขนส่งยานพาหนะ",
+        "subtitle": "จัดการคำสั่งซื้อ วางแผนการขนส่ง และติดตามการส่งมอบอย่างมีประสิทธิภาพ",
+        "login_header": "เข้าสู่ระบบ",
+        "login_caption": "กรอกข้อมูลเพื่อเข้าใช้งานระบบ",
+        "username": "อีเมล / Username",
+        "password": "รหัสผ่าน",
+        "login_btn": "เข้าสู่ระบบ",
+        "login_err": " Username หรือ Password ไม่ถูกต้อง!",
         "user_label": "ผู้ใช้งาน",
         "role_label": "สิทธิ์ระบบ",
         "logout_btn": "Logout",
         "select_menu": "เลือกหัวข้อทำงาน:",
-        "menu_grouping": "🚀 วางแผนจัดกลุ่ม",
-        "menu_master": "📂 ข้อมูลมาสเตอร์",
-        "menu_cond": "📋 เงื่อนไขการจัดกลุ่ม",
-        "menu_fleet": "🚛 ตั้งค่าโควตากองรถ",
-        "menu_history": "📜 ประวัติจัดกลุ่มย้อนหลัง",
-        "menu_revise": "✏️ แก้ไขและสลับคันรถ",
-        "main_sub": "🚀 วางแผนและประมวลผลจัดกลุ่มอัตโนมัติ (Main Workspace)",
-        "upload_fis_title": "📁 อัปโหลดไฟล์ FIS Ready to Grouping (.xlsx)",
+        "menu_grouping": "แดชบอร์ดผู้ดูแลระบบ",
+        "menu_master": "จัดการคำสั่งซื้อ",
+        "menu_cond": "วางแผนการเดินทาง",
+        "menu_fleet": "ตั้งค่าโควตากองรถ",
+        "menu_history": "ประวัติจัดกลุ่มย้อนหลัง",
+        "menu_revise": "แก้ไขและสลับคันรถ",
+        "main_sub": "แดชบอร์ดผู้ดูแลระบบ",
+        "upload_fis_title": "อัปโหลดไฟล์ FIS Ready to Grouping (.xlsx)",
         "upload_fis_desc": "อัปโหลดไฟล์รายการคิวรถที่ต้องการนำมาจัดกลุ่มส่งมอบ",
-        "upload_fis_label": "📁 เลือกไฟล์ FIS Ready to Grouping (.xlsx)",
-        "process_btn": "🚀 เริ่มคำวณจัดกลุ่มอัตโนมัติ (Process Grouping)",
-        "download_btn": "📥 ดาวน์โหลดผลลัพธ์จัดกลุ่ม (.xlsx)",
-        "guide_text": "💡 คำแนะนำ: กรุณาเลือกไฟล์ Grouping order (FIS Ready to Grouping) ด้านบนเพื่อกดปุ่มประมวลผล",
+        "upload_fis_label": "เลือกไฟล์ FIS Ready to Grouping (.xlsx)",
+        "process_btn": "เริ่มคำนวณจัดกลุ่มอัตโนมัติ (Process Grouping)",
+        "download_btn": "ดาวน์โหลดผลลัพธ์จัดกลุ่ม (.xlsx)",
+        "guide_text": " คำแนะนำ: กรุณาเลือกไฟล์ Grouping order (FIS) ด้านบนเพื่อกดปุ่มประมวลผล",
     },
     "ENG": {
-        "title": "Car Carrier Transport Optimization System",
-        "subtitle": "Automated Fleet Grouping & Logistics Optimization Platform for Car Carriers",
-        "login_header": "🔓 System Login",
-        "login_caption": "Please enter Username and Password to access your assigned role",
-        "username": "👤 Username",
-        "password": "🔑 Password",
-        "login_btn": "🔑 Sign In",
-        "login_err": "❌ Invalid Username or Password!",
+        "title": "Car Carrier Transport Management System",
+        "subtitle": "Manage shipment orders, plan logistics, and track deliveries efficiently",
+        "login_header": "System Login",
+        "login_caption": "Please enter your credentials to log in",
+        "username": "Email / Username",
+        "password": "Password",
+        "login_btn": "Sign In",
+        "login_err": " Invalid Username or Password!",
         "user_label": "User",
         "role_label": "System Role",
         "logout_btn": "Logout",
         "select_menu": "Select Module:",
-        "menu_grouping": "🚀 Auto Grouping",
-        "menu_master": "📂 Master List",
-        "menu_cond": "📋 Grouping Conditions",
-        "menu_fleet": "🚛 Fleet Capacity Settings",
-        "menu_history": "📜 Execution History",
-        "menu_revise": "✏️ Revise & Swap VIN",
-        "main_sub": "🚀 Automated Grouping Workspace",
-        "upload_fis_title": "📁 Upload FIS Ready to Grouping (.xlsx)",
+        "menu_grouping": "Admin Dashboard",
+        "menu_master": "Order Management",
+        "menu_cond": "Trip Planning",
+        "menu_fleet": "Fleet Settings",
+        "menu_history": "Grouping History",
+        "menu_revise": "Revise & Swap VIN",
+        "main_sub": "System Administrator Dashboard",
+        "upload_fis_title": "Upload FIS Ready to Grouping (.xlsx)",
         "upload_fis_desc": "Upload pending car shipment list to process auto grouping",
-        "upload_fis_label": "📁 Select FIS Ready to Grouping (.xlsx)",
-        "process_btn": "🚀 Process Auto Grouping",
-        "download_btn": "📥 Download Result Grouping (.xlsx)",
-        "guide_text": "💡 Instruction: Please upload the Grouping order (FIS) file above to begin processing.",
+        "upload_fis_label": "Select FIS Ready to Grouping (.xlsx)",
+        "process_btn": "Process Auto Grouping",
+        "download_btn": "Download Result Grouping (.xlsx)",
+        "guide_text": " Instruction: Please upload the FIS file above to begin processing.",
     },
 }
 
@@ -335,9 +335,9 @@ def process_fis_grouping_with_capacity(file_bytes, master_region_df, grouping_da
     return output_buffer, pd.DataFrame(summary_list), total_cars, [], df
 
 
-# --- STREAMLIT CONFIG & THEME ---
+# --- STREAMLIT CONFIG ---
 st.set_page_config(
-    page_title="SIAM JWD LOGISTICS - Car Carrier TMS",
+    page_title="SIAM JWD LOGISTICS - TMS",
     page_icon="🚚",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -357,180 +357,139 @@ st.session_state["last_activity"] = time.time()
 if "lang" not in st.session_state:
     st.session_state["lang"] = "TH"
 
-car_carrier_bg_url = "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=1920&q=80"
-
 st.markdown(
-    f"""
+    """
     <style>
-    .block-container {{
-        padding-top: 1rem !important;
+    .block-container {
+        padding-top: 0.5rem !important;
         padding-bottom: 1rem !important;
         padding-left: 1.5rem !important;
         padding-right: 1.5rem !important;
         max-width: 100% !important;
-    }}
+    }
     
-    [data-testid="stHeader"] {{
+    [data-testid="stHeader"] {
         background: transparent !important;
-    }}
-    footer {{
+    }
+    footer {
         visibility: hidden !important;
         height: 0px !important;
-    }}
-    a.anchor-link {{
+    }
+    a.anchor-link {
         display: none !important;
-    }}
+    }
     
-    [data-testid="stSidebar"] {{
-        background-color: #f8fafc !important;
-        border-right: 1px solid #e2e8f0 !important;
-        width: 250px !important;
-    }}
-    [data-testid="stSidebar"] * {{
-        color: #1e293b !important;
-    }}
-    [data-testid="stSidebar"] label {{
-        padding: 8px 12px !important;
+    /* SIDEBAR THEME EXACTLY LIKE IMAGE 2 */
+    [data-testid="stSidebar"] {
+        background-color: #ffffff !important;
+        border-right: 1px solid #e5e7eb !important;
+        width: 260px !important;
+    }
+    
+    [data-testid="stSidebar"] * {
+        color: #1f2937 !important;
+    }
+    
+    [data-testid="stSidebar"] label {
+        padding: 10px 14px !important;
         border-radius: 8px !important;
         transition: all 0.2s ease-in-out !important;
-        font-size: 13px !important;
+        font-size: 14px !important;
         font-weight: 500 !important;
-        margin-bottom: 2px !important;
+        margin-bottom: 3px !important;
         cursor: pointer !important;
-    }}
-    [data-testid="stSidebar"] label:hover {{
-        background-color: #e2e8f0 !important;
-        color: #0b2545 !important;
-    }}
-    [data-testid="stSidebar"] [aria-checked="true"] {{
-        background-color: #e0f2fe !important;
-        color: #0066B3 !important;
-        font-weight: 700 !important;
-    }}
-    [data-testid="stSidebarCollapseButton"] button, [data-testid="collapsedControl"] button {{
-        color: #0b2545 !important;
-        background-color: #f1f5f9 !important;
-        border: 1px solid #cbd5e1 !important;
-        border-radius: 6px !important;
-    }}
+    }
     
-    .login-bg {{
-        background: linear-gradient(rgba(11, 37, 69, 0.85), rgba(11, 37, 69, 0.90)), url('{car_carrier_bg_url}');
-        background-size: cover;
-        background-position: center;
-        padding: 22px 20px;
-        border-radius: 12px;
+    [data-testid="stSidebar"] label:hover {
+        background-color: #f3f4f6 !important;
+        color: #1d4ed8 !important;
+    }
+    
+    [data-testid="stSidebar"] [aria-checked="true"] {
+        background-color: #eff6ff !important;
+        color: #1d4ed8 !important;
+        font-weight: 700 !important;
+        border-left: 4px solid #1d4ed8 !important;
+    }
+    
+    /* LOGIN PAGE SPLIT SCREEN (IMAGE 1 STYLE) */
+    .login-left-banner {
+        background: linear-gradient(135deg, #0b2545 0%, #1d3557 100%);
+        height: 100vh;
+        padding: 60px 40px;
         color: white;
-        margin-bottom: 15px;
-    }}
-    
-    [data-testid="stFileUploader"] {{
-        background-color: #ffffff !important;
-        border-radius: 8px !important;
-        padding: 6px !important;
-        border: 1px solid #cbd5e1 !important;
-    }}
-    
-    .clean-card {{
-        background-color: #ffffff;
-        border-left: 5px solid #0066B3;
-        border-radius: 8px;
-        padding: 14px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-        margin-bottom: 10px;
-    }}
-    .clean-card-red {{
-        background-color: #ffffff;
-        border-left: 5px solid #ED1C24;
-        border-radius: 8px;
-        padding: 14px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-        margin-bottom: 10px;
-    }}
-
-    /* CSS FLEXBOX บังคับแถบปุ่มมุมขวาบนให้สมดุล เรียงขนานระนาบเดียวกัน 100% */
-    .top-flex-bar {{
-        display: flex;
-        align-items: center;
-        justify-content: flex-end;
-        gap: 8px;
-        margin-top: 10px;
-    }}
-
-    /* ปุ่มกดเปลี่ยนภาษาทรงกะทัดรัด */
-    .btn-lang-item div.stButton > button {{
-        background-color: #ffffff !important;
-        color: #64748b !important;
-        border: 1px solid #cbd5e1 !important;
-        border-radius: 6px !important;
-        height: 32px !important;
-        padding: 2px 10px !important;
-        font-size: 12px !important;
-        font-weight: 700 !important;
-        margin: 0px !important;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.04) !important;
-    }}
-    .btn-lang-item-active div.stButton > button {{
-        background-color: #f1f5f9 !important;
-        color: #0066B3 !important;
-        border: 1px solid #0066B3 !important;
-        border-radius: 6px !important;
-        height: 32px !important;
-        padding: 2px 10px !important;
-        font-size: 12px !important;
-        font-weight: 800 !important;
-        margin: 0px !important;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.04) !important;
-    }}
-
-    /* กล่องข้อมูลผู้ใช้งาน ยืดหยุ่นตามความกว้างชื่อ */
-    .user-card-flex {{
-        background: #ffffff;
-        border: 1px solid #cbd5e1;
-        border-radius: 6px;
-        height: 32px;
-        padding: 2px 10px;
         display: flex;
         flex-direction: column;
-        justify-content: center;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.04);
-        white-space: nowrap;
-    }}
-    .user-card-title {{
-        font-weight: 800;
-        font-size: 12px;
-        color: #0b2545;
-        line-height: 1.1;
-    }}
-    .user-card-sub {{
-        font-size: 10px;
-        color: #64748b;
-        line-height: 1.1;
-    }}
+        justify-content: space-between;
+    }
 
-    /* ปุ่ม Logout สี่เหลี่ยม [-> */
-    .logout-square-flex div.stButton > button {{
+    /* สวิตช์สลับภาษาทรงแคปซูลมินิมอล (文A TH | EN) */
+    .lang-switcher-btn div.stButton > button {
         background-color: #ffffff !important;
-        color: #0b2545 !important;
-        border: 1px solid #cbd5e1 !important;
+        color: #6b7280 !important;
+        border: 1px solid #e5e7eb !important;
         border-radius: 6px !important;
         height: 32px !important;
-        width: 34px !important;
-        min-width: 34px !important;
-        padding: 0px !important;
-        font-size: 14px !important;
+        padding: 0px 10px !important;
+        font-size: 13px !important;
+        font-weight: 600 !important;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.03) !important;
+    }
+    .lang-switcher-btn-active div.stButton > button {
+        background-color: #ffffff !important;
+        color: #1d4ed8 !important;
+        border: 1px solid #1d4ed8 !important;
+        border-radius: 6px !important;
+        height: 32px !important;
+        padding: 0px 10px !important;
+        font-size: 13px !important;
         font-weight: 800 !important;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.03) !important;
+    }
+
+    /* ปุ่ม Logout สัญลักษณ์ [-> ตรงตามภาพที่ 2 */
+    .logout-btn-exact div.stButton > button {
+        background-color: transparent !important;
+        color: #374151 !important;
+        border: none !important;
+        font-size: 18px !important;
+        font-weight: 700 !important;
+        height: 34px !important;
+        width: 34px !important;
+        padding: 0px !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        margin: 0px !important;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.04) !important;
-    }}
-    .logout-square-flex div.stButton > button:hover {{
-        background-color: #fee2e2 !important;
-        border-color: #ef4444 !important;
+    }
+    .logout-btn-exact div.stButton > button:hover {
         color: #dc2626 !important;
-    }}
+    }
+
+    /* ปุ่มฟอร์มเข้าสู่ระบบสีน้ำเงินเข้มสไตล์ภาพที่ 1 */
+    .login-submit-btn div.stButton > button {
+        background-color: #1d4ed8 !important;
+        color: #ffffff !important;
+        font-size: 15px !important;
+        font-weight: 700 !important;
+        border-radius: 8px !important;
+        height: 44px !important;
+        border: none !important;
+        box-shadow: 0 4px 12px rgba(29, 78, 216, 0.25) !important;
+    }
+
+    .brand-pill-btn {
+        background-color: #eff6ff;
+        border: 1px solid #bfdbfe;
+        color: #1d4ed8;
+        border-radius: 6px;
+        padding: 4px 10px;
+        font-size: 12px;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        height: 32px;
+    }
     </style>
     """,
     unsafe_allow_html=True,
@@ -542,55 +501,73 @@ if "authenticated" not in st.session_state:
     st.session_state["user_info"] = None
 
 if not st.session_state["authenticated"]:
-    # TOP RIGHT LANG SWITCHER FOR LOGIN PAGE
-    st.write("")
-    l_col1, l_col2 = st.columns([0.80, 0.20])
-    with l_col2:
+    # TOP RIGHT LANGUAGE SWITCHER
+    st.markdown("<div style='height: 5px;'></div>", unsafe_allow_html=True)
+    l_top1, l_top2 = st.columns([0.84, 0.16])
+    with l_top2:
         is_th = st.session_state["lang"] == "TH"
-        c_th, c_sep, c_en = st.columns([0.45, 0.10, 0.45])
-        with c_th:
-            st.markdown(f'<div class="{"btn-lang-item-active" if is_th else "btn-lang-item"}">', unsafe_allow_html=True)
-            if st.button("TH", key="lg_th", use_container_width=True):
+        st.markdown("<div style='display:flex; align-items:center; gap:6px; background:#fff; border:1px solid #e5e7eb; padding:2px 8px; border-radius:8px;'>", unsafe_allow_html=True)
+        c_ic, c_t, c_sp, c_e = st.columns([0.2, 0.35, 0.1, 0.35])
+        with c_ic:
+            st.markdown("<span style='font-size:13px; font-weight:bold;'>文<sub>A</sub></span>", unsafe_allow_html=True)
+        with c_t:
+            st.markdown(f'<div class="{"lang-switcher-btn-active" if is_th else "lang-switcher-btn"}">', unsafe_allow_html=True)
+            if st.button("TH", key="lg_th_btn"):
                 st.session_state["lang"] = "TH"
                 st.session_state["last_activity"] = time.time()
                 st.rerun()
             st.markdown('</div>', unsafe_allow_html=True)
-        with c_sep:
-            st.markdown("<div style='text-align:center; color:#cbd5e1; line-height:32px; font-weight:300;'>|</div>", unsafe_allow_html=True)
-        with c_en:
-            st.markdown(f'<div class="{"btn-lang-item-active" if not is_th else "btn-lang-item"}">', unsafe_allow_html=True)
-            if st.button("EN", key="lg_en", use_container_width=True):
+        with c_sp:
+            st.markdown("<span style='color:#d1d5db;'>|</span>", unsafe_allow_html=True)
+        with c_e:
+            st.markdown(f'<div class="{"lang-switcher-btn-active" if not is_th else "lang-switcher-btn"}">', unsafe_allow_html=True)
+            if st.button("EN", key="lg_en_btn"):
                 st.session_state["lang"] = "ENG"
                 st.session_state["last_activity"] = time.time()
                 st.rerun()
             st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
 
     txt = T[st.session_state["lang"]]
 
-    st.markdown(
-        f"""
-        <div class="login-bg">
-            <div style="text-align:center;">
-                <span style="color:#ED1C24; font-size:42px; font-weight:900;">SIAM </span>
-                <span style="color:#ffffff; font-size:42px; font-weight:900;">JWD</span><br>
-                <span style="color:#cbd5e1; font-size:12px; letter-spacing:5px; font-weight:bold;">LOGISTICS</span>
-                <h3 style="color:#ffffff; margin-top:8px; margin-bottom:4px; font-weight:800;">{txt['title']}</h3>
-                <p style="color:#e2e8f0; font-size:13px; margin-bottom:0;">{txt['subtitle']}</p>
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    # LOGIN PAGE SPLIT SCREEN DESIGN (EXACT MATCH IMAGE 1)
+    col_banner, col_form = st.columns([1.1, 1])
 
-    col_l1, col_l2, col_l3 = st.columns([1, 1.5, 1])
-    with col_l2:
-        st.markdown(f"#### **{txt['login_header']}**")
-        st.caption(txt["login_caption"])
+    with col_banner:
+        st.markdown(
+            f"""
+            <div style="background: linear-gradient(180deg, #0b2545 0%, #133a68 100%); padding: 50px 40px; border-radius: 16px; color: white; min-height: 480px; display: flex; flex-direction: column; justify-content: space-between;">
+                <div>
+                    <div style="background: white; width: 140px; padding: 8px; border-radius: 8px; margin-bottom: 30px;">
+                        <span style="color:#ED1C24; font-size:20px; font-weight:900;">SIAM </span>
+                        <span style="color:#0066B3; font-size:20px; font-weight:900;">JWD</span><br>
+                        <span style="color:#64748b; font-size:9px; letter-spacing:2px; font-weight:bold;">LOGISTICS</span>
+                    </div>
+                    <h2 style="font-size: 28px; font-weight: 800; color: #ffffff; margin-bottom: 12px;">{txt['title']}</h2>
+                    <p style="color: #cbd5e1; font-size: 14px; line-height: 1.6;">{txt['subtitle']}</p>
+                </div>
+                <div style="font-size: 12px; color: #94a3b8; font-weight: 500;">
+                    © 2026 YARD - Transportation Management System (TMS). สงวนลิขสิทธิ์
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    with col_form:
+        st.markdown("<div style='padding: 20px 30px;'>", unsafe_allow_html=True)
+        st.markdown(f"<h2 style='font-size:28px; font-weight:800; color:#111827; margin-bottom:4px;'>{txt['login_header']}</h2>", unsafe_allow_html=True)
+        st.markdown(f"<p style='color:#6b7280; font-size:14px; margin-bottom:24px;'>{txt['login_caption']}</p>", unsafe_allow_html=True)
 
         with st.form("login_form"):
-            username_input = st.text_input(txt["username"])
-            password_input = st.text_input(txt["password"], type="password")
-            submit_login = st.form_submit_button(txt["login_btn"], use_container_width=True)
+            username_input = st.text_input(txt["username"], placeholder="jetnarong@siamjwd.com")
+            password_input = st.text_input(txt["password"], type="password", placeholder="••••••••••••")
+            
+            st.markdown("<div style='text-align:right; margin-bottom:15px;'><a href='#' style='color:#2563eb; font-size:13px; text-decoration:none; font-weight:600;'>ลืมรหัสผ่าน?</a></div>", unsafe_allow_html=True)
+            
+            st.markdown('<div class="login-submit-btn">', unsafe_allow_html=True)
+            submit_login = st.form_submit_button(f"→]  {txt['login_btn']}", use_container_width=True)
+            st.markdown('</div>', unsafe_allow_html=True)
 
             if submit_login:
                 user = USER_DB.get(username_input.strip().lower())
@@ -606,24 +583,21 @@ if not st.session_state["authenticated"]:
                     st.rerun()
                 else:
                     st.error(txt["login_err"])
+        st.markdown("</div>", unsafe_allow_html=True)
 
-        st.markdown(
-            """
-            <div style="font-size:12px; color:#64748b; text-align:center; font-weight:bold; margin-top:10px;">
-                SIAM JWD LOGISTICS CO., LTD.
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
     st.stop()
 
-# --- SIDEBAR BRANDING & MENU ---
+
+# --- SIDEBAR BRANDING & MENU (IMAGE 2 STYLE) ---
 st.sidebar.markdown(
     """
-    <div style="padding: 10px 0px 10px 0px; border-bottom: 1px solid #e2e8f0; margin-bottom: 10px;">
-        <span style="color:#ED1C24; font-size:22px; font-weight:900;">SIAM </span>
-        <span style="color:#0066B3; font-size:22px; font-weight:900;">JWD</span><br>
-        <span style="color:#64748b; font-size:10px; letter-spacing:3px; font-weight:bold;">LOGISTICS</span>
+    <div style="padding: 12px 10px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #f3f4f6; margin-bottom: 12px;">
+        <span style="font-size: 20px;">☰</span>
+        <div>
+            <span style="color:#ED1C24; font-size:18px; font-weight:900;">SIAM </span>
+            <span style="color:#0066B3; font-size:18px; font-weight:900;">JWD</span><br>
+            <span style="color:#64748b; font-size:8px; letter-spacing:2px; font-weight:bold;">LOGISTICS</span>
+        </div>
     </div>
     """,
     unsafe_allow_html=True,
@@ -644,71 +618,83 @@ menu_options = [
 active_feature = st.sidebar.radio("Navigation", menu_options, index=0, label_visibility="collapsed")
 
 st.sidebar.markdown("---")
-st.sidebar.caption("SIAM JWD LOGISTICS CO., LTD.")
+st.sidebar.caption("© 2026 SIAM JWD LOGISTICS CO., LTD.")
 
 
-# --- TOP MAIN HEADER: LOGO LEFT & USER + LANG TOP RIGHT (PURE FLEXBOX BALANCED) ---
-head_col1, head_col2 = st.columns([0.48, 0.52])
+# --- TOP MAIN HEADER: LOGO LEFT & USER + LANG TOP RIGHT (EXACT MATCH IMAGE 2) ---
+head_col1, head_col2 = st.columns([0.4, 0.6])
 
 with head_col1:
     st.markdown(
-        """
-        <div style="padding-top: 0px;">
-            <span style="color:#ED1C24; font-size:30px; font-weight:900;">SIAM </span>
-            <span style="color:#0066B3; font-size:30px; font-weight:900;">JWD </span>
-            <span style="color:#1d3557; font-size:20px; font-weight:700;">LOGISTICS</span>
+        f"""
+        <div style="padding-top: 5px;">
+            <h2 style="font-size: 22px; font-weight: 800; color: #111827; margin: 0;">{txt['main_sub']}</h2>
+            <p style="font-size: 13px; color: #6b7280; margin: 0;">กำลังแสดงข้อมูลของ REVER AUTOMOTIVE</p>
         </div>
         """,
         unsafe_allow_html=True,
     )
-    st.markdown(f"#### **{txt['title']}**")
-    st.caption(txt["subtitle"])
 
 with head_col2:
+    # องค์ประกอบมุมขวาบนเรียงขนานเป๊ะ บาลานซ์ตามภาพที่ 2
     is_th = st.session_state["lang"] == "TH"
     
-    # ใช้วิธีจัดสรรพื้นที่คอลัมน์กว้างพอดีองค์ประกอบ ป้องกันการตัดบรรทัด
-    st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
-    u1, u2, u3, u4, u5 = st.columns([0.18, 0.04, 0.18, 0.48, 0.12])
-    
-    # 1. ปุ่ม TH
-    with u1:
-        st.markdown(f'<div class="{"btn-lang-item-active" if is_th else "btn-lang-item"}">', unsafe_allow_html=True)
-        if st.button("TH", key="hdr_th", use_container_width=True):
-            st.session_state["lang"] = "TH"
-            st.session_state["last_activity"] = time.time()
-            st.rerun()
-        st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown("<div style='height: 5px;'></div>", unsafe_allow_html=True)
+    u_lang, u_brand, u_user, u_logout = st.columns([0.28, 0.28, 0.32, 0.12])
 
-    # เส้นคั่น |
-    with u2:
-        st.markdown("<div style='text-align:center; color:#cbd5e1; line-height:32px; font-weight:300;'>|</div>", unsafe_allow_html=True)
+    # 1. ปุ่มสลับภาษา 文A TH | EN
+    with u_lang:
+        st.markdown("<div style='display:flex; align-items:center; gap:4px; background:#fff; border:1px solid #e5e7eb; padding:2px 6px; border-radius:6px; height:32px;'>", unsafe_allow_html=True)
+        c_ic, c_t, c_sp, c_e = st.columns([0.2, 0.35, 0.05, 0.35])
+        with c_ic:
+            st.markdown("<span style='font-size:12px; font-weight:bold;'>文<sub>A</sub></span>", unsafe_allow_html=True)
+        with c_t:
+            st.markdown(f'<div class="{"lang-switcher-btn-active" if is_th else "lang-switcher-btn"}">', unsafe_allow_html=True)
+            if st.button("TH", key="hdr_th_btn"):
+                st.session_state["lang"] = "TH"
+                st.session_state["last_activity"] = time.time()
+                st.rerun()
+            st.markdown('</div>', unsafe_allow_html=True)
+        with c_sp:
+            st.markdown("<span style='color:#d1d5db; font-size:12px;'>|</span>", unsafe_allow_html=True)
+        with c_e:
+            st.markdown(f'<div class="{"lang-switcher-btn-active" if not is_th else "lang-switcher-btn"}">', unsafe_allow_html=True)
+            if st.button("EN", key="hdr_en_btn"):
+                st.session_state["lang"] = "ENG"
+                st.session_state["last_activity"] = time.time()
+                st.rerun()
+            st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
 
-    # 2. ปุ่ม EN
-    with u3:
-        st.markdown(f'<div class="{"btn-lang-item-active" if not is_th else "btn-lang-item"}">', unsafe_allow_html=True)
-        if st.button("EN", key="hdr_en", use_container_width=True):
-            st.session_state["lang"] = "ENG"
-            st.session_state["last_activity"] = time.time()
-            st.rerun()
-        st.markdown('</div>', unsafe_allow_html=True)
-
-    # 3. กล่องโปรไฟล์ผู้ใช้งาน
-    with u4:
+    # 2. ปุ่มเลือกแบรนด์ RE REVER ∨
+    with u_brand:
         st.markdown(
-            f"""
-            <div class="user-card-flex">
-                <div class="user-card-title">{current_user['name']}</div>
-                <div class="user-card-sub">{current_user['role']}</div>
+            """
+            <div class="brand-pill-btn">
+                <span style="background:#2563eb; color:white; border-radius:4px; padding:1px 4px; font-size:10px;">RE</span>
+                <span>REVER</span>
+                <span style="font-size:10px; color:#6b7280;">∨</span>
             </div>
             """,
             unsafe_allow_html=True,
         )
 
-    # 4. ปุ่ม Logout [->
-    with u5:
-        st.markdown('<div class="logout-square-flex">', unsafe_allow_html=True)
-        if st.button("[->", help="Logout / ออกจากระบบ", key="btn_logout_main"):
+    # 3. ชื่อผู้ใช้งาน Admin Ball / Admin (ไร้กรอบครอบทับสไตล์ภาพที่ 2)
+    with u_user:
+        st.markdown(
+            f"""
+            <div style="text-align: right; padding-right: 8px;">
+                <div style="font-weight: 700; font-size: 13px; color: #111827; line-height: 1.1;">{current_user['name']}</div>
+                <div style="font-size: 11px; color: #6b7280; line-height: 1.1;">{current_user['role']}</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    # 4. ปุ่ม Logout ไอคอน [->
+    with u_logout:
+        st.markdown('<div class="logout-btn-exact">', unsafe_allow_html=True)
+        if st.button("[→", help="Logout / ออกจากระบบ", key="btn_logout_main"):
             st.session_state["authenticated"] = False
             st.session_state["user_info"] = None
             st.rerun()
@@ -719,8 +705,6 @@ st.divider()
 
 # 1. AUTO GROUPING WORKSPACE
 if active_feature == txt["menu_grouping"]:
-    st.subheader(txt["main_sub"])
-
     st.markdown(
         f"""
         <div class="clean-card-red">
@@ -744,7 +728,7 @@ if active_feature == txt["menu_grouping"]:
                 st.session_state["master_df_stored"] = master_df_to_use
 
         if master_df_to_use is not None:
-            st.success("✅ File is ready for grouping process.")
+            st.success(" File is ready for grouping process.")
             if st.button(txt["process_btn"], type="primary", use_container_width=True):
                 file_bytes = io.BytesIO(uploaded_file.getvalue())
 
@@ -760,9 +744,9 @@ if active_feature == txt["menu_grouping"]:
                     )
 
                 if missing_locs:
-                    st.error("❌ Missing delivery locations found in Master list!")
+                    st.error(" Missing delivery locations found in Master list!")
                     for m_loc in missing_locs:
-                        st.write(f"- 📍 **{m_loc}**")
+                        st.write(f"-  **{m_loc}**")
                 else:
                     st.divider()
                     st.subheader("📊 Grouping Result Summary")
@@ -814,7 +798,7 @@ elif active_feature == txt["menu_master"]:
         elif "master_df_stored" in st.session_state:
             st.dataframe(st.session_state["master_df_stored"], use_container_width=True)
     else:
-        st.info("🔒 Read-Only mode for Operator role.")
+        st.info(" Read-Only mode for Operator role.")
         if "master_df_stored" in st.session_state:
             st.dataframe(st.session_state["master_df_stored"], use_container_width=True)
 
@@ -828,7 +812,7 @@ elif active_feature == txt["menu_cond"]:
         st.markdown(
             """
             <div class="clean-card">
-                <h4 style="color:#0066B3; margin-top:0;">🎯 Auto Matching</h4>
+                <h4 style="color:#0066B3; margin-top:0;"> Auto Matching</h4>
                 <p style="color:#4a5568; font-size:14px; margin:0;">Delivery Location to Region auto mapping from Master list.</p>
             </div>
             """,
@@ -848,7 +832,7 @@ elif active_feature == txt["menu_cond"]:
         st.markdown(
             """
             <div class="clean-card">
-                <h4 style="color:#0066B3; margin-top:0;">🚛 Route & Slide-on</h4>
+                <h4 style="color:#0066B3; margin-top:0;"> Route & Slide-on</h4>
                 <p style="color:#4a5568; font-size:14px; margin:0;">6-8 Cars per trailer load (DENZA D9 in BKK uses Slide-on).</p>
             </div>
             """,
@@ -858,7 +842,7 @@ elif active_feature == txt["menu_cond"]:
 
 # 4. FLEET CAPACITY SETTINGS
 elif active_feature == txt["menu_fleet"]:
-    st.subheader(f"🚛 {txt['menu_fleet']}")
+    st.subheader(f" {txt['menu_fleet']}")
 
     f1, f2 = st.columns(2)
     with f1:
@@ -927,7 +911,7 @@ elif active_feature == txt["menu_revise"]:
 
             col_rev1, col_rev2 = st.columns(2)
             with col_rev1:
-                if st.button("❌ Remove Selected VINs", type="primary"):
+                if st.button(" Remove Selected VINs", type="primary"):
                     if vins_to_remove:
                         df_proc.loc[df_proc["Vin"].isin(vins_to_remove), "Calc_Group_No"] = ""
                         df_proc.loc[df_proc["Vin"].isin(vins_to_remove), "Calc_Group_Date"] = ""
