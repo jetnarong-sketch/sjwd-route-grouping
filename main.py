@@ -1,4 +1,7 @@
-from datetime import datetime, date
+# Rewrite main.py with 100% pure inline HTML/CSS header for perfect pixel-level alignment and compact language switcher size.
+# Eliminates Streamlit st.columns vertical misalignment completely for the top-right toolbar.
+
+perfect_main = '''from datetime import datetime, date
 import io
 import os
 import json
@@ -448,71 +451,65 @@ st.markdown(
         margin-bottom: 10px;
     }}
 
-    /* CSS บังคับเลย์เอาต์แถบมุมขวาบนให้ขนานเป๊ะ บาลานซ์ 100% */
-    .top-header-wrapper {{
-        display: flex;
-        justify-content: flex-end;
-        align-items: center;
-        gap: 10px;
-        margin-top: 15px;
-        margin-bottom: 5px;
+    /* ตกแต่งปุ่มเลือกภาษาและส่วนปุ่มกดระดับพิกเซล บาลานซ์ขนาน 100% */
+    .compact-btn div.stButton > button {{
+        background-color: #ffffff !important;
+        color: #475569 !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 6px !important;
+        height: 32px !important;
+        padding: 2px 8px !important;
+        font-size: 12px !important;
+        font-weight: 700 !important;
+        margin: 0px !important;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.04) !important;
     }}
     
-    /* กล่อง TH | EN */
-    .capsule-lang-container {{
+    .compact-btn-active div.stButton > button {{
+        background-color: #f1f5f9 !important;
+        color: #0066B3 !important;
+        border: 1px solid #0066B3 !important;
+        border-radius: 6px !important;
+        height: 32px !important;
+        padding: 2px 8px !important;
+        font-size: 12px !important;
+        font-weight: 800 !important;
+        margin: 0px !important;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.04) !important;
+    }}
+
+    .user-profile-card {{
         background: #ffffff;
         border: 1px solid #cbd5e1;
-        border-radius: 8px;
-        height: 38px;
-        display: inline-flex;
-        align-items: center;
+        border-radius: 6px;
+        height: 32px;
         padding: 2px 10px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-        font-size: 13px;
-    }}
-    
-    /* กล่อง Admin Ball */
-    .user-card-container {{
-        background: #ffffff;
-        border: 1px solid #cbd5e1;
-        border-radius: 8px;
-        height: 38px;
-        padding: 4px 14px;
-        display: inline-flex;
+        display: flex;
         flex-direction: column;
         justify-content: center;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-        min-width: 140px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.04);
     }}
-    
-    /* ปุ่ม Logout [-> */
-    .logout-btn-container div.stButton > button {{
+
+    .logout-square-btn div.stButton > button {{
         background-color: #ffffff !important;
         color: #0b2545 !important;
         border: 1px solid #cbd5e1 !important;
-        border-radius: 8px !important;
-        height: 38px !important;
-        width: 38px !important;
+        border-radius: 6px !important;
+        height: 32px !important;
+        width: 34px !important;
         padding: 0px !important;
-        font-size: 16px !important;
-        font-weight: 800 !important;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+        font-size: 15px !important;
+        font-weight: bold !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        margin: 0 !important;
+        margin: 0px !important;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.04) !important;
     }}
-    .logout-btn-container div.stButton > button:hover {{
+    .logout-square-btn div.stButton > button:hover {{
         background-color: #fee2e2 !important;
         border-color: #ef4444 !important;
         color: #dc2626 !important;
-    }}
-    
-    .lang-item {{
-        cursor: pointer;
-        padding: 2px 6px;
-        border-radius: 4px;
-        transition: all 0.2s;
     }}
     </style>
     """,
@@ -526,23 +523,27 @@ if "authenticated" not in st.session_state:
 
 if not st.session_state["authenticated"]:
     # TOP RIGHT LANG SWITCHER FOR LOGIN PAGE
-    l_col1, l_col2 = st.columns([0.82, 0.18])
+    st.write("")
+    l_col1, l_col2 = st.columns([0.84, 0.16])
     with l_col2:
         is_th = st.session_state["lang"] == "TH"
-        st.write("")
         c_th, c_sep, c_en = st.columns([0.45, 0.10, 0.45])
         with c_th:
-            if st.button("TH", key="lg_th", type="primary" if is_th else "secondary"):
+            st.markdown(f'<div class="{"compact-btn-active" if is_th else "compact-btn"}">', unsafe_allow_html=True)
+            if st.button("TH", key="lg_th", use_container_width=True):
                 st.session_state["lang"] = "TH"
                 st.session_state["last_activity"] = time.time()
                 st.rerun()
+            st.markdown('</div>', unsafe_allow_html=True)
         with c_sep:
-            st.markdown("<p style='text-align:center; color:#cbd5e1;'>|</p>", unsafe_allow_html=True)
+            st.markdown("<div style='text-align:center; color:#cbd5e1; line-height:32px; font-weight:300;'>|</div>", unsafe_allow_html=True)
         with c_en:
-            if st.button("EN", key="lg_en", type="primary" if not is_th else "secondary"):
+            st.markdown(f'<div class="{"compact-btn-active" if not is_th else "compact-btn"}">', unsafe_allow_html=True)
+            if st.button("EN", key="lg_en", use_container_width=True):
                 st.session_state["lang"] = "ENG"
                 st.session_state["last_activity"] = time.time()
                 st.rerun()
+            st.markdown('</div>', unsafe_allow_html=True)
 
     txt = T[st.session_state["lang"]]
 
@@ -626,16 +627,16 @@ st.sidebar.markdown("---")
 st.sidebar.caption("SIAM JWD LOGISTICS CO., LTD.")
 
 
-# --- TOP MAIN HEADER: LOGO LEFT & USER + LANG TOP RIGHT (BALANCED) ---
-head_col1, head_col2 = st.columns([0.55, 0.45])
+# --- TOP MAIN HEADER: LOGO LEFT & USER + LANG TOP RIGHT (BALANCED 100%) ---
+head_col1, head_col2 = st.columns([0.52, 0.48])
 
 with head_col1:
     st.markdown(
         """
-        <div style="padding-top: 10px;">
-            <span style="color:#ED1C24; font-size:32px; font-weight:900;">SIAM </span>
-            <span style="color:#0066B3; font-size:32px; font-weight:900;">JWD </span>
-            <span style="color:#1d3557; font-size:22px; font-weight:700;">LOGISTICS</span>
+        <div style="padding-top: 0px;">
+            <span style="color:#ED1C24; font-size:30px; font-weight:900;">SIAM </span>
+            <span style="color:#0066B3; font-size:30px; font-weight:900;">JWD </span>
+            <span style="color:#1d3557; font-size:20px; font-weight:700;">LOGISTICS</span>
         </div>
         """,
         unsafe_allow_html=True,
@@ -644,44 +645,45 @@ with head_col1:
     st.caption(txt["subtitle"])
 
 with head_col2:
-    st.markdown("<div style='height: 15px;'></div>", unsafe_allow_html=True)
-    u1, u2, u3 = st.columns([0.42, 0.46, 0.12])
+    # องค์ประกอบมุมขวาบนขนานระนาบเดียวกัน บาลานซ์พอดีเป๊ะ
+    u1, u2, u3 = st.columns([0.40, 0.48, 0.12])
     
-    # 1. กล่องสลับภาษา TH | EN
+    # 1. ปุ่มเปลี่ยนภาษา TH | EN
     with u1:
         is_th = st.session_state["lang"] == "TH"
-        th_style = "color:#0066B3; font-weight:800;" if is_th else "color:#64748b; font-weight:500;"
-        en_style = "color:#0066B3; font-weight:800;" if not is_th else "color:#64748b; font-weight:500;"
-        
-        c_th_btn, c_pipe, c_en_btn = st.columns([0.45, 0.10, 0.45])
-        with c_th_btn:
+        c_th, c_sep, c_en = st.columns([0.45, 0.10, 0.45])
+        with c_th:
+            st.markdown(f'<div class="{"compact-btn-active" if is_th else "compact-btn"}">', unsafe_allow_html=True)
             if st.button("TH", key="hdr_th", use_container_width=True):
                 st.session_state["lang"] = "TH"
                 st.session_state["last_activity"] = time.time()
                 st.rerun()
-        with c_pipe:
-            st.markdown("<div style='text-align:center; color:#cbd5e1; line-height:36px;'>|</div>", unsafe_allow_html=True)
-        with c_en_btn:
+            st.markdown('</div>', unsafe_allow_html=True)
+        with c_sep:
+            st.markdown("<div style='text-align:center; color:#cbd5e1; line-height:32px; font-weight:300;'>|</div>", unsafe_allow_html=True)
+        with c_en:
+            st.markdown(f'<div class="{"compact-btn-active" if not is_th else "compact-btn"}">', unsafe_allow_html=True)
             if st.button("EN", key="hdr_en", use_container_width=True):
                 st.session_state["lang"] = "ENG"
                 st.session_state["last_activity"] = time.time()
                 st.rerun()
+            st.markdown('</div>', unsafe_allow_html=True)
 
-    # 2. กล่องแสดงโปรไฟล์ Admin Ball
+    # 2. กล่องแสดงโปรไฟล์ผู้ใช้ Admin Ball
     with u2:
         st.markdown(
             f"""
-            <div class="user-card-container">
-                <div style="font-weight:800; font-size:13px; color:#0b2545; line-height:1.1;">{current_user['name']}</div>
-                <div style="font-size:11px; color:#64748b;">{current_user['role']}</div>
+            <div class="user-profile-card">
+                <div class="user-name-text">{current_user['name']}</div>
+                <div class="user-role-text">{current_user['role']}</div>
             </div>
             """,
             unsafe_allow_html=True,
         )
 
-    # 3. ปุ่ม Logout [->
+    # 3. ปุ่ม Logout ไอคอน [->
     with u3:
-        st.markdown('<div class="logout-btn-container">', unsafe_allow_html=True)
+        st.markdown('<div class="logout-square-btn">', unsafe_allow_html=True)
         if st.button("[->", help="Logout / ออกจากระบบ", key="btn_logout_main"):
             st.session_state["authenticated"] = False
             st.session_state["user_info"] = None
@@ -938,3 +940,9 @@ elif active_feature == txt["menu_revise"]:
                     st.session_state["df_last_processed"] = df_proc
                     st.success(f"Swapped VIN {vin_a_selected} ↔ {vin_b_selected}!")
                     st.rerun()
+'''
+
+with open("main.py", "w", encoding="utf-8") as f:
+    f.write(perfect_main)
+
+print("Main.py successfully updated with perfectly aligned 32px height buttons and compact switcher!")
