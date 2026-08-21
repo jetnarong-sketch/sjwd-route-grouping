@@ -335,7 +335,7 @@ def process_fis_grouping_with_capacity(file_bytes, master_region_df, grouping_da
     return output_buffer, pd.DataFrame(summary_list), total_cars, [], df
 
 
-# --- STREAMLIT CONFIG & LIGHTWEIGHT SIDEBAR THEME ---
+# --- STREAMLIT CONFIG & THEME ---
 st.set_page_config(
     page_title="SIAM JWD LOGISTICS - Car Carrier TMS",
     page_icon="🚚",
@@ -386,11 +386,9 @@ st.markdown(
         border-right: 1px solid #e2e8f0 !important;
         width: 250px !important;
     }}
-    
     [data-testid="stSidebar"] * {{
         color: #1e293b !important;
     }}
-    
     [data-testid="stSidebar"] label {{
         padding: 8px 12px !important;
         border-radius: 8px !important;
@@ -400,18 +398,15 @@ st.markdown(
         margin-bottom: 2px !important;
         cursor: pointer !important;
     }}
-    
     [data-testid="stSidebar"] label:hover {{
         background-color: #e2e8f0 !important;
         color: #0b2545 !important;
     }}
-    
     [data-testid="stSidebar"] [aria-checked="true"] {{
         background-color: #e0f2fe !important;
         color: #0066B3 !important;
         font-weight: 700 !important;
     }}
-    
     [data-testid="stSidebarCollapseButton"] button, [data-testid="collapsedControl"] button {{
         color: #0b2545 !important;
         background-color: #f1f5f9 !important;
@@ -435,9 +430,6 @@ st.markdown(
         padding: 6px !important;
         border: 1px solid #cbd5e1 !important;
     }}
-    [data-testid="stFileUploader"] * {{
-        color: #1a202c !important;
-    }}
     
     .clean-card {{
         background-color: #ffffff;
@@ -455,117 +447,77 @@ st.markdown(
         box-shadow: 0 2px 8px rgba(0,0,0,0.06);
         margin-bottom: 10px;
     }}
+
+    /* CSS บังคับเลย์เอาต์แถบมุมขวาบนให้ขนานเป๊ะ บาลานซ์ 100% */
+    .top-header-wrapper {{
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 10px;
+        margin-top: 15px;
+        margin-bottom: 5px;
+    }}
     
-    /* กล่องข้อมูลผู้ใช้งานขนานสมดุล */
-    .user-profile-box {{
+    /* กล่อง TH | EN */
+    .capsule-lang-container {{
         background: #ffffff;
         border: 1px solid #cbd5e1;
         border-radius: 8px;
-        padding: 4px 12px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
         height: 38px;
-        margin-top: 0px;
-    }}
-    .user-name-text {{
-        font-weight: 800;
+        display: inline-flex;
+        align-items: center;
+        padding: 2px 10px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
         font-size: 13px;
-        color: #0b2545;
-        line-height: 1.1;
-    }}
-    .user-role-text {{
-        font-size: 11px;
-        color: #64748b;
     }}
     
-    /* สไตล์สวิตช์แปลภาษาแคปซูลมินิมอล TH | EN บาลานซ์เป๊ะ */
-    .lang-capsule-box {{
+    /* กล่อง Admin Ball */
+    .user-card-container {{
         background: #ffffff;
         border: 1px solid #cbd5e1;
         border-radius: 8px;
         height: 38px;
-        display: flex;
-        align-items: center;
+        padding: 4px 14px;
+        display: inline-flex;
+        flex-direction: column;
         justify-content: center;
-        padding: 0px 8px;
         box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        min-width: 140px;
     }}
     
-    .lang-btn-sub div.stButton > button {{
-        background-color: transparent !important;
-        color: #64748b !important;
-        border: none !important;
-        box-shadow: none !important;
-        height: 30px !important;
-        padding: 0px 8px !important;
-        font-size: 13px !important;
-        font-weight: 600 !important;
-    }}
-    
-    .lang-btn-active div.stButton > button {{
-        background-color: transparent !important;
-        color: #0066B3 !important;
-        border: none !important;
-        box-shadow: none !important;
-        height: 30px !important;
-        padding: 0px 8px !important;
-        font-size: 13px !important;
-        font-weight: 800 !important;
-    }}
-    
-    /* ปุ่ม Logout สัญลักษณ์ [-> */
-    .logout-icon-btn div.stButton > button {{
+    /* ปุ่ม Logout [-> */
+    .logout-btn-container div.stButton > button {{
         background-color: #ffffff !important;
         color: #0b2545 !important;
         border: 1px solid #cbd5e1 !important;
         border-radius: 8px !important;
+        height: 38px !important;
+        width: 38px !important;
         padding: 0px !important;
         font-size: 16px !important;
         font-weight: 800 !important;
         box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
-        height: 38px !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
+        margin: 0 !important;
     }}
-    .logout-icon-btn div.stButton > button:hover {{
+    .logout-btn-container div.stButton > button:hover {{
         background-color: #fee2e2 !important;
         border-color: #ef4444 !important;
         color: #dc2626 !important;
+    }}
+    
+    .lang-item {{
+        cursor: pointer;
+        padding: 2px 6px;
+        border-radius: 4px;
+        transition: all 0.2s;
     }}
     </style>
     """,
     unsafe_allow_html=True,
 )
-
-# HELPER FUNCTION FOR CAPSULE LANGUAGE SWITCHER (TH | EN)
-def render_capsule_lang_switch(key_suffix=""):
-    is_th = st.session_state["lang"] == "TH"
-    
-    c_th, c_sep, c_en = st.columns([0.45, 0.10, 0.45])
-    
-    with c_th:
-        css_class = "lang-btn-active" if is_th else "lang-btn-sub"
-        st.markdown(f'<div class="{css_class}">', unsafe_allow_html=True)
-        if st.button("TH", key=f"btn_th_{key_suffix}", use_container_width=True):
-            st.session_state["lang"] = "TH"
-            st.session_state["last_activity"] = time.time()
-            st.rerun()
-        st.markdown('</div>', unsafe_allow_html=True)
-        
-    with c_sep:
-        st.markdown('<div style="text-align:center; color:#cbd5e1; font-weight:300; line-height:30px;">|</div>', unsafe_allow_html=True)
-        
-    with c_en:
-        css_class = "lang-btn-active" if not is_th else "lang-btn-sub"
-        st.markdown(f'<div class="{css_class}">', unsafe_allow_html=True)
-        if st.button("EN", key=f"btn_en_{key_suffix}", use_container_width=True):
-            st.session_state["lang"] = "ENG"
-            st.session_state["last_activity"] = time.time()
-            st.rerun()
-        st.markdown('</div>', unsafe_allow_html=True)
 
 # --- LOGIN SYSTEM ---
 if "authenticated" not in st.session_state:
@@ -573,11 +525,24 @@ if "authenticated" not in st.session_state:
     st.session_state["user_info"] = None
 
 if not st.session_state["authenticated"]:
-    top_col1, top_col2 = st.columns([0.82, 0.18])
-    with top_col2:
-        st.markdown('<div class="lang-capsule-box">', unsafe_allow_html=True)
-        render_capsule_lang_switch("login")
-        st.markdown('</div>', unsafe_allow_html=True)
+    # TOP RIGHT LANG SWITCHER FOR LOGIN PAGE
+    l_col1, l_col2 = st.columns([0.82, 0.18])
+    with l_col2:
+        is_th = st.session_state["lang"] == "TH"
+        st.write("")
+        c_th, c_sep, c_en = st.columns([0.45, 0.10, 0.45])
+        with c_th:
+            if st.button("TH", key="lg_th", type="primary" if is_th else "secondary"):
+                st.session_state["lang"] = "TH"
+                st.session_state["last_activity"] = time.time()
+                st.rerun()
+        with c_sep:
+            st.markdown("<p style='text-align:center; color:#cbd5e1;'>|</p>", unsafe_allow_html=True)
+        with c_en:
+            if st.button("EN", key="lg_en", type="primary" if not is_th else "secondary"):
+                st.session_state["lang"] = "ENG"
+                st.session_state["last_activity"] = time.time()
+                st.rerun()
 
     txt = T[st.session_state["lang"]]
 
@@ -661,13 +626,13 @@ st.sidebar.markdown("---")
 st.sidebar.caption("SIAM JWD LOGISTICS CO., LTD.")
 
 
-# --- TOP MAIN HEADER: LOGO LEFT & USER + LANG TOP RIGHT ---
+# --- TOP MAIN HEADER: LOGO LEFT & USER + LANG TOP RIGHT (BALANCED) ---
 head_col1, head_col2 = st.columns([0.55, 0.45])
 
 with head_col1:
     st.markdown(
         """
-        <div style="padding-top: 2px;">
+        <div style="padding-top: 10px;">
             <span style="color:#ED1C24; font-size:32px; font-weight:900;">SIAM </span>
             <span style="color:#0066B3; font-size:32px; font-weight:900;">JWD </span>
             <span style="color:#1d3557; font-size:22px; font-weight:700;">LOGISTICS</span>
@@ -679,30 +644,45 @@ with head_col1:
     st.caption(txt["subtitle"])
 
 with head_col2:
-    u_col1, u_col2, u_col3 = st.columns([0.38, 0.50, 0.12])
+    st.markdown("<div style='height: 15px;'></div>", unsafe_allow_html=True)
+    u1, u2, u3 = st.columns([0.42, 0.46, 0.12])
     
-    with u_col1:
-        st.markdown('<div class="lang-capsule-box">', unsafe_allow_html=True)
-        render_capsule_lang_switch("main_header")
-        st.markdown('</div>', unsafe_allow_html=True)
+    # 1. กล่องสลับภาษา TH | EN
+    with u1:
+        is_th = st.session_state["lang"] == "TH"
+        th_style = "color:#0066B3; font-weight:800;" if is_th else "color:#64748b; font-weight:500;"
+        en_style = "color:#0066B3; font-weight:800;" if not is_th else "color:#64748b; font-weight:500;"
+        
+        c_th_btn, c_pipe, c_en_btn = st.columns([0.45, 0.10, 0.45])
+        with c_th_btn:
+            if st.button("TH", key="hdr_th", use_container_width=True):
+                st.session_state["lang"] = "TH"
+                st.session_state["last_activity"] = time.time()
+                st.rerun()
+        with c_pipe:
+            st.markdown("<div style='text-align:center; color:#cbd5e1; line-height:36px;'>|</div>", unsafe_allow_html=True)
+        with c_en_btn:
+            if st.button("EN", key="hdr_en", use_container_width=True):
+                st.session_state["lang"] = "ENG"
+                st.session_state["last_activity"] = time.time()
+                st.rerun()
 
-    with u_col2:
-        role_label = current_user["role"]
+    # 2. กล่องแสดงโปรไฟล์ Admin Ball
+    with u2:
         st.markdown(
             f"""
-            <div class="user-profile-box">
-                <div>
-                    <div class="user-name-text">{current_user['name']}</div>
-                    <div class="user-role-text">{role_label}</div>
-                </div>
+            <div class="user-card-container">
+                <div style="font-weight:800; font-size:13px; color:#0b2545; line-height:1.1;">{current_user['name']}</div>
+                <div style="font-size:11px; color:#64748b;">{current_user['role']}</div>
             </div>
             """,
             unsafe_allow_html=True,
         )
 
-    with u_col3:
-        st.markdown('<div class="logout-icon-btn">', unsafe_allow_html=True)
-        if st.button("[->", help="Logout / ออกจากระบบ", use_container_width=True):
+    # 3. ปุ่ม Logout [->
+    with u3:
+        st.markdown('<div class="logout-btn-container">', unsafe_allow_html=True)
+        if st.button("[->", help="Logout / ออกจากระบบ", key="btn_logout_main"):
             st.session_state["authenticated"] = False
             st.session_state["user_info"] = None
             st.rerun()
