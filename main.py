@@ -1,5 +1,4 @@
-# Rewrite main.py with the brand-new Revise/Search/Edit module
-full_code = '''from datetime import datetime, date
+from datetime import datetime, date
 import io
 import os
 import json
@@ -1035,7 +1034,10 @@ elif active_feature == txt["menu_revise"]:
                 df_temp = pd.DataFrame(hrec["full_details"])
                 gcol_t = "Grouping number" if "Grouping number" in df_temp.columns else "Calc_Group_No"
                 if gcol_t in df_temp.columns:
-                    mask = df_temp[gcol_t].astype(str).str.strip().str.lower() == str(target_group_id).strip().lower()
+                    # Flexible partial search
+                    clean_target = str(target_group_id).strip().lower().replace("atl", "").replace("sjwd", "")
+                    g_series = df_temp[gcol_t].astype(str).str.strip().str.lower()
+                    mask = g_series.str.contains(clean_target, na=False) | (g_series == str(target_group_id).strip().lower())
                     if mask.any():
                         matched_records.append((hkey, hrec, df_temp, gcol_t))
 
@@ -1043,7 +1045,10 @@ elif active_feature == txt["menu_revise"]:
             df_temp = st.session_state["df_last_processed"]
             gcol_t = "Grouping number" if "Grouping number" in df_temp.columns else "Calc_Group_No"
             if gcol_t in df_temp.columns:
-                mask = df_temp[gcol_t].astype(str).str.strip().str.lower() == str(target_group_id).strip().lower()
+                # Flexible partial search
+                clean_target = str(target_group_id).strip().lower().replace("atl", "").replace("sjwd", "")
+                g_series = df_temp[gcol_t].astype(str).str.strip().str.lower()
+                mask = g_series.str.contains(clean_target, na=False) | (g_series == str(target_group_id).strip().lower())
                 if mask.any():
                     matched_records.append(("Active_Session", {}, df_temp, gcol_t))
 
@@ -1051,7 +1056,11 @@ elif active_feature == txt["menu_revise"]:
             st.error(f"❌ ไม่พบข้อมูลสำหรับ Grouping Number: `{target_group_id}` ในระบบ กรุณาตรวจสอบรหัสอีกครั้ง")
         else:
             hkey, hrec, df_matched, gcol = matched_records[0]
-            group_vins_df = df_matched[df_matched[gcol].astype(str).str.strip().str.lower() == str(target_group_id).strip().lower()].copy()
+            clean_target = str(target_group_id).strip().lower().replace("atl", "").replace("sjwd", "")
+            g_series = df_matched[gcol].astype(str).str.strip().str.lower()
+            mask_match = g_series.str.contains(clean_target, na=False) | (g_series == str(target_group_id).strip().lower())
+            
+            group_vins_df = df_matched[mask_match].copy()
 
             st.success(f"✅ พบรถในกลุ่มนี้ทั้งหมด {len(group_vins_df)} คัน")
 
@@ -1076,9 +1085,9 @@ elif active_feature == txt["menu_revise"]:
             # Action 1: Cancel Entire Group
             with col_act1:
                 if st.button(f"🚨 ยกเลิกกลุ่ม {target_group_id} ทั้งหมด ({len(group_vins_df)} คัน)", type="primary", use_container_width=True, key="btn_cancel_entire_searched"):
-                    df_matched.loc[df_matched[gcol].astype(str).str.strip().str.lower() == str(target_group_id).strip().lower(), gcol] = "เศษรอ Mix"
+                    df_matched.loc[mask_match, gcol] = "เศษรอ Mix"
                     if "Calc_Group_No" in df_matched.columns:
-                        df_matched.loc[df_matched["Calc_Group_No"].astype(str).str.strip().str.lower() == str(target_group_id).strip().lower(), "Calc_Group_No"] = ""
+                        df_matched.loc[mask_match, "Calc_Group_No"] = ""
 
                     # Save back to History Database
                     if hkey != "Active_Session" and hkey in history_data:
@@ -1114,9 +1123,3 @@ elif active_feature == txt["menu_revise"]:
                         st.rerun()
                     else:
                         st.warning("⚠️ กรุณาติ๊กเลือกคันรถที่ต้องการถอดออกด้านบนก่อนครับ")
-'''
-
-with open("main.py", "w", encoding="utf-8") as f:
-    f.write(full_code)
-
-print("Updated main.py with direct Search Box and Checkbox selection for Group editing!")
