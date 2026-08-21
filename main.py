@@ -2,6 +2,7 @@ from datetime import datetime, date
 import io
 import os
 import json
+import time
 import openpyxl
 import pandas as pd
 import streamlit as st
@@ -334,13 +335,24 @@ def process_fis_grouping_with_capacity(file_bytes, master_region_df, grouping_da
     return output_buffer, pd.DataFrame(summary_list), total_cars, [], df
 
 
-# --- STREAMLIT CONFIG & LIGHTWEIGHT SIDEBAR THEME ---
+# --- STREAMLIT CONFIG & CUSTOM LOGISTICS THEME ---
 st.set_page_config(
     page_title="SIAM JWD LOGISTICS - Car Carrier TMS",
     page_icon="🚚",
     layout="wide",
     initial_sidebar_state="expanded",
 )
+
+# SESSION TIMEOUT CHECK (10 MINS INACTIVITY AUTO LOGOUT)
+TIMEOUT_SECONDS = 600  # 10 นาที
+if "last_activity" in st.session_state and st.session_state.get("authenticated", False):
+    if time.time() - st.session_state["last_activity"] > TIMEOUT_SECONDS:
+        st.session_state["authenticated"] = False
+        st.session_state["user_info"] = None
+        st.warning("⏱️ หมดเวลาการใช้งานระบบเนื่องจากไม่มีการเคลื่อนไหวเกิน 10 นาที กรุณาเข้าสู่ระบบใหม่")
+        st.rerun()
+
+st.session_state["last_activity"] = time.time()
 
 if "lang" not in st.session_state:
     st.session_state["lang"] = "TH"
@@ -406,9 +418,6 @@ st.markdown(
         border: 1px solid #cbd5e1 !important;
         border-radius: 6px !important;
     }}
-    [data-testid="stSidebarCollapseButton"] button:hover, [data-testid="collapsedControl"] button:hover {{
-        background-color: #e2e8f0 !important;
-    }}
     
     .login-bg {{
         background: linear-gradient(rgba(11, 37, 69, 0.85), rgba(11, 37, 69, 0.90)), url('{car_carrier_bg_url}');
@@ -429,23 +438,8 @@ st.markdown(
     [data-testid="stFileUploader"] * {{
         color: #1a202c !important;
     }}
-    [data-testid="stFileUploader"] button {{
-        background-color: #0066B3 !important;
-        color: #ffffff !important;
-        border-radius: 6px !important;
-        border: none !important;
-    }}
     
-    div.stButton > button:first-child {{
-        background-color: #ED1C24 !important;
-        color: white !important;
-        font-weight: bold !important;
-        border-radius: 8px !important;
-        border: none !important;
-        padding: 8px 20px !important;
-        box-shadow: 0px 4px 10px rgba(237, 28, 36, 0.3) !important;
-    }}
-    
+    /* การ์ดลบปุ่มสีแดงเดิมออก */
     .clean-card {{
         background-color: #ffffff;
         border-left: 5px solid #0066B3;
@@ -472,6 +466,7 @@ st.markdown(
         align-items: center;
         justify-content: space-between;
         box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+        height: 38px;
     }}
     .user-name-text {{
         font-weight: 800;
@@ -484,43 +479,67 @@ st.markdown(
         color: #64748b;
     }}
     
-    /* สไตล์ปุ่มสลับภาษาจิ๋วแบบกำหนดขนาดเป๊ะ คลิกง่าย */
-    .flag-switch-btn button {{
+    /* สไตล์ปุ่มสลับภาษาจิ๋ว สีขาวสะอาดยึดพื้นที่เต็มนิ้วคลิกง่าย */
+    .flag-btn-clean button {{
         background-color: #ffffff !important;
-        color: #0b2545 !important;
+        color: #1e293b !important;
         border: 1px solid #cbd5e1 !important;
         border-radius: 6px !important;
         padding: 4px 8px !important;
         font-size: 12px !important;
         font-weight: bold !important;
-        box-shadow: none !important;
-        height: 36px !important;
-        margin: 0px !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+        height: 38px !important;
+        cursor: pointer !important;
     }}
-    .flag-switch-btn button:hover {{
+    .flag-btn-clean button:hover {{
         background-color: #f1f5f9 !important;
         border-color: #0066B3 !important;
         color: #0066B3 !important;
+    }}
+    
+    /* ปุ่ม Logout ไอคอนสัญลักษณ์ [-> สไตล์มินิมอล */
+    .logout-icon-btn button {{
+        background-color: #ffffff !important;
+        color: #0b2545 !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 8px !important;
+        padding: 0px !important;
+        font-size: 18px !important;
+        font-weight: bold !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+        height: 38px !important;
+        cursor: pointer !important;
+    }}
+    .logout-icon-btn button:hover {{
+        background-color: #fee2e2 !important;
+        border-color: #ef4444 !important;
+        color: #dc2626 !important;
     }}
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-# HELPER FUNCTION FOR COMPACT FLAG SWITCHING BUTTONS
-def render_flag_switch(key_suffix=""):
+# HELPER FUNCTION FOR COMPACT CLEAN FLAG BUTTONS WITH REAL IMAGES
+def render_clean_flag_switch(key_suffix=""):
     c_th, c_eng = st.columns([1, 1])
+    th_flag_img = "https://flagcdn.com/w20/th.png"
+    eng_flag_img = "https://flagcdn.com/w20/gb.png"
+    
     with c_th:
-        st.markdown('<div class="flag-switch-btn">', unsafe_allow_html=True)
+        st.markdown('<div class="flag-btn-clean">', unsafe_allow_html=True)
         if st.button("TH | 🇹🇭", key=f"btn_th_{key_suffix}", use_container_width=True):
             st.session_state["lang"] = "TH"
+            st.session_state["last_activity"] = time.time()
             st.rerun()
         st.markdown('</div>', unsafe_allow_html=True)
             
     with c_eng:
-        st.markdown('<div class="flag-switch-btn">', unsafe_allow_html=True)
+        st.markdown('<div class="flag-btn-clean">', unsafe_allow_html=True)
         if st.button("ENG | 🇬🇧", key=f"btn_eng_{key_suffix}", use_container_width=True):
             st.session_state["lang"] = "ENG"
+            st.session_state["last_activity"] = time.time()
             st.rerun()
         st.markdown('</div>', unsafe_allow_html=True)
 
@@ -532,7 +551,7 @@ if "authenticated" not in st.session_state:
 if not st.session_state["authenticated"]:
     top_col1, top_col2 = st.columns([0.82, 0.18])
     with top_col2:
-        render_flag_switch("login")
+        render_clean_flag_switch("login")
 
     txt = T[st.session_state["lang"]]
 
@@ -565,6 +584,7 @@ if not st.session_state["authenticated"]:
                 user = USER_DB.get(username_input.strip().lower())
                 if user and user["password"] == password_input:
                     st.session_state["authenticated"] = True
+                    st.session_state["last_activity"] = time.time()
                     st.session_state["user_info"] = {
                         "username": username_input,
                         "name": user["name"],
@@ -636,7 +656,7 @@ with head_col2:
     u_col1, u_col2, u_col3 = st.columns([0.42, 0.43, 0.15])
     
     with u_col1:
-        render_flag_switch("main_header")
+        render_clean_flag_switch("main_header")
 
     with u_col2:
         role_label = current_user["role"]
@@ -653,10 +673,12 @@ with head_col2:
         )
 
     with u_col3:
+        st.markdown('<div class="logout-icon-btn">', unsafe_allow_html=True)
         if st.button("🚪", help="Logout / ออกจากระบบ", use_container_width=True):
             st.session_state["authenticated"] = False
             st.session_state["user_info"] = None
             st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
 
 st.divider()
 
