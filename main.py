@@ -335,7 +335,7 @@ def process_fis_grouping_with_capacity(file_bytes, master_region_df, grouping_da
     return output_buffer, pd.DataFrame(summary_list), total_cars, [], df
 
 
-# --- STREAMLIT CONFIG & CUSTOM LOGISTICS THEME ---
+# --- STREAMLIT CONFIG & COMPACT RESPONSIVE THEME ---
 st.set_page_config(
     page_title="SIAM JWD LOGISTICS - Car Carrier TMS",
     page_icon="🚚",
@@ -345,15 +345,21 @@ st.set_page_config(
 if "lang" not in st.session_state:
     st.session_state["lang"] = "TH"
 
-cur_lang = st.session_state["lang"]
-txt = T[cur_lang]
-
 car_carrier_bg_url = "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=1920&q=80"
 
 st.markdown(
     f"""
     <style>
-    /* ซ่อน Anchor Links และ Header/Footer */
+    /* ลด Padding ของทั้งหน้าเพื่อความพอดีหน้าจอ */
+    .block-container {{
+        padding-top: 1rem !important;
+        padding-bottom: 1rem !important;
+        padding-left: 2rem !important;
+        padding-right: 2rem !important;
+        max-width: 100% !important;
+    }}
+    
+    /* ซ่อน Header / Footer / Anchor link */
     .css-1544g2n, .e1ewe6wb4, [data-testid="stHeader"], footer {{
         visibility: hidden !important;
         height: 0px !important;
@@ -362,23 +368,15 @@ st.markdown(
         display: none !important;
     }}
     
-    /* สไตล์ Banner หน้า Login */
+    /* Banner หน้า Login แบบกะทัดรัด */
     .login-bg {{
         background: linear-gradient(rgba(11, 37, 69, 0.85), rgba(11, 37, 69, 0.90)), url('{car_carrier_bg_url}');
         background-size: cover;
         background-position: center;
-        padding: 45px 20px;
-        border-radius: 16px;
-        color: white;
-        margin-bottom: 25px;
-    }}
-    
-    .login-card {{
-        background-color: #ffffff;
-        padding: 30px;
+        padding: 25px 20px;
         border-radius: 12px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.12);
-        border: 1px solid #cbd5e1;
+        color: white;
+        margin-bottom: 15px;
     }}
     
     /* Sidebar สีกรมองค์กร */
@@ -393,8 +391,8 @@ st.markdown(
     /* กล่อง File Uploader */
     [data-testid="stFileUploader"] {{
         background-color: #f8f9fa !important;
-        border-radius: 10px !important;
-        padding: 10px !important;
+        border-radius: 8px !important;
+        padding: 6px !important;
         border: 1px solid #cbd5e1 !important;
     }}
     [data-testid="stFileUploader"] * {{
@@ -414,7 +412,7 @@ st.markdown(
         font-weight: bold !important;
         border-radius: 8px !important;
         border: none !important;
-        padding: 10px 24px !important;
+        padding: 8px 20px !important;
         box-shadow: 0px 4px 10px rgba(237, 28, 36, 0.3) !important;
     }}
     
@@ -423,17 +421,27 @@ st.markdown(
         background-color: #ffffff;
         border-left: 5px solid #0066B3;
         border-radius: 8px;
-        padding: 18px;
+        padding: 14px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-        margin-bottom: 15px;
+        margin-bottom: 10px;
     }}
     .clean-card-red {{
         background-color: #ffffff;
         border-left: 5px solid #ED1C24;
         border-radius: 8px;
-        padding: 18px;
+        padding: 14px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-        margin-bottom: 15px;
+        margin-bottom: 10px;
+    }}
+    
+    /* ธงชาติตกแต่งจิ๋วในปุ่มเปลี่ยนภาษา */
+    .flag-icon {{
+        width: 18px;
+        height: 12px;
+        margin-left: 5px;
+        vertical-align: middle;
+        border-radius: 2px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.2);
     }}
     </style>
     """,
@@ -446,35 +454,53 @@ if "authenticated" not in st.session_state:
     st.session_state["user_info"] = None
 
 if not st.session_state["authenticated"]:
-    # LANGUAGE SELECTOR ON LOGIN PAGE
-    lang_col1, lang_col2 = st.columns([8, 2])
+    # LANGUAGE SELECTOR ON TOP RIGHT
+    lang_col1, lang_col2 = st.columns([8.2, 1.8])
     with lang_col2:
-        selected_lang = st.radio("🌐 Language", ["TH 🇹🇭", "ENG 🇬🇧"], horizontal=True, key="login_lang_toggle")
-        new_lang = "TH" if "TH" in selected_lang else "ENG"
-        if new_lang != st.session_state["lang"]:
-            st.session_state["lang"] = new_lang
+        selected_lang_choice = st.radio(
+            "🌐 Language",
+            ["TH", "ENG"],
+            horizontal=True,
+            key="login_lang_toggle",
+            label_visibility="collapsed",
+        )
+        if selected_lang_choice != st.session_state["lang"]:
+            st.session_state["lang"] = selected_lang_choice
             st.rerun()
 
     txt = T[st.session_state["lang"]]
 
+    # Banner โลโก้และหัวข้อ
     st.markdown(
         f"""
         <div class="login-bg">
             <div style="text-align:center;">
-                <span style="color:#ED1C24; font-size:52px; font-weight:900;">SIAM </span>
-                <span style="color:#ffffff; font-size:52px; font-weight:900;">JWD</span><br>
-                <span style="color:#cbd5e1; font-size:13px; letter-spacing:6px; font-weight:bold;">LOGISTICS</span>
-                <h2 style="color:#ffffff; margin-top:15px; font-weight:800;">{txt['title']}</h2>
-                <p style="color:#e2e8f0; font-size:15px; margin-bottom:0;">{txt['subtitle']}</p>
+                <span style="color:#ED1C24; font-size:42px; font-weight:900;">SIAM </span>
+                <span style="color:#ffffff; font-size:42px; font-weight:900;">JWD</span><br>
+                <span style="color:#cbd5e1; font-size:12px; letter-spacing:5px; font-weight:bold;">LOGISTICS</span>
+                <h3 style="color:#ffffff; margin-top:8px; margin-bottom:4px; font-weight:800;">{txt['title']}</h3>
+                <p style="color:#e2e8f0; font-size:13px; margin-bottom:0;">{txt['subtitle']}</p>
             </div>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
-    col_l1, col_l2, col_l3 = st.columns([0.8, 1.4, 0.8])
+    col_l1, col_l2, col_l3 = st.columns([1, 1.5, 1])
     with col_l2:
-        st.markdown(f"##### **{txt['login_header']}**")
+        st.markdown(
+            f"""
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                <span style="font-size:18px; font-weight:bold; color:#0b2545;">{txt['login_header']}</span>
+                <span style="font-size:12px; color:#64748b;">
+                    Language: 
+                    <b>TH</b><img src="https://flagcdn.com/w20/th.png" class="flag-icon"> | 
+                    <b>ENG</b><img src="https://flagcdn.com/w20/gb.png" class="flag-icon">
+                </span>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
         st.caption(txt["login_caption"])
 
         with st.form("login_form"):
@@ -496,10 +522,9 @@ if not st.session_state["authenticated"]:
                 else:
                     st.error(txt["login_err"])
 
-        st.markdown("---")
         st.markdown(
             """
-            <div style="font-size:13px; color:#64748b; text-align:center; font-weight:bold;">
+            <div style="font-size:12px; color:#64748b; text-align:center; font-weight:bold; margin-top:10px;">
                 SIAM JWD LOGISTICS CO., LTD.
             </div>
             """,
@@ -510,20 +535,19 @@ if not st.session_state["authenticated"]:
 # --- SIDEBAR BRANDING & AUTH USER INFO ---
 st.sidebar.markdown(
     """
-    <div style="text-align:center; padding: 10px 0px 10px 0px;">
-        <span style="color:#ED1C24; font-size:26px; font-weight:900;">SIAM </span>
-        <span style="color:#ffffff; font-size:26px; font-weight:900;">JWD</span><br>
-        <span style="color:#8da9c4; font-size:12px; letter-spacing:4px; font-weight:bold;">LOGISTICS</span>
+    <div style="text-align:center; padding: 5px 0px 5px 0px;">
+        <span style="color:#ED1C24; font-size:24px; font-weight:900;">SIAM </span>
+        <span style="color:#ffffff; font-size:24px; font-weight:900;">JWD</span><br>
+        <span style="color:#8da9c4; font-size:11px; letter-spacing:4px; font-weight:bold;">LOGISTICS</span>
     </div>
     """,
     unsafe_allow_html=True,
 )
 
-# LANGUAGE TOGGLE IN SIDEBAR
-sb_lang = st.sidebar.radio("🌐 Language / ภาษา", ["TH 🇹🇭", "ENG 🇬🇧"], horizontal=True, key="sb_lang_toggle")
-new_sb_lang = "TH" if "TH" in sb_lang else "ENG"
-if new_sb_lang != st.session_state["lang"]:
-    st.session_state["lang"] = new_sb_lang
+# LANGUAGE TOGGLE IN SIDEBAR WITH SUBTLE FLAGS
+sb_lang = st.sidebar.radio("🌐 Language", ["TH", "ENG"], horizontal=True, key="sb_lang_toggle")
+if sb_lang != st.session_state["lang"]:
+    st.session_state["lang"] = sb_lang
     st.rerun()
 
 txt = T[st.session_state["lang"]]
@@ -563,10 +587,10 @@ st.sidebar.caption("SIAM JWD LOGISTICS CO., LTD.")
 # --- MAIN PANEL HEADER ---
 st.markdown(
     """
-    <div style="padding-bottom: 10px;">
-        <span style="color:#ED1C24; font-size:46px; font-weight:900;">SIAM </span>
-        <span style="color:#0066B3; font-size:46px; font-weight:900;">JWD </span>
-        <span style="color:#1d3557; font-size:32px; font-weight:700;">LOGISTICS</span>
+    <div style="padding-bottom: 5px;">
+        <span style="color:#ED1C24; font-size:38px; font-weight:900;">SIAM </span>
+        <span style="color:#0066B3; font-size:38px; font-weight:900;">JWD </span>
+        <span style="color:#1d3557; font-size:26px; font-weight:700;">LOGISTICS</span>
     </div>
     """,
     unsafe_allow_html=True,
