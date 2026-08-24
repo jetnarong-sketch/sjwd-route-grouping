@@ -27,6 +27,7 @@ USER_DB = {
     },
 }
 
+# --- TRANSLATION DICTIONARY ---
 T = {
     "TH": {
         "title": "Car Carrier Transport Optimization System",
@@ -145,6 +146,174 @@ def is_car_ready_to_ship(row, hold_col="HOLD", remark_col="Remark"):
 
     return True, "Ready"
 
+def process_fis_grouping_adapted(file_bytes, grouping_date_obj, target_regions=["BKK", "Northeast", "West"]):
+    grouping_date_str = grouping_date_obj.strftime("%y%m%d")
+    grouping_date_display = grouping_date_obj.strftime("%d %b %y")
+
+    df = pd.read_excel(file_bytes)
+
+    pickup_col = "Location" if "Location" in df.columns else "Pick up Location"
+    delivery_col = "Delivery Location"
+    region_col = "Region"
+    model_col = "Model" if "Model" in df.columns else "MODEL NAME"
+    group_no_col = "Grouping number"
+    group_date_col = "Grouping Date"
+    hold_col = "HOLD"
+    remark_col = "Remark"
+    alloc_date_col = "Allocation Date"
+
+    df["Mapped_Region"] = df[delivery_col].astype(str).str.strip().map(DEALER_REGION_MAP)
+    df[region_col] = df[region_col].fillna(df["Mapped_Region"])
+
+    df[group_no_col] = df[group_no_col].astype(object)
+    if group_date_col in df.columns:
+        df[group_date_col] = df[group_date_col].astype(object)
+
+    df["Ready_Tuple"] = df.apply(lambda r: is_car_ready_to_ship(r, hold_col, remark_col), axis=1)
+    df["Ready_Flag"] = df["Ready_Tuple"].apply(lambda x: x[0])
+    df["Unready_Reason"] = df["Ready_Tuple"].apply(lambda x: x[1])
+
+    df["Is_Express"] = df[remark_col].astype(str).str.contains("จัดส่งด่วน|ด่วน|express", case=False, na=False)
+    if alloc_date_col in df.columns:
+        df["_sort_date"] = pd.to_datetime(df[alloc_date_col], errors="coerce")
+    else:
+        df["_sort_date"] = pd.Timestamp.max
+
+    ready_df = df[(df["Ready_Flag"] == True) & (df[region_col].isin(target_regions))].copy()
+    ready_df = ready_df.sort_values(by=["Is_Express", "_sort_date"], ascending=[False, True])
+
+    ready_df["Estimated_Weight_KG"] = (
+        ready_df[model_col]
+        .astype(str)
+        .str.upper()
+        .map(lambda x: MODEL_WEIGHT_MASTER.get(x, 1800))
+    )
+
+    df["Calc_Group_No"] = ""
+    df["Calc_Group_Date"] = ""
+    summary_list = []
+    prefix = f"SJWD{grouping_date_str}-"
+    group_counter = 1
+
+    bkk_ready = ready_df[ready_df[region_col] == "BKK"].copy()
+    bkk_dealer_counts = bkk_ready[delivery_col].value_counts()
+
+    for dealer, count in bkk_dealer_counts.items():
+        if count >= 5:
+            dealer_indices = bkk_ready[bkk_ready[delivery_col] == dealer].index.tolist()
+            load_size = min(count, 7)
+            group_indices = dealer_indices[:load_size]
+
+            current_group_id = f"{prefix}{group_counter:03d}"
+            df.loc[group_indices, "Calc_Group_No"] = current_group_id
+            df.loc[group_indices, "Calc_Group_Date"] = grouping_date_display
+
+            group_weight = ready_df.loc[group_indices, "Estimated_Weight_KG"].sum()
+            vins_in_group = ready_df.loc[group_indices, "Vin"].astype(str).tolist() if "Vin" in ready_df.columns else []
+
+            summary_list.append(
+                {
+                    "Grouping ID": current_group_id,
+                    "Type": f"Single-Dealer ({len(group_indices)} Load)",
+                    "Region": "BKK",
+                    "Pick up Locations": ", ".join(map(str, set(ready_df.loc[group_indices, pickup_col]))),
+                    "Delivery Locations": str(dealer),
+                    "Car Count": len(group_indices),
+                    "Total Weight (kg)": group_weight,
+                    "VINs": vins_in_group,
+                    "Indices": [int(x) for x in group_indices],
+                }
+            )
+            group_counter += 1
+            ready_df = ready_df.drop(index=group_indices)
+
+    bkk_rem = ready_df[ready_df[region_col] == "BKK"].index.tolist()
+    if len(bkk_rem) >= 6:
+        group_size = min(len(bkk_rem), 8)
+        group_indices = bkk_rem[:group_size]
+
+        current_group_id = f"{prefix}{group_counter:03d}"
+        df.loc[group_indices, "Calc_Group_No"] = current_group_id
+        df.loc[group_indices, "Calc_Group_Date"] = grouping_date_display
+
+        group_weight = ready_df.loc[group_indices, "Estimated_Weight_KG"].sum()
+        vins_in_group = ready_df.loc[group_indices, "Vin"].astype(str).tolist() if "Vin" in ready_df.columns else []
+
+        summary_list.append(
+            {
+                "Grouping ID": current_group_id,
+                "Type": f"Trailer ({len(group_indices)} Load)",
+                "Region": "BKK",
+                "Pick up Locations": ", ".join(map(str, set(ready_df.loc[group_indices, pickup_col]))),
+                "Delivery Locations": ", ".join(map(str, set(ready_df.loc[group_indices, delivery_col]))),
+                "Car Count": len(group_indices),
+                "Total Weight (kg)": group_weight,
+                "VINs": vins_in_group,
+                "Indices": [int(x) for x in group_indices],
+            }
+        )
+        group_counter += 1
+        ready_df = ready_df.drop(index=group_indices)
+
+    for reg in ["Northeast", "West"]:
+        reg_indices = ready_df[ready_df[region_col] == reg].index.tolist()
+        while len(reg_indices) >= 6:
+            target_count = 8 if len(reg_indices) >= 8 else (7 if len(reg_indices) >= 7 else 6)
+            group_indices = reg_indices[:target_count]
+
+            current_group_id = f"{prefix}{group_counter:03d}"
+            df.loc[group_indices, "Calc_Group_No"] = current_group_id
+            df.loc[group_indices, "Calc_Group_Date"] = grouping_date_display
+
+            group_weight = ready_df.loc[group_indices, "Estimated_Weight_KG"].sum()
+            vins_in_group = ready_df.loc[group_indices, "Vin"].astype(str).tolist() if "Vin" in ready_df.columns else []
+
+            summary_list.append(
+                {
+                    "Grouping ID": current_group_id,
+                    "Type": f"Trailer ({len(group_indices)} Load)",
+                    "Region": reg,
+                    "Pick up Locations": ", ".join(map(str, set(ready_df.loc[group_indices, pickup_col]))),
+                    "Delivery Locations": ", ".join(map(str, set(ready_df.loc[group_indices, delivery_col]))),
+                    "Car Count": len(group_indices),
+                    "Total Weight (kg)": group_weight,
+                    "VINs": vins_in_group,
+                    "Indices": [int(x) for x in group_indices],
+                }
+            )
+            group_counter += 1
+            ready_df = ready_df.drop(index=group_indices)
+            reg_indices = ready_df[ready_df[region_col] == reg].index.tolist()
+
+    wb = openpyxl.load_workbook(file_bytes)
+    ws = wb.active
+
+    headers = [cell.value for cell in ws[1]]
+    g_no_col_idx = headers.index(group_no_col) + 1
+    region_col_idx = headers.index(region_col) + 1
+
+    for idx, row in df.iterrows():
+        excel_row_num = idx + 2
+        calc_no = row["Calc_Group_No"]
+        calc_date = row["Calc_Group_Date"]
+        region_val = row[region_col]
+
+        ws.cell(row=excel_row_num, column=region_col_idx, value=region_val)
+
+        if calc_no != "":
+            ws.cell(row=excel_row_num, column=g_no_col_idx, value=calc_no)
+            if group_date_col in headers:
+                g_date_col_idx = headers.index(group_date_col) + 1
+                ws.cell(row=excel_row_num, column=g_date_col_idx, value=calc_date)
+
+    output_buffer = io.BytesIO()
+    wb.save(output_buffer)
+    output_buffer.seek(0)
+
+    total_cars = len(df)
+    return output_buffer, pd.DataFrame(summary_list), total_cars, df
+
+# --- STREAMLIT CONFIG ---
 st.set_page_config(
     page_title="SIAM JWD LOGISTICS - Car Carrier TMS",
     page_icon="🚚",
@@ -167,6 +336,7 @@ if "lang" not in st.session_state:
 
 car_carrier_bg_url = "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=1920&q=80"
 
+# --- SIMPLE CSS & THEME ---
 st.markdown(
     f"""
     <style>
@@ -208,6 +378,14 @@ st.markdown(
     .clean-card {{
         background-color: #ffffff;
         border-left: 5px solid #0066B3;
+        border-radius: 8px;
+        padding: 14px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        margin-bottom: 10px;
+    }}
+    .clean-card-red {{
+        background-color: #ffffff;
+        border-left: 5px solid #ED1C24;
         border-radius: 8px;
         padding: 14px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.06);
@@ -509,13 +687,13 @@ elif active_feature == txt["menu_history"]:
                 show_cols = df_display.columns.tolist()
             st.dataframe(df_display[show_cols], use_container_width=True)
 
-# --- 6. REVISE & SEARCH MODULE (AUTOSUGGEST DROPDOWN WITH CONFIRMATION) ---
+# --- 6. REVISE & SEARCH MODULE (DROPDOWN SEARCH & TABLE VIEW) ---
 elif active_feature == txt["menu_revise"]:
     st.subheader("✏️ แก้ไขและยกเลิกกลุ่ม (Revise Grouping Number)")
 
     history_data = load_history()
 
-    # ดึงรายการ Grouping ID ทั้งหมดเฉพาะกลุ่มที่มีอยู่จริง
+    # Collect all available grouping numbers
     all_groups_pool = set()
     for hkey, hrec in history_data.items():
         if "full_details" in hrec and hrec["full_details"]:
@@ -591,7 +769,6 @@ elif active_feature == txt["menu_revise"]:
 
             st.success(f"✅ พบรถในกลุ่มนี้ทั้งหมด {len(group_vins_df)} คัน")
             
-            # Interactive Checkbox Data Table
             display_cols = [c for c in ["Vin", "MODEL NAME", "Color", "Location", "Delivery Location", "Region"] if c in group_vins_df.columns]
             
             table_data = group_vins_df[display_cols].copy()
