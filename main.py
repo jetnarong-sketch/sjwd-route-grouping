@@ -27,7 +27,6 @@ USER_DB = {
     },
 }
 
-# --- TRANSLATION DICTIONARY ---
 T = {
     "TH": {
         "title": "Car Carrier Transport Optimization System",
@@ -44,7 +43,7 @@ T = {
         "menu_cond": "📋 เงื่อนไขการจัดกลุ่ม",
         "menu_fleet": "🚛 ตั้งค่าโควตากองรถ",
         "menu_history": "📜 ประวัติจัดกลุ่มย้อนหลัง",
-        "menu_revise": "✏️ แก้ไขและสลับคันรถ",
+        "menu_revise": "✏️ แก้ไขและยกเลิกกลุ่ม",
         "main_sub": "🚀 วางแผนและประมวลผลจัดกลุ่มอัตโนมัติ (Main Workspace)",
         "upload_fis_title": "📁 อัปโหลดไฟล์ FIS Ready to Grouping (.xlsx)",
         "upload_fis_desc": "อัปโหลดไฟล์รายการคิวรถที่ต้องการนำมาจัดกลุ่มส่งมอบ",
@@ -68,7 +67,7 @@ T = {
         "menu_cond": "📋 Grouping Conditions",
         "menu_fleet": "🚛 Fleet Capacity Settings",
         "menu_history": "📜 Execution History",
-        "menu_revise": "✏️ Revise & Swap VIN",
+        "menu_revise": "✏️ Revise & Cancel Grouping",
         "main_sub": "🚀 Transport Grouping Workspace",
         "upload_fis_title": "📁 Upload FIS Ready to Grouping (.xlsx)",
         "upload_fis_desc": "Upload pending car shipment list to process auto grouping",
@@ -107,120 +106,6 @@ DEALER_REGION_MAP = {
 
 HISTORY_FILE = "grouping_history.json"
 
-DEFAULT_HISTORY = {
-  "2026-08-21_133000_Manual": {
-    "timestamp": "2026-08-21 13:30:00",
-    "mode": "Manual Actual Import",
-    "total_cars": 169,
-    "grouped_cars": 60,
-    "total_groups": 9,
-    "summary": [
-      {
-        "Grouping ID": "SJWD260821-001",
-        "Car Count": 6,
-        "Region": "BKK",
-        "Delivery Locations": "BKK Automobile Co., Ltd. (Minburi-Ramindra)"
-      },
-      {
-        "Grouping ID": "SJWD260821-002",
-        "Car Count": 5,
-        "Region": "BKK",
-        "Delivery Locations": "BKK EV Car Co., Ltd. (Donmuang)"
-      },
-      {
-        "Grouping ID": "SJWD260821-003",
-        "Car Count": 7,
-        "Region": "BKK",
-        "Delivery Locations": "Jinlong Motors Co., Ltd. (Chaengwattana)"
-      },
-      {
-        "Grouping ID": "SJWD260821-004",
-        "Car Count": 6,
-        "Region": "BKK",
-        "Delivery Locations": "Metromobile Co., Ltd. (Talingchan)"
-      },
-      {
-        "Grouping ID": "SJWD260821-005",
-        "Car Count": 7,
-        "Region": "BKK",
-        "Delivery Locations": "Metromobile Co., Ltd. (Onnut)"
-      },
-      {
-        "Grouping ID": "SJWD260821-006",
-        "Car Count": 8,
-        "Region": "Northeast",
-        "Delivery Locations": "Arena Motor (Nongbualamphu) Co., Ltd., Arena Motor Co., Ltd., EV-D Ubon Co., Ltd."
-      }
-    ],
-    "full_details": [
-      {
-        "Vin": "LGXCE4CB9TG026047",
-        "MODEL NAME": "BYD ATTO3 (480KM-EXT) BLUE",
-        "Location": "Auto Tran 20Rai",
-        "Delivery Location": "Arena Motor (Nongbualamphu) Co., Ltd. (Nong Bua Lam Phu)",
-        "Region": "Northeast",
-        "Grouping number": "SJWD260821-006"
-      },
-      {
-        "Vin": "LC0CE4CBXT4313286",
-        "MODEL NAME": "BYD ATTO 2 PREMIUM BLACK",
-        "Location": "Main Yard (LCB)",
-        "Delivery Location": "Arena Motor Co., Ltd. (Arena Udon Thani)",
-        "Region": "Northeast",
-        "Grouping number": "SJWD260821-006"
-      },
-      {
-        "Vin": "LGXCE4CC8T2214399",
-        "MODEL NAME": "BYD ATTO 1 DYNAMIC WHITE",
-        "Location": "Main Yard (LCB)",
-        "Delivery Location": "Arena Motor Co., Ltd. (Arena Udon Thani)",
-        "Region": "Northeast",
-        "Grouping number": "SJWD260821-006"
-      },
-      {
-        "Vin": "LC0CE4CB3T4340801",
-        "MODEL NAME": "BYD ATTO 2 PREMIUM WHITE",
-        "Location": "NYB2 Phase 2",
-        "Delivery Location": "EV-D Ubon Co., Ltd.  (Ubon Ratchathani)",
-        "Region": "Northeast",
-        "Grouping number": "SJWD260821-006"
-      },
-      {
-        "Vin": "LC0CE4CB3T4340829",
-        "MODEL NAME": "BYD ATTO 2 PREMIUM WHITE",
-        "Location": "NYB2 Phase 2",
-        "Delivery Location": "EV-D Ubon Co., Ltd.  (Ubon Ratchathani)",
-        "Region": "Northeast",
-        "Grouping number": "SJWD260821-006"
-      },
-      {
-        "Vin": "LC0CE4CB4T4340872",
-        "MODEL NAME": "BYD ATTO 2 PREMIUM WHITE",
-        "Location": "NYB2 Phase 2",
-        "Delivery Location": "EV-D Ubon Co., Ltd.  (Ubon Ratchathani)",
-        "Region": "Northeast",
-        "Grouping number": "SJWD260821-006"
-      },
-      {
-        "Vin": "LC0CE4CB4T4330097",
-        "MODEL NAME": "BYD ATTO 2 PREMIUM WHITE",
-        "Location": "NYB2 Phase 2",
-        "Delivery Location": "EV-D Ubon Co., Ltd.  (Ubon Ratchathani)",
-        "Region": "Northeast",
-        "Grouping number": "SJWD260821-006"
-      },
-      {
-        "Vin": "LC0CE4CB5T4330111",
-        "MODEL NAME": "BYD ATTO 2 PREMIUM WHITE",
-        "Location": "NYB2 Phase 2",
-        "Delivery Location": "EV-D Ubon Co., Ltd.  (Ubon Ratchathani)",
-        "Region": "Northeast",
-        "Grouping number": "SJWD260821-006"
-      }
-    ]
-  }
-}
-
 def normalize_key(text):
     if pd.isna(text) or text is None:
         return ""
@@ -236,8 +121,7 @@ def load_history():
                     return data
         except Exception:
             pass
-    save_history(DEFAULT_HISTORY)
-    return DEFAULT_HISTORY
+    return {}
 
 def save_history(history_data):
     try:
@@ -260,173 +144,6 @@ def is_car_ready_to_ship(row, hold_col="HOLD", remark_col="Remark"):
                 return False, f"Remark: {str(row[remark_col]).strip()}"
 
     return True, "Ready"
-
-def process_fis_grouping_adapted(file_bytes, grouping_date_obj, target_regions=["BKK", "Northeast", "West"]):
-    grouping_date_str = grouping_date_obj.strftime("%y%m%d")
-    grouping_date_display = grouping_date_obj.strftime("%d %b %y")
-
-    df = pd.read_excel(file_bytes)
-
-    pickup_col = "Location" if "Location" in df.columns else "Pick up Location"
-    delivery_col = "Delivery Location"
-    region_col = "Region"
-    model_col = "Model" if "Model" in df.columns else "MODEL NAME"
-    group_no_col = "Grouping number"
-    group_date_col = "Grouping Date"
-    hold_col = "HOLD"
-    remark_col = "Remark"
-    alloc_date_col = "Allocation Date"
-
-    df["Mapped_Region"] = df[delivery_col].astype(str).str.strip().map(DEALER_REGION_MAP)
-    df[region_col] = df[region_col].fillna(df["Mapped_Region"])
-
-    df[group_no_col] = df[group_no_col].astype(object)
-    if group_date_col in df.columns:
-        df[group_date_col] = df[group_date_col].astype(object)
-
-    df["Ready_Tuple"] = df.apply(lambda r: is_car_ready_to_ship(r, hold_col, remark_col), axis=1)
-    df["Ready_Flag"] = df["Ready_Tuple"].apply(lambda x: x[0])
-    df["Unready_Reason"] = df["Ready_Tuple"].apply(lambda x: x[1])
-
-    df["Is_Express"] = df[remark_col].astype(str).str.contains("จัดส่งด่วน|ด่วน|express", case=False, na=False)
-    if alloc_date_col in df.columns:
-        df["_sort_date"] = pd.to_datetime(df[alloc_date_col], errors="coerce")
-    else:
-        df["_sort_date"] = pd.Timestamp.max
-
-    ready_df = df[(df["Ready_Flag"] == True) & (df[region_col].isin(target_regions))].copy()
-    ready_df = ready_df.sort_values(by=["Is_Express", "_sort_date"], ascending=[False, True])
-
-    ready_df["Estimated_Weight_KG"] = (
-        ready_df[model_col]
-        .astype(str)
-        .str.upper()
-        .map(lambda x: MODEL_WEIGHT_MASTER.get(x, 1800))
-    )
-
-    df["Calc_Group_No"] = ""
-    df["Calc_Group_Date"] = ""
-    summary_list = []
-    prefix = f"SJWD{grouping_date_str}-"
-    group_counter = 1
-
-    bkk_ready = ready_df[ready_df[region_col] == "BKK"].copy()
-    bkk_dealer_counts = bkk_ready[delivery_col].value_counts()
-
-    for dealer, count in bkk_dealer_counts.items():
-        if count >= 5:
-            dealer_indices = bkk_ready[bkk_ready[delivery_col] == dealer].index.tolist()
-            load_size = min(count, 7)
-            group_indices = dealer_indices[:load_size]
-
-            current_group_id = f"{prefix}{group_counter:03d}"
-            df.loc[group_indices, "Calc_Group_No"] = current_group_id
-            df.loc[group_indices, "Calc_Group_Date"] = grouping_date_display
-
-            group_weight = ready_df.loc[group_indices, "Estimated_Weight_KG"].sum()
-            vins_in_group = ready_df.loc[group_indices, "Vin"].astype(str).tolist() if "Vin" in ready_df.columns else []
-
-            summary_list.append(
-                {
-                    "Grouping ID": current_group_id,
-                    "Type": f"Single-Dealer ({len(group_indices)} Load)",
-                    "Region": "BKK",
-                    "Pick up Locations": ", ".join(map(str, set(ready_df.loc[group_indices, pickup_col]))),
-                    "Delivery Locations": str(dealer),
-                    "Car Count": len(group_indices),
-                    "Total Weight (kg)": group_weight,
-                    "VINs": vins_in_group,
-                    "Indices": [int(x) for x in group_indices],
-                }
-            )
-            group_counter += 1
-            ready_df = ready_df.drop(index=group_indices)
-
-    bkk_rem = ready_df[ready_df[region_col] == "BKK"].index.tolist()
-    if len(bkk_rem) >= 6:
-        group_size = min(len(bkk_rem), 8)
-        group_indices = bkk_rem[:group_size]
-
-        current_group_id = f"{prefix}{group_counter:03d}"
-        df.loc[group_indices, "Calc_Group_No"] = current_group_id
-        df.loc[group_indices, "Calc_Group_Date"] = grouping_date_display
-
-        group_weight = ready_df.loc[group_indices, "Estimated_Weight_KG"].sum()
-        vins_in_group = ready_df.loc[group_indices, "Vin"].astype(str).tolist() if "Vin" in ready_df.columns else []
-
-        summary_list.append(
-            {
-                "Grouping ID": current_group_id,
-                "Type": f"Trailer ({len(group_indices)} Load)",
-                "Region": "BKK",
-                "Pick up Locations": ", ".join(map(str, set(ready_df.loc[group_indices, pickup_col]))),
-                "Delivery Locations": ", ".join(map(str, set(ready_df.loc[group_indices, delivery_col]))),
-                "Car Count": len(group_indices),
-                "Total Weight (kg)": group_weight,
-                "VINs": vins_in_group,
-                "Indices": [int(x) for x in group_indices],
-            }
-        )
-        group_counter += 1
-        ready_df = ready_df.drop(index=group_indices)
-
-    for reg in ["Northeast", "West"]:
-        reg_indices = ready_df[ready_df[region_col] == reg].index.tolist()
-        while len(reg_indices) >= 6:
-            target_count = 8 if len(reg_indices) >= 8 else (7 if len(reg_indices) >= 7 else 6)
-            group_indices = reg_indices[:target_count]
-
-            current_group_id = f"{prefix}{group_counter:03d}"
-            df.loc[group_indices, "Calc_Group_No"] = current_group_id
-            df.loc[group_indices, "Calc_Group_Date"] = grouping_date_display
-
-            group_weight = ready_df.loc[group_indices, "Estimated_Weight_KG"].sum()
-            vins_in_group = ready_df.loc[group_indices, "Vin"].astype(str).tolist() if "Vin" in ready_df.columns else []
-
-            summary_list.append(
-                {
-                    "Grouping ID": current_group_id,
-                    "Type": f"Trailer ({len(group_indices)} Load)",
-                    "Region": reg,
-                    "Pick up Locations": ", ".join(map(str, set(ready_df.loc[group_indices, pickup_col]))),
-                    "Delivery Locations": ", ".join(map(str, set(ready_df.loc[group_indices, delivery_col]))),
-                    "Car Count": len(group_indices),
-                    "Total Weight (kg)": group_weight,
-                    "VINs": vins_in_group,
-                    "Indices": [int(x) for x in group_indices],
-                }
-            )
-            group_counter += 1
-            ready_df = ready_df.drop(index=group_indices)
-            reg_indices = ready_df[ready_df[region_col] == reg].index.tolist()
-
-    wb = openpyxl.load_workbook(file_bytes)
-    ws = wb.active
-
-    headers = [cell.value for cell in ws[1]]
-    g_no_col_idx = headers.index(group_no_col) + 1
-    region_col_idx = headers.index(region_col) + 1
-
-    for idx, row in df.iterrows():
-        excel_row_num = idx + 2
-        calc_no = row["Calc_Group_No"]
-        calc_date = row["Calc_Group_Date"]
-        region_val = row[region_col]
-
-        ws.cell(row=excel_row_num, column=region_col_idx, value=region_val)
-
-        if calc_no != "":
-            ws.cell(row=excel_row_num, column=g_no_col_idx, value=calc_no)
-            if group_date_col in headers:
-                g_date_col_idx = headers.index(group_date_col) + 1
-                ws.cell(row=excel_row_num, column=g_date_col_idx, value=calc_date)
-
-    output_buffer = io.BytesIO()
-    wb.save(output_buffer)
-    output_buffer.seek(0)
-
-    total_cars = len(df)
-    return output_buffer, pd.DataFrame(summary_list), total_cars, df
 
 st.set_page_config(
     page_title="SIAM JWD LOGISTICS - Car Carrier TMS",
@@ -491,14 +208,6 @@ st.markdown(
     .clean-card {{
         background-color: #ffffff;
         border-left: 5px solid #0066B3;
-        border-radius: 8px;
-        padding: 14px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-        margin-bottom: 10px;
-    }}
-    .clean-card-red {{
-        background-color: #ffffff;
-        border-left: 5px solid #ED1C24;
         border-radius: 8px;
         padding: 14px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.06);
@@ -707,28 +416,59 @@ elif active_feature == txt["menu_grouping"]:
     with tab_manual:
         actual_file = st.file_uploader("เลือกไฟล์ FIS ที่จัดกลุ่ม Manual แล้ว (.xlsx)", type=["xlsx", "xls"], key="manual_import_file")
         if actual_file:
-            df_act = pd.read_excel(actual_file)
+            xls_m = pd.ExcelFile(actual_file)
+            all_rows = []
+            if "Sheet3  (2)" in xls_m.sheet_names:
+                df_main = pd.read_excel(actual_file, sheet_name="Sheet3  (2)")
+                vin_map = {}
+                for sname in xls_m.sheet_names:
+                    if sname != "Sheet3  (2)" and "Sheet" not in sname:
+                        df_s = pd.read_excel(actual_file, sheet_name=sname)
+                        if len(df_s) > 1:
+                            df_s.columns = df_s.iloc[0].values
+                            data_s = df_s.iloc[1:].copy()
+                            data_s['Groupping  Number'] = data_s['Groupping  Number'].ffill()
+                            for _, r_s in data_s.iterrows():
+                                v_s = str(r_s.get('Vin', '')).strip()
+                                g_s = str(r_s.get('Groupping  Number', '')).strip()
+                                if v_s and v_s != 'nan':
+                                    vin_map[v_s] = g_s
+                
+                df_main['Grouping number'] = df_main['Vin'].astype(str).str.strip().map(vin_map).fillna(df_main['Grouping number'])
+                df_act = df_main.copy()
+            else:
+                df_act = pd.read_excel(actual_file)
+
             group_col = "Grouping number" if "Grouping number" in df_act.columns else None
             if group_col and group_col in df_act.columns:
-                act_grouped = df_act[df_act[group_col].notna() & (df_act[group_col].astype(str).str.strip() != "เศษรอ Mix")].copy()
-                st.success(f"✅ อ่านข้อมูลสำเร็จ จัดกลุ่มแล้ว {len(act_grouped)} คัน")
+                df_act[group_col] = df_act[group_col].fillna("เศษรอ Mix")
+                act_grouped = df_act[df_act[group_col].notna() & (~df_act[group_col].astype(str).str.strip().isin(["เศษรอ Mix", "", "nan"]))].copy()
+                st.success(f"✅ อ่านข้อมูลสำเร็จทั้งหมด {len(df_act)} คัน (จัดกลุ่มแล้ว {len(act_grouped)} คัน)")
 
                 if st.button("💾 บันทึกเข้า History Benchmark", type="primary", use_container_width=True):
                     history = load_history()
                     date_key = datetime.now().strftime("%Y-%m-%d_%H%M%S_Manual")
                     df_act_clean = df_act.copy().astype(str)
+                    
+                    sum_df = act_grouped.groupby(group_col).agg(
+                        Car_Count=("Vin", "count"),
+                        Region=("Region", lambda x: ", ".join(map(str, set(x)))),
+                        Delivery_Locations=("Delivery Location", lambda x: ", ".join(map(str, set(x)))),
+                    ).reset_index()
+                    sum_df.columns = ["Grouping ID", "Car Count", "Region", "Delivery Locations"]
+
                     history[date_key] = {
                         "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                         "mode": "Manual Actual Import",
                         "total_cars": len(df_act),
                         "grouped_cars": len(act_grouped),
-                        "total_groups": len(act_grouped[group_col].unique()),
-                        "summary": act_grouped.groupby(group_col).size().reset_index(name="Car Count").to_dict(orient="records"),
+                        "total_groups": len(sum_df),
+                        "summary": sum_df.to_dict(orient="records"),
                         "full_details": df_act_clean.fillna("").to_dict(orient="records"),
                     }
                     save_history(history)
                     st.balloons()
-                    st.success("🎉 บันทึกสำเร็จ!")
+                    st.success("🎉 บันทึกข้อมูลคิวรถทั้งหมดสำเร็จเรียบร้อย!")
 
 # --- 2. MASTER LIST ---
 elif active_feature == txt["menu_master"]:
@@ -763,13 +503,28 @@ elif active_feature == txt["menu_history"]:
             rec = history_data[selected_date]
             df_display = pd.DataFrame(rec.get("full_details", rec.get("summary", [])))
             st.markdown(f"**รายการประวัติรอบ ({rec.get('mode', '-')}) ทั้งหมด {len(df_display)} รายการ:**")
-            st.dataframe(df_display, use_container_width=True)
+            
+            show_cols = [c for c in ["Grouping number", "Vin", "MODEL NAME", "Location", "Delivery Location", "Region", "Remark", "HOLD"] if c in df_display.columns]
+            if not show_cols:
+                show_cols = df_display.columns.tolist()
+            st.dataframe(df_display[show_cols], use_container_width=True)
 
-# --- 6. REVISE & SEARCH MODULE ---
+# --- 6. REVISE & SEARCH MODULE (AUTOSUGGEST DROPDOWN WITH CONFIRMATION) ---
 elif active_feature == txt["menu_revise"]:
     st.subheader("✏️ แก้ไขและยกเลิกกลุ่ม (Revise Grouping Number)")
 
     history_data = load_history()
+
+    # ดึงรายการ Grouping ID ทั้งหมดเฉพาะกลุ่มที่มีอยู่จริง
+    all_groups_pool = set()
+    for hkey, hrec in history_data.items():
+        if "full_details" in hrec and hrec["full_details"]:
+            for r_item in hrec["full_details"]:
+                gid = str(r_item.get("Grouping number", r_item.get("Calc_Group_No", r_item.get("Grouping ID", "")))).strip()
+                if gid and gid not in ["nan", "เศษรอ Mix", ""]:
+                    all_groups_pool.add(gid)
+
+    sorted_groups = sorted(list(all_groups_pool))
 
     st.markdown(
         """
@@ -780,27 +535,36 @@ elif active_feature == txt["menu_revise"]:
         unsafe_allow_html=True,
     )
 
-    if "search_group_input_text" not in st.session_state:
-        st.session_state["search_group_input_text"] = ""
+    if "confirmed_group_id" not in st.session_state:
+        st.session_state["confirmed_group_id"] = ""
 
-    col_input, col_clear = st.columns([0.80, 0.20])
+    col_input, col_confirm, col_clear = st.columns([0.70, 0.15, 0.15])
+    
     with col_input:
-        search_val = st.text_input(
-            "🔎 กรอก Group number ที่ต้องการค้นหา:",
-            value=st.session_state["search_group_input_text"],
-            placeholder="กรอก Group number ที่ต้องการค้นหา...",
+        selected_dropdown = st.selectbox(
+            "🔎 พิมพ์หรือเลือก Group number ที่ต้องการค้นหา:",
+            options=["-- เลือก หรือ พิมพ์ Group number --"] + sorted_groups,
+            index=0,
+            placeholder="พิมพ์ หรือ เลือก Group number เช่น ATL260821-006...",
             label_visibility="collapsed"
         )
+    
+    with col_confirm:
+        if st.button("🔍 ดึงข้อมูล", type="primary", use_container_width=True):
+            if selected_dropdown and selected_dropdown != "-- เลือก หรือ พิมพ์ Group number --":
+                st.session_state["confirmed_group_id"] = selected_dropdown.strip()
+            else:
+                st.warning("กรุณาเลือก Group number ก่อนครับ")
+
     with col_clear:
         if st.button("❌ ล้างค่า", use_container_width=True):
-            st.session_state["search_group_input_text"] = ""
+            st.session_state["confirmed_group_id"] = ""
             st.rerun()
 
-    st.session_state["search_group_input_text"] = search_val.strip()
-    target_group_id = st.session_state["search_group_input_text"]
+    target_group_id = st.session_state["confirmed_group_id"]
 
     if not target_group_id:
-        st.info("💡 กรอก Group number ด้านบน (เช่น 006 หรือ SJWD260821-006) เพื่อเริ่มแก้ไขหรือยกเลิกคิวรถในกลุ่ม")
+        st.info("💡 พิมพ์หรือเลือก Group number ในช่องด้านบน แล้วกดปุ่ม **'🔍 ดึงข้อมูล'** เพื่อเริ่มดูและแก้ไขตารางรถในกลุ่ม")
     else:
         st.divider()
         st.markdown(f"### **📋 ผลการค้นหาสำหรับ Grouping ID: `{target_group_id}`**")
@@ -820,30 +584,38 @@ elif active_feature == txt["menu_revise"]:
                             break
 
         if not matched_records:
-            st.error(f"❌ ไม่พบข้อมูลสำหรับ Grouping Number: `{target_group_id}` กรุณาตรวจสอบรหัสอีกครั้ง")
+            st.error(f"❌ ไม่พบข้อมูลสำหรับ Grouping Number: `{target_group_id}`")
         else:
             hkey, hrec, df_matched, gcol, mask_match = matched_records[0]
-            group_vins_df = df_matched[mask_match].copy()
+            group_vins_df = df_matched[mask_match].copy().reset_index(drop=True)
 
             st.success(f"✅ พบรถในกลุ่มนี้ทั้งหมด {len(group_vins_df)} คัน")
-            select_all = st.checkbox("☑️ เลือกทั้งหมด (Select All)", key="chk_select_all_vins")
+            
+            # Interactive Checkbox Data Table
+            display_cols = [c for c in ["Vin", "MODEL NAME", "Color", "Location", "Delivery Location", "Region"] if c in group_vins_df.columns]
+            
+            table_data = group_vins_df[display_cols].copy()
+            table_data.insert(0, "เลือกถอดออก", False)
 
-            st.markdown("#### **รายการรถในกลุ่ม (ติ๊กเลือกคันที่ต้องการถอดออกหรือยกเลิก):**")
+            st.markdown("#### **ตารางรายการรถในกลุ่ม (ติ๊กเลือกคันที่ต้องการถอดออกหรือแก้ไข):**")
+            
+            edited_table = st.data_editor(
+                table_data,
+                column_config={
+                    "เลือกถอดออก": st.column_config.CheckboxColumn("เลือกถอดออก", default=False),
+                    "Vin": st.column_config.TextColumn("VIN (หมายเลข ตัวถัง)", disabled=True),
+                    "MODEL NAME": st.column_config.TextColumn("รุ่นรถยนต์", disabled=True),
+                    "Color": st.column_config.TextColumn("สี", disabled=True),
+                    "Location": st.column_config.TextColumn("ยาร์ด / ลานจอด", disabled=True),
+                    "Delivery Location": st.column_config.TextColumn("สถานที่ส่งมอบดีลเลอร์", disabled=True),
+                    "Region": st.column_config.TextColumn("ภูมิภาค", disabled=True),
+                },
+                hide_index=True,
+                use_container_width=True,
+                key=f"editor_group_{target_group_id}"
+            )
 
-            selected_vins_to_remove = []
-            for idx_row, row_data in group_vins_df.iterrows():
-                vin_val = str(row_data.get("Vin", f"คิวที่_{idx_row}"))
-                model_val = str(row_data.get("MODEL NAME", row_data.get("Model", "-")))
-                loc_val = str(row_data.get("Location", "-"))
-                del_val = str(row_data.get("Delivery Location", "-"))
-
-                chk = st.checkbox(
-                    f"🚘 **VIN:** `{vin_val}` | **รุ่น:** {model_val} | **ลานจอด:** {loc_val} | **ส่ง:** {del_val}",
-                    value=select_all,
-                    key=f"chk_v_{idx_row}_{vin_val}"
-                )
-                if chk:
-                    selected_vins_to_remove.append(vin_val)
+            selected_vins_to_remove = edited_table[edited_table["เลือกถอดออก"] == True]["Vin"].tolist()
 
             st.write("")
             col_act1, col_act2 = st.columns(2)
@@ -856,6 +628,7 @@ elif active_feature == txt["menu_revise"]:
                     st.balloons()
                     st.success("🎉 ยกเลิกกลุ่มเรียบร้อยแล้ว!")
                     time.sleep(1)
+                    st.session_state["confirmed_group_id"] = ""
                     st.rerun()
 
             with col_act2:
@@ -868,4 +641,4 @@ elif active_feature == txt["menu_revise"]:
                         time.sleep(1)
                         st.rerun()
                     else:
-                        st.warning("⚠️ กรุณาติ๊กเลือกคันรถก่อนครับ")
+                        st.warning("⚠️ กรุณาติ๊กเลือกช่อง 'เลือกถอดออก' ในตารางด้านบนก่อนครับ")
