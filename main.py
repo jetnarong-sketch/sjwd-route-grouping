@@ -1,4 +1,5 @@
-from datetime import datetime, date
+# Re-generate the clean main.py file without any trailing execution code
+clean_main_code = """from datetime import datetime, date
 import io
 import os
 import json
@@ -338,7 +339,7 @@ car_carrier_bg_url = "https://images.unsplash.com/photo-1601584115197-04ecc0da31
 
 # --- SIMPLE CSS & THEME ---
 st.markdown(
-    f"""
+    f\"\"\"
     <style>
     .block-container {{
         padding-top: 1rem !important;
@@ -399,7 +400,7 @@ st.markdown(
         margin-bottom: 12px;
     }}
     </style>
-    """,
+    \"\"\",
     unsafe_allow_html=True,
 )
 
@@ -427,7 +428,7 @@ if not st.session_state["authenticated"]:
     txt = T[st.session_state["lang"]]
 
     st.markdown(
-        f"""
+        f\"\"\"
         <div class="login-bg">
             <div style="text-align:center;">
                 <span style="color:#ED1C24; font-size:42px; font-weight:900;">SIAM </span>
@@ -437,7 +438,7 @@ if not st.session_state["authenticated"]:
                 <p style="color:#e2e8f0; font-size:13px; margin-bottom:0;">{txt['subtitle']}</p>
             </div>
         </div>
-        """,
+        \"\"\",
         unsafe_allow_html=True,
     )
 
@@ -471,12 +472,12 @@ txt = T[st.session_state["lang"]]
 current_user = st.session_state["user_info"]
 
 st.sidebar.markdown(
-    f"""
+    f\"\"\"
     <div class="sidebar-user-box">
         <div style="font-weight:800; font-size:13px; color:#0b2545;">👤 {current_user['name']}</div>
         <div style="font-size:11px; color:#64748b;">🔑 {current_user['role']}</div>
     </div>
-    """,
+    \"\"\",
     unsafe_allow_html=True,
 )
 
@@ -670,30 +671,70 @@ elif active_feature == txt["menu_fleet"]:
     st.subheader(f"🚛 {txt['menu_fleet']}")
     st.success("💾 โควตากองรถอยู่ในสถานะพร้อมใช้งาน")
 
-# --- 5. HISTORY ---
+# --- 5. HISTORY (UNIVERSAL ADVANCED SEARCH) ---
 elif active_feature == txt["menu_history"]:
     st.subheader("📜 ประวัติจัดกลุ่มย้อนหลังและการค้นหาคันรถ")
     history_data = load_history()
-    if history_data:
-        available_dates = sorted(list(history_data.keys()), reverse=True)
-        selected_date = st.selectbox("📅 เลือกประวัติที่ต้องการดู:", available_dates)
-        if selected_date in history_data:
-            rec = history_data[selected_date]
-            df_display = pd.DataFrame(rec.get("full_details", rec.get("summary", [])))
-            st.markdown(f"**รายการประวัติรอบ ({rec.get('mode', '-')}) ทั้งหมด {len(df_display)} รายการ:**")
-            
-            show_cols = [c for c in ["Grouping number", "Vin", "MODEL NAME", "Location", "Delivery Location", "Region", "Remark", "HOLD"] if c in df_display.columns]
-            if not show_cols:
-                show_cols = df_display.columns.tolist()
-            st.dataframe(df_display[show_cols], use_container_width=True)
+    
+    if not history_data:
+        st.info("💡 ยังไม่มีข้อมูลในประวัติระบบ")
+    else:
+        all_cars_list = []
+        for hkey, hrec in history_data.items():
+            if "full_details" in hrec and hrec["full_details"]:
+                for row in hrec["full_details"]:
+                    r_copy = dict(row)
+                    r_copy["History_Run"] = hkey
+                    all_cars_list.append(r_copy)
 
-# --- 6. REVISE & SEARCH MODULE (DROPDOWN SEARCH & TABLE VIEW) ---
+        df_all_history = pd.DataFrame(all_cars_list)
+
+        st.markdown(
+            \"\"\"
+            <div class="clean-card">
+                <h4 style="color:#0066B3; margin:0;">🔍 ค้นหาข้อมูลแบบรวม (ค้นหาได้จาก Grouping number, VIN, วันที่ หรือสถานที่ส่ง)</h4>
+            </div>
+            \"\"\",
+            unsafe_allow_html=True,
+        )
+
+        c_srch1, c_srch2 = st.columns([0.80, 0.20])
+        with c_srch1:
+            univ_search = st.text_input(
+                "🔎 พิมพ์คำค้นหา (VIN, Grouping number, วันที่ Allocation, ดีลเลอร์ ฯลฯ):",
+                placeholder="พิมพ์เพื่อค้นหา เช่น ATL260821-001 หรือ SJWD260821-006 หรือ LGXCE4...",
+                label_visibility="collapsed"
+            )
+        with c_srch2:
+            if st.button("❌ ล้างการค้นหา", use_container_width=True):
+                st.rerun()
+
+        if univ_search.strip():
+            query_str = univ_search.strip().lower()
+            mask = df_all_history.astype(str).apply(lambda col: col.str.lower().str.contains(query_str, na=False)).any(axis=1)
+            filtered_df = df_all_history[mask].copy()
+            st.success(f"✅ พบข้อมูลทั้งหมด {len(filtered_df)} รายการที่ตรงกับคำค้นหา '{univ_search}'")
+        else:
+            filtered_df = df_all_history.copy()
+            st.caption(f"แสดงรายการรถทั้งหมดในระบบประวัติ ({len(filtered_df)} รายการ)")
+
+        excel_target_cols = [
+            "Dealer Code", "Name", "Vin", "MODEL NAME", "Model",
+            "Color", "Location", "Delivery Location", "Allocation Date", "Grouping number"
+        ]
+        
+        valid_cols = [c for c in excel_target_cols if c in filtered_df.columns]
+        if not valid_cols:
+            valid_cols = filtered_df.columns.tolist()
+
+        st.dataframe(filtered_df[valid_cols], use_container_width=True, hide_index=True)
+
+# --- 6. REVISE & SEARCH MODULE (REQUIRE TYPING FIRST + EXACT EXCEL TABLE COLUMNS) ---
 elif active_feature == txt["menu_revise"]:
     st.subheader("✏️ แก้ไขและยกเลิกกลุ่ม (Revise Grouping Number)")
 
     history_data = load_history()
 
-    # Collect all available grouping numbers
     all_groups_pool = set()
     for hkey, hrec in history_data.items():
         if "full_details" in hrec and hrec["full_details"]:
@@ -705,11 +746,11 @@ elif active_feature == txt["menu_revise"]:
     sorted_groups = sorted(list(all_groups_pool))
 
     st.markdown(
-        """
+        \"\"\"
         <div class="clean-card">
             <h3 style="color:#0066B3; margin:0;">🔍 ค้นหา Grouping Number ที่ต้องการแก้ไข / ยกเลิก</h3>
         </div>
-        """,
+        \"\"\",
         unsafe_allow_html=True,
     )
 
@@ -719,20 +760,29 @@ elif active_feature == txt["menu_revise"]:
     col_input, col_confirm, col_clear = st.columns([0.70, 0.15, 0.15])
     
     with col_input:
-        selected_dropdown = st.selectbox(
-            "🔎 พิมพ์หรือเลือก Group number ที่ต้องการค้นหา:",
-            options=["-- เลือก หรือ พิมพ์ Group number --"] + sorted_groups,
-            index=0,
-            placeholder="พิมพ์ หรือ เลือก Group number เช่น ATL260821-006...",
-            label_visibility="collapsed"
+        typed_input = st.text_input(
+            "🔎 พิมพ์ Group number ที่ต้องการค้นหา:",
+            placeholder="กรอก Group number เช่น SJWD260821-006 หรือ ATL...",
+            label_visibility="collapsed",
+            key="input_revise_text_field"
         )
     
+    matched_suggestions = []
+    if typed_input.strip():
+        norm_typed = normalize_key(typed_input)
+        matched_suggestions = [g for g in sorted_groups if norm_typed in normalize_key(g)]
+
+    if matched_suggestions:
+        selected_from_sug = st.selectbox("💡 รายการที่แนะนำตรงกับคำค้นหา:", options=matched_suggestions, index=0)
+    else:
+        selected_from_sug = typed_input.strip()
+
     with col_confirm:
-        if st.button("🔍 ดึงข้อมูล", type="primary", use_container_width=True):
-            if selected_dropdown and selected_dropdown != "-- เลือก หรือ พิมพ์ Group number --":
-                st.session_state["confirmed_group_id"] = selected_dropdown.strip()
+        if st.button("🔍 ค้นหา", type="primary", use_container_width=True):
+            if selected_from_sug.strip():
+                st.session_state["confirmed_group_id"] = selected_from_sug.strip()
             else:
-                st.warning("กรุณาเลือก Group number ก่อนครับ")
+                st.warning("กรุณาพิมพ์ Group number ก่อนกดค้นหาครับ")
 
     with col_clear:
         if st.button("❌ ล้างค่า", use_container_width=True):
@@ -742,7 +792,7 @@ elif active_feature == txt["menu_revise"]:
     target_group_id = st.session_state["confirmed_group_id"]
 
     if not target_group_id:
-        st.info("💡 พิมพ์หรือเลือก Group number ในช่องด้านบน แล้วกดปุ่ม **'🔍 ดึงข้อมูล'** เพื่อเริ่มดูและแก้ไขตารางรถในกลุ่ม")
+        st.info("💡 พิมพ์ Group number ในช่องด้านบน แล้วกดปุ่ม **'🔍 ค้นหา'** เพื่อเริ่มดูและแก้ไขคิวรถในกลุ่ม")
     else:
         st.divider()
         st.markdown(f"### **📋 ผลการค้นหาสำหรับ Grouping ID: `{target_group_id}`**")
@@ -769,23 +819,36 @@ elif active_feature == txt["menu_revise"]:
 
             st.success(f"✅ พบรถในกลุ่มนี้ทั้งหมด {len(group_vins_df)} คัน")
             
-            display_cols = [c for c in ["Vin", "MODEL NAME", "Color", "Location", "Delivery Location", "Region"] if c in group_vins_df.columns]
-            
-            table_data = group_vins_df[display_cols].copy()
-            table_data.insert(0, "เลือกถอดออก", False)
+            c_all1, c_all2 = st.columns([0.25, 0.75])
+            with c_all1:
+                select_all_hdr = st.checkbox("☑️ เลือกทั้งหมด (Select All)", value=False, key=f"chk_all_hdr_{target_group_id}")
 
-            st.markdown("#### **ตารางรายการรถในกลุ่ม (ติ๊กเลือกคันที่ต้องการถอดออกหรือแก้ไข):**")
+            target_excel_cols = [
+                "Dealer Code", "Name", "Vin", "MODEL NAME", "Model",
+                "Color", "Location", "Delivery Location", "Allocation Date", "Grouping number"
+            ]
             
+            display_cols = [c for c in target_excel_cols if c in group_vins_df.columns]
+            if not display_cols:
+                display_cols = group_vins_df.columns.tolist()
+
+            table_data = group_vins_df[display_cols].copy()
+            table_data.insert(0, "เลือกถอดออก", select_all_hdr)
+
             edited_table = st.data_editor(
                 table_data,
                 column_config={
-                    "เลือกถอดออก": st.column_config.CheckboxColumn("เลือกถอดออก", default=False),
-                    "Vin": st.column_config.TextColumn("VIN (หมายเลข ตัวถัง)", disabled=True),
-                    "MODEL NAME": st.column_config.TextColumn("รุ่นรถยนต์", disabled=True),
-                    "Color": st.column_config.TextColumn("สี", disabled=True),
-                    "Location": st.column_config.TextColumn("ยาร์ด / ลานจอด", disabled=True),
-                    "Delivery Location": st.column_config.TextColumn("สถานที่ส่งมอบดีลเลอร์", disabled=True),
-                    "Region": st.column_config.TextColumn("ภูมิภาค", disabled=True),
+                    "เลือกถอดออก": st.column_config.CheckboxColumn("เลือกถอดออก", default=select_all_hdr),
+                    "Dealer Code": st.column_config.TextColumn("Dealer Code", disabled=True),
+                    "Name": st.column_config.TextColumn("Name", disabled=True),
+                    "Vin": st.column_config.TextColumn("Vin", disabled=True),
+                    "MODEL NAME": st.column_config.TextColumn("MODEL NAME", disabled=True),
+                    "Model": st.column_config.TextColumn("Model", disabled=True),
+                    "Color": st.column_config.TextColumn("Color", disabled=True),
+                    "Location": st.column_config.TextColumn("Location", disabled=True),
+                    "Delivery Location": st.column_config.TextColumn("Delivery Location", disabled=True),
+                    "Allocation Date": st.column_config.TextColumn("Allocation Date", disabled=True),
+                    "Grouping number": st.column_config.TextColumn("Grouping number", disabled=True),
                 },
                 hide_index=True,
                 use_container_width=True,
@@ -819,3 +882,9 @@ elif active_feature == txt["menu_revise"]:
                         st.rerun()
                     else:
                         st.warning("⚠️ กรุณาติ๊กเลือกช่อง 'เลือกถอดออก' ในตารางด้านบนก่อนครับ")
+"""
+
+with open("main.py", "w", encoding="utf-8") as f:
+    f.write(clean_main_code)
+
+print("Saved clean main.py without any trailing code lines!")
