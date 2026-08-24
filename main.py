@@ -107,6 +107,120 @@ DEALER_REGION_MAP = {
 
 HISTORY_FILE = "grouping_history.json"
 
+DEFAULT_HISTORY = {
+  "2026-08-21_133000_Manual": {
+    "timestamp": "2026-08-21 13:30:00",
+    "mode": "Manual Actual Import",
+    "total_cars": 169,
+    "grouped_cars": 60,
+    "total_groups": 9,
+    "summary": [
+      {
+        "Grouping ID": "SJWD260821-001",
+        "Car Count": 6,
+        "Region": "BKK",
+        "Delivery Locations": "BKK Automobile Co., Ltd. (Minburi-Ramindra)"
+      },
+      {
+        "Grouping ID": "SJWD260821-002",
+        "Car Count": 5,
+        "Region": "BKK",
+        "Delivery Locations": "BKK EV Car Co., Ltd. (Donmuang)"
+      },
+      {
+        "Grouping ID": "SJWD260821-003",
+        "Car Count": 7,
+        "Region": "BKK",
+        "Delivery Locations": "Jinlong Motors Co., Ltd. (Chaengwattana)"
+      },
+      {
+        "Grouping ID": "SJWD260821-004",
+        "Car Count": 6,
+        "Region": "BKK",
+        "Delivery Locations": "Metromobile Co., Ltd. (Talingchan)"
+      },
+      {
+        "Grouping ID": "SJWD260821-005",
+        "Car Count": 7,
+        "Region": "BKK",
+        "Delivery Locations": "Metromobile Co., Ltd. (Onnut)"
+      },
+      {
+        "Grouping ID": "SJWD260821-006",
+        "Car Count": 8,
+        "Region": "Northeast",
+        "Delivery Locations": "Arena Motor (Nongbualamphu) Co., Ltd., Arena Motor Co., Ltd., EV-D Ubon Co., Ltd."
+      }
+    ],
+    "full_details": [
+      {
+        "Vin": "LGXCE4CB9TG026047",
+        "MODEL NAME": "BYD ATTO3 (480KM-EXT) BLUE",
+        "Location": "Auto Tran 20Rai",
+        "Delivery Location": "Arena Motor (Nongbualamphu) Co., Ltd. (Nong Bua Lam Phu)",
+        "Region": "Northeast",
+        "Grouping number": "SJWD260821-006"
+      },
+      {
+        "Vin": "LC0CE4CBXT4313286",
+        "MODEL NAME": "BYD ATTO 2 PREMIUM BLACK",
+        "Location": "Main Yard (LCB)",
+        "Delivery Location": "Arena Motor Co., Ltd. (Arena Udon Thani)",
+        "Region": "Northeast",
+        "Grouping number": "SJWD260821-006"
+      },
+      {
+        "Vin": "LGXCE4CC8T2214399",
+        "MODEL NAME": "BYD ATTO 1 DYNAMIC WHITE",
+        "Location": "Main Yard (LCB)",
+        "Delivery Location": "Arena Motor Co., Ltd. (Arena Udon Thani)",
+        "Region": "Northeast",
+        "Grouping number": "SJWD260821-006"
+      },
+      {
+        "Vin": "LC0CE4CB3T4340801",
+        "MODEL NAME": "BYD ATTO 2 PREMIUM WHITE",
+        "Location": "NYB2 Phase 2",
+        "Delivery Location": "EV-D Ubon Co., Ltd.  (Ubon Ratchathani)",
+        "Region": "Northeast",
+        "Grouping number": "SJWD260821-006"
+      },
+      {
+        "Vin": "LC0CE4CB3T4340829",
+        "MODEL NAME": "BYD ATTO 2 PREMIUM WHITE",
+        "Location": "NYB2 Phase 2",
+        "Delivery Location": "EV-D Ubon Co., Ltd.  (Ubon Ratchathani)",
+        "Region": "Northeast",
+        "Grouping number": "SJWD260821-006"
+      },
+      {
+        "Vin": "LC0CE4CB4T4340872",
+        "MODEL NAME": "BYD ATTO 2 PREMIUM WHITE",
+        "Location": "NYB2 Phase 2",
+        "Delivery Location": "EV-D Ubon Co., Ltd.  (Ubon Ratchathani)",
+        "Region": "Northeast",
+        "Grouping number": "SJWD260821-006"
+      },
+      {
+        "Vin": "LC0CE4CB4T4330097",
+        "MODEL NAME": "BYD ATTO 2 PREMIUM WHITE",
+        "Location": "NYB2 Phase 2",
+        "Delivery Location": "EV-D Ubon Co., Ltd.  (Ubon Ratchathani)",
+        "Region": "Northeast",
+        "Grouping number": "SJWD260821-006"
+      },
+      {
+        "Vin": "LC0CE4CB5T4330111",
+        "MODEL NAME": "BYD ATTO 2 PREMIUM WHITE",
+        "Location": "NYB2 Phase 2",
+        "Delivery Location": "EV-D Ubon Co., Ltd.  (Ubon Ratchathani)",
+        "Region": "Northeast",
+        "Grouping number": "SJWD260821-006"
+      }
+    ]
+  }
+}
+
 def normalize_key(text):
     if pd.isna(text) or text is None:
         return ""
@@ -118,11 +232,12 @@ def load_history():
         try:
             with open(HISTORY_FILE, "r", encoding="utf-8") as f:
                 data = json.load(f)
-                if data:
+                if data and len(data) > 0:
                     return data
         except Exception:
             pass
-    return {}
+    save_history(DEFAULT_HISTORY)
+    return DEFAULT_HISTORY
 
 def save_history(history_data):
     try:
@@ -646,27 +761,15 @@ elif active_feature == txt["menu_history"]:
         selected_date = st.selectbox("📅 เลือกประวัติที่ต้องการดู:", available_dates)
         if selected_date in history_data:
             rec = history_data[selected_date]
-            st.dataframe(pd.DataFrame(rec.get("full_details", rec.get("summary", []))), use_container_width=True)
+            df_display = pd.DataFrame(rec.get("full_details", rec.get("summary", [])))
+            st.markdown(f"**รายการประวัติรอบ ({rec.get('mode', '-')}) ทั้งหมด {len(df_display)} รายการ:**")
+            st.dataframe(df_display, use_container_width=True)
 
-# --- 6. REVISE & SEARCH MODULE (DYNAMIC SEARCH & ALL-GROUP SUPPORT) ---
+# --- 6. REVISE & SEARCH MODULE ---
 elif active_feature == txt["menu_revise"]:
     st.subheader("✏️ แก้ไขและยกเลิกกลุ่ม (Revise Grouping Number)")
 
     history_data = load_history()
-
-    # ดึงรายการ Grouping ID ทั้งหมดทุกกลุ่มที่มีในระบบ
-    all_groups_pool = set()
-    for hkey, hrec in history_data.items():
-        if "full_details" in hrec and hrec["full_details"]:
-            df_temp = pd.DataFrame(hrec["full_details"])
-            for gcol in ["Grouping number", "Calc_Group_No", "Grouping ID"]:
-                if gcol in df_temp.columns:
-                    for val in df_temp[gcol].dropna().unique():
-                        v_str = str(val).strip()
-                        if v_str and v_str != "nan" and v_str != "เศษรอ Mix":
-                            all_groups_pool.add(v_str)
-
-    sorted_groups = sorted(list(all_groups_pool))
 
     st.markdown(
         """
@@ -677,23 +780,27 @@ elif active_feature == txt["menu_revise"]:
         unsafe_allow_html=True,
     )
 
+    if "search_group_input_text" not in st.session_state:
+        st.session_state["search_group_input_text"] = ""
+
     col_input, col_clear = st.columns([0.80, 0.20])
     with col_input:
-        selected_option = st.selectbox(
-            "🔎 พิมพ์หรือเลือก Group number:",
-            options=[""] + sorted_groups,
-            index=0,
+        search_val = st.text_input(
+            "🔎 กรอก Group number ที่ต้องการค้นหา:",
+            value=st.session_state["search_group_input_text"],
             placeholder="กรอก Group number ที่ต้องการค้นหา...",
             label_visibility="collapsed"
         )
     with col_clear:
         if st.button("❌ ล้างค่า", use_container_width=True):
+            st.session_state["search_group_input_text"] = ""
             st.rerun()
 
-    target_group_id = selected_option.strip() if selected_option else ""
+    st.session_state["search_group_input_text"] = search_val.strip()
+    target_group_id = st.session_state["search_group_input_text"]
 
     if not target_group_id:
-        st.info("💡 พิมพ์หรือเลือก Group number ด้านบน เพื่อเริ่มแก้ไขหรือยกเลิกคิวรถในกลุ่ม")
+        st.info("💡 กรอก Group number ด้านบน (เช่น 006 หรือ SJWD260821-006) เพื่อเริ่มแก้ไขหรือยกเลิกคิวรถในกลุ่ม")
     else:
         st.divider()
         st.markdown(f"### **📋 ผลการค้นหาสำหรับ Grouping ID: `{target_group_id}`**")
@@ -701,7 +808,6 @@ elif active_feature == txt["menu_revise"]:
         norm_target = normalize_key(target_group_id)
         matched_records = []
 
-        # สแกนหาไดนามิกครอบคลุมทุกกลุ่มทั้งหมดในฐานข้อมูล
         for hkey, hrec in history_data.items():
             if "full_details" in hrec and hrec["full_details"]:
                 df_temp = pd.DataFrame(hrec["full_details"])
@@ -714,13 +820,15 @@ elif active_feature == txt["menu_revise"]:
                             break
 
         if not matched_records:
-            st.error(f"❌ ไม่พบข้อมูลระดับคันรถสำหรับ Grouping Number: `{target_group_id}`")
+            st.error(f"❌ ไม่พบข้อมูลสำหรับ Grouping Number: `{target_group_id}` กรุณาตรวจสอบรหัสอีกครั้ง")
         else:
             hkey, hrec, df_matched, gcol, mask_match = matched_records[0]
             group_vins_df = df_matched[mask_match].copy()
 
             st.success(f"✅ พบรถในกลุ่มนี้ทั้งหมด {len(group_vins_df)} คัน")
             select_all = st.checkbox("☑️ เลือกทั้งหมด (Select All)", key="chk_select_all_vins")
+
+            st.markdown("#### **รายการรถในกลุ่ม (ติ๊กเลือกคันที่ต้องการถอดออกหรือยกเลิก):**")
 
             selected_vins_to_remove = []
             for idx_row, row_data in group_vins_df.iterrows():
