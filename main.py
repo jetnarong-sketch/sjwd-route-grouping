@@ -883,8 +883,3 @@ elif active_feature == txt["menu_revise"]:
                     else:
                         st.warning("⚠️ กรุณาติ๊กเลือกช่อง 'เลือกถอดออก' ในตารางด้านบนก่อนครับ")
 """
-
-with open("main.py", "w", encoding="utf-8") as f:
-    f.write(clean_main_code)
-
-print("Saved clean main.py without any trailing code lines!")
